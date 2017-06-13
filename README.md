@@ -1,9 +1,10 @@
 # Bobinette
 
-## Prepare New Image
+## Installation
+
+Download the [last image of Raspbian Lite](https://downloads.raspberrypi.org/raspbian_lite_latest).
 
 ### Install Raspbian on SD Card
-Download the [last image of Raspbian Lite](https://downloads.raspberrypi.org/raspbian_lite_latest).
 Find out SD Card mounting index (`X`).
 ```
 sudo diskutil list
@@ -11,16 +12,16 @@ sudo diskutil list
 Burn the image.
 ```
 sudo diskutil unmountDisk /dev/diskX
-sudo dd bs=1m if=YYYY-MM-DD-raspbian-jessie-lite.img of=/dev/rdiskX
+sudo dd bs=1m if=path/to/raspbian-jessie-lite.img of=/dev/rdiskX
 sudo diskutil unmountDisk /dev/diskX
 ```
-Boot the Pi on the SD Card.
+Boot the SD Card on a Raspberry Pi.
 
-### Set WiFi up
+### Connect the Pi
 ```
 sudo nano /etc/wpa_supplicant/wpa_supplicant.conf
 ```
-Add network configuration add the end of the file.
+Write network configuration at the end of the file, save and exit (`ctrl+X`).
 ```
 network={
     ssid="network_name"
@@ -44,14 +45,14 @@ sudo apt-get install -y git
 ```
 
 ### Install NodeJS
-##### Raspberry Pi 3
-```
-curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-sudo apt-get install -y nodejs
-```
-##### Raspberry Pi Zero
+##### Raspberry Pi Zero (`bobinette`)
 ```
 wget -O - https://raw.githubusercontent.com/sdesalas/node-pi-zero/master/install-node-v.last.sh | bash
+sudo apt-get install -y nodejs
+```
+##### Raspberry Pi 3 (`bobinette-dev`)
+```
+curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 sudo apt-get install -y nodejs
 ```
 
@@ -59,5 +60,13 @@ sudo apt-get install -y nodejs
 ```
 git clone http://github.com/WebMaestroFr/bobinette.git
 cd bobinette
+```
+##### Raspberry Pi Zero (`bobinette`)
+```
+npm install
+```
+##### Raspberry Pi 3 (`bobinette-dev`)
+```
+git checkout bobinette-dev
 npm install
 ```
