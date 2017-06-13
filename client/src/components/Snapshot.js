@@ -29,9 +29,7 @@ class Snapshot extends React.Component {
 }
 
 Snapshot.propTypes = {
-    date: React
-        .PropTypes
-        .instanceOf(Date),
+    date: PropTypes.instanceOf(Date),
     image: PropTypes.string,
     region: PropTypes.object,
     height: PropTypes.number,

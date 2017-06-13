@@ -1,5 +1,5 @@
 {
-    "name": "rpi-doorbell",
+    "name": "bobinette",
     "version": "1.0.0",
     "description": "Raspberry Pi Facial Recognition Access Control System",
     "scripts": {
@@ -10,14 +10,14 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/WebMaestroFr/rpi-doorbell.git"
+        "url": "git+https://github.com/WebMaestroFr/bobinette.git"
     },
     "author": "etienne@webmaestro.fr",
     "license": "ISC",
     "bugs": {
-        "url": "https://github.com/WebMaestroFr/rpi-doorbell/issues"
+        "url": "https://github.com/WebMaestroFr/bobinette/issues"
     },
-    "homepage": "https://github.com/WebMaestroFr/rpi-doorbell#readme",
+    "homepage": "https://github.com/WebMaestroFr/bobinette#readme",
     "eslintConfig": {
         "env": {
             "browser": true,

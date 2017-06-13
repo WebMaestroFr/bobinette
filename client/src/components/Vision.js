@@ -19,15 +19,10 @@ class Vision extends React.Component {
                     context.save();
                     context.translate(detection.transform.center.x, detection.transform.center.y);
                     context.rotate(detection.transform.angle);
-
                     context.strokeRect(detection.region.x, detection.region.y, detection.region.width, detection.region.height);
-
                     context.restore();
-
                 } else {
-                    // context.strokeRect(detection.region.x, detection.region.y, detection.region.width,
-                    // detection.region.height);
-                    context.strokeRect(detection.x, detection.y, detection.width, detection.height);
+                    context.strokeRect(detection.region.x, detection.region.y, detection.region.width, detection.region.height);
                 }
             }
         };
