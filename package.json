@@ -1,0 +1,34 @@
+{
+    "name": "rpi-doorbell",
+    "version": "1.0.0",
+    "description": "Raspberry Pi Facial Recognition Access Control System",
+    "scripts": {
+        "start": "npm run client | npm run server",
+        "client": "npm start --prefix client",
+        "server": "npm start --prefix server",
+        "install": "sudo bash ./install.sh"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/WebMaestroFr/rpi-doorbell.git"
+    },
+    "author": "etienne@webmaestro.fr",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/WebMaestroFr/rpi-doorbell/issues"
+    },
+    "homepage": "https://github.com/WebMaestroFr/rpi-doorbell#readme",
+    "eslintConfig": {
+        "env": {
+            "browser": true,
+            "es6": true
+        },
+        "parserOptions": {
+            "sourceType": "module",
+            "ecmaFeatures": {
+                "jsx": true,
+                "experimentalObjectRestSpread": true
+            }
+        }
+    }
+}

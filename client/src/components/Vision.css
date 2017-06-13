@@ -1,0 +1,16 @@
+.Vision {
+    position: relative;
+}
+
+.Vision > img {
+    width: 100%;
+    height: auto;
+}
+
+.Vision-detection {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+}

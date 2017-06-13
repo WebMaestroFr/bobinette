@@ -1,0 +1,14 @@
+{
+    "name": "server",
+    "version": "1.0.0",
+    "main": "main.js",
+    "scripts": {
+        "start": "node main.js"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "camera": "file:./camera",
+        "vision": "file:./vision",
+        "websocket": "file:./websocket"
+    }
+}

@@ -1,0 +1,9 @@
+.Snapshot {
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+}
+
+.Snapshot-image {
+    position: absolute;
+}

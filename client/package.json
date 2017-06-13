@@ -1,0 +1,21 @@
+{
+    "name": "client",
+    "version": "0.1.0",
+    "private": true,
+    "dependencies": {
+        "bootstrap": "latest",
+        "prop-types": "latest",
+        "react": "latest",
+        "react-bootstrap": "latest",
+        "react-dom": "latest"
+    },
+    "devDependencies": {
+        "react-scripts": "latest"
+    },
+    "scripts": {
+        "start": "react-scripts start",
+        "build": "react-scripts build",
+        "test": "react-scripts test --env=jsdom",
+        "eject": "react-scripts eject"
+    }
+}

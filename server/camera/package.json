@@ -1,0 +1,11 @@
+{
+    "name": "camera",
+    "version": "1.0.0",
+    "description": "Raspberry Pi Camera Stream.",
+    "author": "Etienne Baudry <etienne@webmaestro.fr>",
+    "main": "main.js",
+    "scripts": {
+        "install": "sudo bash ./install.sh"
+    },
+    "dependencies": {}
+}
