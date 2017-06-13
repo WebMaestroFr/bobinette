@@ -7,7 +7,7 @@ const detectionSocket = new WebSocket(9001);
 
 const handleFaceDetection = (faces) => {
     detectionSocket.broadcast({
-        type: `vision-detect`,
+        type: `detection`,
         data: faces
     }, `json`);
     console.error(`\x1b[32m✔\x1b[0m Frontal Faces`, faces);
@@ -17,8 +17,8 @@ const handleCameraFrame = (buffer) => {
     cameraSocket.broadcast(buffer, `base64`);
     Vision.detect({
         cascade: `frontalface_default`,
-        scale: 1.15,
-        neighbors: 1,
+        scale: 1.2,
+        neighbors: 2,
         size: [48, 48]
     }, buffer)
         .then(handleFaceDetection)

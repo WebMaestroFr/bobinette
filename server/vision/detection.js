@@ -36,20 +36,18 @@ class Detection {
     }
 
     constructor(group) {
-        this.region = {
-            x: group.reduce((a, b) => {
-                return a.x + b.x;
-            }, {x: 0}) / group.length,
-            y: group.reduce((a, b) => {
-                return a.y + b.y;
-            }, {y: 0}) / group.length,
-            width: group.reduce((a, b) => {
-                return a.width + b.width;
-            }, {width: 0}) / group.length,
-            height: group.reduce((a, b) => {
-                return a.height + b.height;
-            }, {height: 0}) / group.length
-        };
+        this.x = group.reduce((a, b) => {
+            return a.x + b.x;
+        }, {x: 0}) / group.length;
+        this.y = group.reduce((a, b) => {
+            return a.y + b.y;
+        }, {y: 0}) / group.length;
+        this.width = group.reduce((a, b) => {
+            return a.width + b.width;
+        }, {width: 0}) / group.length;
+        this.height = group.reduce((a, b) => {
+            return a.height + b.height;
+        }, {height: 0}) / group.length;
     }
 }
 

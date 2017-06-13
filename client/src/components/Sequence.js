@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import {Carousel, FormControl, FormGroup, Modal} from 'react-bootstrap';
 
 import Snapshot from './Snapshot';
-import Vision from './Vision';
+import Detection from './Detection';
 
 import './Sequence.css';
 
@@ -55,9 +55,9 @@ class Sequence extends React.Component {
                                 const d = new Date(snapshot.date);
                                 return (
                                     <Carousel.Item key={index * 2 + 1}>
-                                        <Vision detections={[snapshot]} width={480} height={360}>
+                                        <Detection regions={[snapshot]} width={480} height={360}>
                                             <img alt={d} src={snapshot.image} width={480} height={360}/>
-                                        </Vision>
+                                        </Detection>
                                         <Carousel.Caption>
                                             <time>
                                                 {d.toLocaleString()}
