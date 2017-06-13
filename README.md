@@ -2,6 +2,28 @@
 
 ## Installation
 
+Instead of building the system manually, download the last release of the development repository and burn it on a SD Card.
+```
+sudo diskutil unmountDisk /dev/diskX
+gunzip --stdout path/to/YYYY-MM-DD-bobinette-dev.img.gz | sudo dd bs=1m of=/dev/rdiskX
+sudo diskutil unmountDisk /dev/diskX
+```
+
+## Start
+```
+cd ~/bobinette
+```
+##### Server
+```
+npm run server
+```
+##### Client
+```
+npm run client
+```
+
+## Build
+
 Download the [last image of Raspbian Lite](https://downloads.raspberrypi.org/raspbian_lite_latest).
 
 ### Install Raspbian on SD Card
@@ -42,6 +64,7 @@ sudo raspi-config
 ```
 sudo apt-get update
 sudo apt-get install -y git
+git config --global credential.helper 'cache --timeout=28800'
 ```
 
 ### Install NodeJS
@@ -69,4 +92,9 @@ npm install
 ```
 git checkout bobinette-dev
 npm install
+```
+
+## Backup Image
+```
+sudo dd bs=1m if=/dev/rdiskX | gzip > YYYY-MM-DD-bobinette-dev.img.gz
 ```
