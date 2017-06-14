@@ -1,4 +1,5 @@
 const spawn = require(`child_process`).spawn;
+
 const Detection = require(`./detection`);
 
 let cpus = require(`os`)
@@ -14,11 +15,10 @@ if (cpus > 2) {
 class Vision {
 
     static process(module, options, buffer) {
-
         return new Promise((resolve, reject) => {
 
             if (cpus === 0) {
-                return reject(`\x1b[31m✘\x1b[0m Vision Process`);
+                return;
             }
             cpus -= 1;
 
@@ -27,11 +27,11 @@ class Vision {
                 args.push(`--` + opt);
                 args.push(JSON.stringify(options[opt]));
             }
-
             const execution = spawn(`python`, args, {
                 stdio: [`pipe`, `pipe`, `pipe`]
             });
-            console.error(`\x1b[32m✔\x1b[0m Vision Process\n\x1b[34m=> python\x1b[0m`, args.join(` `));
+            console.error(`\x1b[34mVision Process\n=>\x1b[0m python`, args.join(' '));
+
             execution
                 .stdout
                 .on(`data`, (data) => {
@@ -48,18 +48,22 @@ class Vision {
                     reject(data.toString());
                 });
 
-            execution
-                .stdin
-                .end(buffer);
+            try {
+                execution
+                    .stdin
+                    .end(buffer);
+            } catch (err) {
+                reject(err);
+            }
         });
     }
 
-    static detect(options, buffer) {
+    static detect(options, buffer, overlap) {
         return new Promise((resolve, reject) => {
-            this
+            Vision
                 .process(`detect`, options, buffer)
-                .then((results) => {
-                    const detections = Detection.collect(results);
+                .then((objects) => {
+                    const detections = Detection.collect(objects, overlap);
                     resolve(detections);
                 })
                 .catch(reject);

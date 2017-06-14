@@ -32,7 +32,8 @@ class Camera {
         const raspivid = spawn(`raspivid`, args, {
             stdio: [`ignore`, `pipe`, `pipe`]
         });
-        console.error(`\x1b[32m✔\x1b[0m Camera Source\n\x1b[34m=> raspivid\x1b[0m`, args.join(` `));
+        console.error(`\x1b[34mCamera Source\n=>\x1b[0m raspivid`, args.join(` `));
+
         raspivid
             .stderr
             .on(`data`, (data) => {
@@ -64,7 +65,8 @@ class Camera {
         const avconv = spawn(`avconv`, args, {
             stdio: [`pipe`, `pipe`, `pipe`]
         });
-        console.error(`\x1b[32m✔\x1b[0m Camera Stream\n\x1b[34m=> avconv\x1b[0m`, args.join(` `));
+        console.error(`\x1b[34mCamera Stream\n=>\x1b[0m avconv`, args.join(` `));
+
         avconv
             .stdout
             .on(`data`, callback);

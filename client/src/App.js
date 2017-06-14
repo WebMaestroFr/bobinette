@@ -12,7 +12,10 @@ class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            detection: []
+            snapshot: {
+                date: new Date(0),
+                detections: []
+            }
         };
     }
 
@@ -41,7 +44,7 @@ class App extends Component {
                 <Row>
                     <Col md={6}>
                         <h1>Camera Video Stream</h1>
-                        <Detection regions={this.state.detection} width={480} height={360}>
+                        <Detection regions={this.state.snapshot.detections} width={480} height={360}>
                             <Camera port={this.props.cameraPort} width={480} height={360}/>
                         </Detection>
                         <h1>Face Detection Sequences</h1>

@@ -3,7 +3,7 @@ const ws = require(`ws`);
 class WebSocket {
     constructor(port) {
         this.server = new ws.Server({port: port, perMessageDeflate: false});
-        console.error(`\x1b[32m✔\x1b[0m WebSocket Server`, port);
+        console.error(`\x1b[32m✔ WebSocket Server\x1b[0m`, port);
     }
     broadcast(message, encoding = null) {
         switch (encoding) {
@@ -22,7 +22,7 @@ class WebSocket {
                 }
             }
         } catch (err) {
-            console.error(`\x1b[31m✘\x1b[0m WebSocket`, err);
+            console.error(`\x1b[31m✘\x1b[0m WebSocket Message`, err);
         }
     }
 }

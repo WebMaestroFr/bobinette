@@ -78,7 +78,7 @@ class Session {
         // Time silence
         callback(date - this._timestamp);
     }
-};
+}
 
 module.exports = {
     Session: Session,

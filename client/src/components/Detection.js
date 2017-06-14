@@ -3,6 +3,27 @@ import PropTypes from 'prop-types';
 
 import './Detection.css';
 
+CanvasRenderingContext2D.prototype.drawRegion = function({
+    x,
+    y,
+    width,
+    height
+}, radius) {
+    if (width < 2 * radius) 
+        radius = width / 2;
+    if (height < 2 * radius) 
+        radius = height / 2;
+    this.beginPath();
+    this.moveTo(x + radius, y);
+    this.arcTo(x + width, y, x + width, y + height, radius);
+    this.arcTo(x + width, y + height, x, y + height, radius);
+    this.arcTo(x, y + height, x, y, radius);
+    this.arcTo(x, y, x + width, y, radius);
+    this.closePath();
+    this.stroke();
+    return this;
+};
+
 class Detection extends React.Component {
 
     componentDidMount() {
@@ -10,18 +31,18 @@ class Detection extends React.Component {
             .refs
             .regions
             .getContext(`2d`);
-        this.drawDetections = (regions) => {
+        this.drawRegions = (regions) => {
             context.clearRect(0, 0, this.props.width, this.props.height);
             context.strokeStyle = 'rgba(255,255,255,0.5)';
-            for (const region of regions) {
-                context.strokeRect(region.x, region.y, region.width, region.height);
+            for (let region of regions) {
+                context.drawRegion(region, 4);
             }
         };
-        this.drawDetections(this.props.regions);
+        this.drawRegions(this.props.regions);
     }
 
     componentWillReceiveProps(props) {
-        this.drawDetections(props.regions);
+        this.drawRegions(props.regions);
     }
 
     shouldComponentUpdate() {
