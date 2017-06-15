@@ -17,8 +17,8 @@ PARSER = argparse.ArgumentParser()
 # IMAGE = numpy.fromstring(ARGS.image, dtype=numpy.uint8)
 
 PARSER.add_argument("--cascade", type=json.loads)
-PARSER.add_argument("--scale", type=json.loads, default=1.1)
-PARSER.add_argument("--neighbors", type=json.loads, default=4)
+PARSER.add_argument("--scale", type=json.loads, default=1.2)
+PARSER.add_argument("--neighbors", type=json.loads, default=1)
 PARSER.add_argument("--size", type=json.loads, default=[32, 32])
 PARSER.add_argument("--flip", type=json.loads, default=False)
 PARSER.add_argument("--region", type=json.loads, default=None)
@@ -31,12 +31,12 @@ ARGS = PARSER.parse_args()
 def detect(image):
     """Detect objects"""
 
-    if ARGS.region:
-        image = image[ARGS.region.y:ARGS.region.y + ARGS.region.height,
-                      ARGS.region.x:ARGS.region.x + ARGS.region.width]
-
     gray = cv2.imdecode(image, 0)
     # gray = CLAHE.apply(gray)
+
+    if ARGS.region:
+        gray = gray[ARGS.region["y"]:ARGS.region["y"] + ARGS.region["height"],
+                    ARGS.region["x"]:ARGS.region["x"] + ARGS.region["width"]]
     if ARGS.flip:
         gray = cv2.flip(gray, 1)
 

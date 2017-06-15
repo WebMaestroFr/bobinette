@@ -1,26 +1,60 @@
-const Camera = require('./camera');
-const Vision = require('./vision');
-const WebSocket = require('./websocket');
-const Snapshot = require('./snapshot');
+const cpus = require(`os`).cpus();
+
+const Camera = require(`./camera`);
+const WebSocket = require(`./websocket`);
+const Snapshot = require(`./snapshot`);
 
 const cameraSocket = new WebSocket(9000);
 const appSocket = new WebSocket(9001);
 
+console.error(`\x1b[32m✔ CPU\x1b[0m`, cpus.length);
+
 const camera = new Camera({width: 480, height: 360, framerate: 8});
+
+let countProcess = cpus.length > 2
+    ? cpus.length - 2
+    : 1;
+
 camera.mjpeg((buffer) => {
-    const date = new Date();
     cameraSocket.broadcast(buffer, `base64`);
-    Vision.detect({
-        cascade: `frontalface_default`,
-        scale: 1.2,
-        neighbors: 1,
-        size: [48, 48]
-    }, buffer, 2 / 3).then((detections) => {
-        const snapshot = new Snapshot(date, detections);
-        appSocket.broadcast({
-            type: `snapshot`,
-            data: snapshot
-        }, `json`);
-        console.error(`\x1b[32m✔ Snapshot\x1b[0m`, JSON.stringify(snapshot));
-    }).catch(console.error);
+    const snapshot = new Snapshot(buffer);
+    if (countProcess > 0) {
+        countProcess -= 1;
+        return snapshot
+            .setDetections({
+            cascade: `frontalface_default`,
+            scale: 1.2,
+            neighbors: 2,
+            size: [48, 48]
+        })
+            .then((detections) => {
+                countProcess += 1;
+                appSocket.broadcast({
+                    type: `detections`,
+                    data: detections
+                }, `json`).then((message) => {
+                    return console.error(`\x1b[32m✔ Detection\x1b[0m`, message);
+                });
+                return snapshot.setFeatures({
+                    cascade: `eye`,
+                    scale: 1.1,
+                    neighbors: 1,
+                    size: [12, 12]
+                }, {
+                    x: 1 / 4,
+                    y: 1 / 4
+                }, {
+                    x: 3 / 4,
+                    y: 1 / 4
+                }).then((results) => {
+                    this.detections = results.filter(Boolean);
+                    appSocket.broadcast({
+                        type: `snapshot`,
+                        data: snapshot
+                    }, `json`).then((message) => {
+                        return console.error(`\x1b[32m✔ Snapshot\x1b[0m`, message);
+                    });
+                }).catch(console.error);
+            });
+    }
 });

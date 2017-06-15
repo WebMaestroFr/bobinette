@@ -6,24 +6,27 @@ class WebSocket {
         console.error(`\x1b[32m✔ WebSocket Server\x1b[0m`, port);
     }
     broadcast(message, encoding = null) {
-        switch (encoding) {
-            case null:
-                break;
-            case `json`:
-                message = JSON.stringify(message);
-                break;
-            default:
-                message = message.toString(encoding);
-        }
-        try {
-            for (const client of this.server.clients) {
-                if (client.readyState === ws.OPEN) {
-                    client.send(message);
-                }
+        return new Promise((resolve) => {
+            switch (encoding) {
+                case null:
+                    break;
+                case `json`:
+                    message = JSON.stringify(message);
+                    break;
+                default:
+                    message = message.toString(encoding);
             }
-        } catch (err) {
-            console.error(`\x1b[31m✘\x1b[0m WebSocket Message`, err);
-        }
+            try {
+                for (const client of this.server.clients) {
+                    if (client.readyState === ws.OPEN) {
+                        client.send(message);
+                    }
+                }
+                return resolve(message);
+            } catch (err) {
+                return console.error(`\x1b[31m✘\x1b[0m WebSocket Message`, err);
+            }
+        });
     }
 }
 

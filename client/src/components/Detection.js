@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import './Detection.css';
 
-CanvasRenderingContext2D.prototype.drawRegion = function({
+CanvasRenderingContext2D.prototype.strokeRoundRect = function({
     x,
     y,
     width,
@@ -29,20 +29,20 @@ class Detection extends React.Component {
     componentDidMount() {
         const context = this
             .refs
-            .regions
+            .detections
             .getContext(`2d`);
-        this.drawRegions = (regions) => {
+        this.drawRegions = (detections) => {
             context.clearRect(0, 0, this.props.width, this.props.height);
             context.strokeStyle = 'rgba(255,255,255,0.5)';
-            for (let region of regions) {
-                context.drawRegion(region, 4);
+            for (let detection of detections) {
+                context.strokeRoundRect(detection, 4);
             }
         };
-        this.drawRegions(this.props.regions);
+        this.drawRegions(this.props.detections);
     }
 
     componentWillReceiveProps(props) {
-        this.drawRegions(props.regions);
+        this.drawRegions(props.detections);
     }
 
     shouldComponentUpdate() {
@@ -54,8 +54,8 @@ class Detection extends React.Component {
             <div className="Detection">
                 {this.props.children}
                 <canvas
-                    ref="regions"
-                    className="Detection-regions"
+                    ref="detections"
+                    className="Detection-detections"
                     width={this.props.width}
                     height={this.props.height}/>
             </div>
@@ -65,13 +65,13 @@ class Detection extends React.Component {
 
 Detection.propTypes = {
     children: PropTypes.element,
-    regions: PropTypes.array,
+    detections: PropTypes.array,
     height: PropTypes.number,
     width: PropTypes.number
 };
 
 Detection.defaultProps = {
-    regions: [],
+    detections: [],
     width: 640,
     height: 480
 };

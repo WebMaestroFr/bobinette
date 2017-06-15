@@ -2,25 +2,10 @@ const spawn = require(`child_process`).spawn;
 
 const Detection = require(`./detection`);
 
-let cpus = require(`os`)
-    .cpus()
-    .length;
-
-if (cpus > 2) {
-    cpus -= 2;
-} else {
-    cpus = 1;
-}
-
 class Vision {
 
     static process(module, options, buffer) {
         return new Promise((resolve, reject) => {
-
-            if (cpus === 0) {
-                return;
-            }
-            cpus -= 1;
 
             const args = [`${__dirname}/${module}.py`];
             for (const opt of Object.keys(options)) {
@@ -30,22 +15,20 @@ class Vision {
             const execution = spawn(`python`, args, {
                 stdio: [`pipe`, `pipe`, `pipe`]
             });
-            console.error(`\x1b[34mVision Process\n=>\x1b[0m python`, args.join(' '));
+            console.error(`\x1b[34mVision Process\n=>\x1b[0m python`, args.join(` `));
 
             execution
                 .stdout
                 .on(`data`, (data) => {
                     const response = JSON.parse(data);
                     execution.kill();
-                    cpus += 1;
-                    resolve(response);
+                    return resolve(response);
                 });
             execution
                 .stderr
                 .on(`data`, (data) => {
                     execution.kill();
-                    cpus += 1;
-                    reject(data.toString());
+                    return reject(data.toString());
                 });
 
             try {
@@ -53,20 +36,21 @@ class Vision {
                     .stdin
                     .end(buffer);
             } catch (err) {
-                reject(err);
+                return reject(err);
             }
+        }).catch((err) => {
+            return console.error(`\x1b[31m✘\x1b[0m Vision Process`, err);
         });
     }
 
     static detect(options, buffer, overlap) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             Vision
                 .process(`detect`, options, buffer)
                 .then((objects) => {
                     const detections = Detection.collect(objects, overlap);
                     resolve(detections);
-                })
-                .catch(reject);
+                });
         });
     }
 }

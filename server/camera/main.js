@@ -37,7 +37,7 @@ class Camera {
         raspivid
             .stderr
             .on(`data`, (data) => {
-                console.error(data.toString());
+                console.error(`\x1b[31m✘ Camera Source\x1b[0m`, data.toString());
             });
 
         // H264 stream
@@ -91,7 +91,7 @@ class Camera {
             `-c:v`,
             `mjpeg`,
             `-b:v`,
-            (2048 * 1024),
+            (1024 * 1024),
             `-r`,
             this.options.framerate
         ], callback);

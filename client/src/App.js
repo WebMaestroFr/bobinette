@@ -12,15 +12,12 @@ class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            snapshot: {
-                date: new Date(0),
-                detections: []
-            }
+            detections: []
         };
     }
 
     componentDidMount() {
-        this.receive = (e) => {
+        this.updateState = (e) => {
             const message = JSON.parse(e.data);
             this.setState({
                 [message.type]: message.data
@@ -29,13 +26,13 @@ class App extends Component {
         this.socket = new WebSocket(`ws://${document.location.hostname}:${this.props.appPort}`);
         this
             .socket
-            .addEventListener(`message`, this.receive);
+            .addEventListener(`message`, this.updateState);
     }
 
     componentWillUnmount() {
         this
             .socket
-            .removeEventListener(`message`, this.receive);
+            .removeEventListener(`message`, this.updateState);
     }
 
     render() {
@@ -44,7 +41,7 @@ class App extends Component {
                 <Row>
                     <Col md={6}>
                         <h1>Camera Video Stream</h1>
-                        <Detection regions={this.state.snapshot.detections} width={480} height={360}>
+                        <Detection detections={this.state.detections} width={480} height={360}>
                             <Camera port={this.props.cameraPort} width={480} height={360}/>
                         </Detection>
                         <h1>Face Detection Sequences</h1>
