@@ -73,7 +73,7 @@ class Camera {
         avconv
             .stderr
             .on(`data`, (data) => {
-                console.error(data.toString());
+                console.error(`\x1b[33m${data.toString()}\x1b[0m`);
             });
 
         // Controller

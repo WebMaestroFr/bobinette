@@ -35,7 +35,9 @@ camera.mjpeg((buffer) => {
                 type: `detections`,
                 data: detections
             }, `json`).then((message) => {
-                return console.error(`\x1b[32m✔ Detection\x1b[0m (${detections.length})`);
+                return console.error(`✔ Detection`, detections.map(({x, y, width, height}) => {
+                    return {x, y, width, height};
+                }));
             });
             if (0 === detections.length) {
                 return null;
@@ -57,7 +59,9 @@ camera.mjpeg((buffer) => {
                     type: `snapshot`,
                     data: snapshot
                 }, `json`).then((message) => {
-                    return console.error(`\x1b[32m✔ Snapshot\x1b[0m (${snapshot.detections.length})`);
+                    return console.error(`\x1b[32m✔ Snapshot`, snapshot.detections.map(({x, y, width, height}) => {
+                        return {x, y, width, height};
+                    }), `\x1b[0m`);
                 });
             }).catch(console.error);
         });

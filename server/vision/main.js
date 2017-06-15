@@ -15,7 +15,7 @@ class Vision {
             const execution = spawn(`python`, args, {
                 stdio: [`pipe`, `pipe`, `pipe`]
             });
-            console.error(`\x1b[34mVision Process\n=>\x1b[0m python`, args.join(` `));
+            // console.error(`\x1b[34mVision Process\n=>\x1b[0m python`, args.join(` `));
 
             execution
                 .stdout
