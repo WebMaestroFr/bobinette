@@ -11,7 +11,7 @@ class WebSocket {
                 case null:
                     break;
                 case `json`:
-                    message = JSON.stringify(message);
+                    message = JSON.stringify(message, null, '  ');
                     break;
                 default:
                     message = message.toString(encoding);

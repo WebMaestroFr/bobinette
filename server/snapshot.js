@@ -47,7 +47,15 @@ class Snapshot {
             .detections
             .map((detection) => {
                 return new Promise((resolve) => {
-                    const detectionOption = Object.assign({}, options, {region: detection});
+                    const {x, y, width, height} = detection;
+                    const detectionOption = Object.assign({}, options, {
+                        region: {
+                            x,
+                            y,
+                            width,
+                            height
+                        }
+                    });
                     return Vision
                         .detect(detectionOption, this._buffer, overlap)
                         .then((features) => {

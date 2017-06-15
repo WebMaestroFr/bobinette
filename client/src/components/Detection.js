@@ -33,8 +33,11 @@ class Detection extends React.Component {
             .getContext(`2d`);
         this.drawRegions = (detections) => {
             context.clearRect(0, 0, this.props.width, this.props.height);
-            context.strokeStyle = 'rgba(255,255,255,0.5)';
             for (let detection of detections) {
+                let opacity = detection.objects.length < 4
+                    ? detection.objects.length / 4
+                    : 1;
+                context.strokeStyle = `rgba(255,255,255,${opacity})`;
                 context.strokeRoundRect(detection, 4);
             }
         };
