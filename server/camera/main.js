@@ -32,11 +32,12 @@ class Camera {
         const raspivid = spawn(`raspivid`, args, {
             stdio: [`ignore`, `pipe`, `pipe`]
         });
-        console.error(`\x1b[32m✔\x1b[0m Camera Source\n\x1b[34m=> raspivid\x1b[0m`, args.join(` `));
+        console.error(`\x1b[34mCamera Source\n=>\x1b[0m raspivid`, args.join(` `));
+
         raspivid
             .stderr
             .on(`data`, (data) => {
-                console.error(data.toString());
+                console.error(`\x1b[31m✘ Camera Source\x1b[0m`, data.toString());
             });
 
         // H264 stream
@@ -64,14 +65,15 @@ class Camera {
         const avconv = spawn(`avconv`, args, {
             stdio: [`pipe`, `pipe`, `pipe`]
         });
-        console.error(`\x1b[32m✔\x1b[0m Camera Stream\n\x1b[34m=> avconv\x1b[0m`, args.join(` `));
+        console.error(`\x1b[34mCamera Stream\n=>\x1b[0m avconv`, args.join(` `));
+
         avconv
             .stdout
             .on(`data`, callback);
         avconv
             .stderr
             .on(`data`, (data) => {
-                console.error(data.toString());
+                console.error(`\x1b[33m${data.toString()}\x1b[0m`);
             });
 
         // Controller
@@ -89,7 +91,7 @@ class Camera {
             `-c:v`,
             `mjpeg`,
             `-b:v`,
-            (2048 * 1024),
+            (1024 * 1024),
             `-r`,
             this.options.framerate
         ], callback);

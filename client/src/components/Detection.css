@@ -1,13 +1,13 @@
-.Vision {
+.Detection {
     position: relative;
 }
 
-.Vision > img {
+.Detection > img {
     width: 100%;
     height: auto;
 }
 
-.Vision-detection {
+.Detection-detections {
     position: absolute;
     top: 0;
     left: 0;

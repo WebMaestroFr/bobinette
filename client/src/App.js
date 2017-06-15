@@ -1,31 +1,49 @@
 import React, {Component} from 'react';
 import {Grid, Row, Col} from 'react-bootstrap';
+import PropTypes from 'prop-types';
+
 import Archive from './components/Archive';
 import Camera from './components/Camera';
 import Session from './components/Session';
-import Vision from './components/Vision';
+import Detection from './components/Detection';
 
 class App extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            detections: []
+        };
+    }
+
     componentDidMount() {
-        this.socket = new WebSocket("ws://" + document.location.hostname + ":9001");
+        this.updateState = (e) => {
+            const message = JSON.parse(e.data);
+            this.setState({
+                [message.type]: message.data
+            });
+        };
+        this.socket = new WebSocket(`ws://${document.location.hostname}:${this.props.appPort}`);
         this
             .socket
-            .addEventListener("message", (e) => {
-                const message = JSON.parse(e.data);
-                const event = new CustomEvent(message.type);
-                event.data = message.data;
-                document.dispatchEvent(event);
-            });
+            .addEventListener(`message`, this.updateState);
     }
+
+    componentWillUnmount() {
+        this
+            .socket
+            .removeEventListener(`message`, this.updateState);
+    }
+
     render() {
         return (
             <Grid className="App">
                 <Row>
                     <Col md={6}>
                         <h1>Camera Video Stream</h1>
-                        <Vision event="vision-detect" width={480} height={360}>
-                            <Camera port={9000} width={480} height={360}/>
-                        </Vision>
+                        <Detection detections={this.state.detections} width={480} height={360}>
+                            <Camera port={this.props.cameraPort} width={480} height={360}/>
+                        </Detection>
                         <h1>Face Detection Sequences</h1>
                         <Session event="session-live"/>
                     </Col>
@@ -38,5 +56,10 @@ class App extends Component {
         );
     }
 }
+
+App.propTypes = {
+    appPort: PropTypes.number.isRequired,
+    cameraPort: PropTypes.number.isRequired
+};
 
 export default App;

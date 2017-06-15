@@ -6,30 +6,27 @@ import './Camera.css';
 class Camera extends React.Component {
 
     componentDidMount() {
-        const image = new Image();
         const context = this
             .refs
             .mjpeg
-            .getContext('2d');
-
+            .getContext(`2d`);
+        const image = new Image();
         image.onload = () => {
             context.drawImage(image, 0, 0, this.props.width, this.props.height);
         };
-
         this.loadImage = (e) => {
-            image.src = "data:image/jpeg;base64," + e.data;
+            image.src = `data:image/jpeg;base64,${e.data}`;
         };
-
-        this.socket = new WebSocket("ws://" + document.location.hostname + ":" + this.props.port);
+        this.socket = new WebSocket(`ws://${document.location.hostname}:${this.props.port}`);
         this
             .socket
-            .addEventListener("message", this.loadImage);
+            .addEventListener(`message`, this.loadImage);
     }
 
     componentWillUnmount() {
         this
             .socket
-            .removeEventListener("message", this.loadImage);
+            .removeEventListener(`message`, this.loadImage);
     }
 
     shouldComponentUpdate() {

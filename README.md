@@ -1,14 +1,5 @@
 # Bobinette
 
-## Installation
-
-Instead of building the system manually, download the last release of the development repository and burn it on a SD Card.
-```
-sudo diskutil unmountDisk /dev/diskX
-gunzip --stdout path/to/YYYY-MM-DD-bobinette-dev.img.gz | sudo dd bs=1m of=/dev/rdiskX
-sudo diskutil unmountDisk /dev/diskX
-```
-
 ## Start
 ```
 cd ~/bobinette
@@ -92,9 +83,4 @@ npm install
 ```
 git checkout bobinette-dev
 npm install
-```
-
-## Backup Image
-```
-sudo dd bs=1m if=/dev/rdiskX | gzip > YYYY-MM-DD-bobinette-dev.img.gz
 ```
