@@ -19,6 +19,7 @@ class App extends Component {
     componentDidMount() {
         this.updateState = (e) => {
             const message = JSON.parse(e.data);
+            console.log(message.type, message.data);
             this.setState({
                 [message.type]: message.data
             });
