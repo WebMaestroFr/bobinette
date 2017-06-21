@@ -42,7 +42,7 @@ class App extends Component {
                 <Row>
                     <Col md={6}>
                         <h1>Camera Video Stream</h1>
-                        <Detection detections={this.state.detections} width={480} height={360}>
+                        <Detection detections={this.state.objects} width={480} height={360}>
                             <Camera port={this.props.cameraPort} width={480} height={360}/>
                         </Detection>
                         <h1>Face Detection Sequences</h1>

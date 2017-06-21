@@ -143,8 +143,8 @@ class Detection {
                     this.angle = Math.atan2(reference.y - origin.y, reference.x - origin.x) - Math.atan2(absoluteReference.y - absoluteOrigin.y, absoluteReference.x - absoluteOrigin.x);
                     this.scale = getDistance(absoluteOrigin, absoluteReference) / distance;
                     this.crop = {
-                        x: origin.x - size.width * pointOrigin.x,
-                        y: origin.y - size.height * pointOrigin.y,
+                        x: -size.width * pointOrigin.x,
+                        y: -size.height * pointOrigin.y,
                         width: size.width,
                         height: size.height
                     };
