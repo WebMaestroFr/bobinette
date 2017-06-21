@@ -63,8 +63,9 @@ camera.mjpeg((buffer) => {
                             type: `objects`,
                             data: objects
                         }, `json`);
-                        console.error(`\x1b[32m✔ Objects\x1b[0m`, objects);
-                        if (objects.length) {} else {
+                        if (objects.length) {
+                            console.error(`\x1b[32m✔ Objects\x1b[0m`, objects);
+                        } else {
                             fs.unlinkSync(snapshot.image);
                         }
                         ready = true;
