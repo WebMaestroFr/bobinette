@@ -1,20 +1,15 @@
 const spawn = require(`child_process`).spawn;
 const WebSocket = require(`./websocket`);
-const Snapshot = require(`./vision`).Snapshot;
 
-const cameraSocket = new WebSocket(9000);
-const appSocket = new WebSocket(9001);
+const socket = new WebSocket(9000);
 
-const execution = spawn(`python`, [`${__dirname}/snapshot.py`], {
-    stdio: [`pipe`, `pipe`, `pipe`]
-});
-console.error(`\x1b[34mVision Process\n=>\x1b[0m python`, args.join(` `));
+const execution = spawn(`python`, [`${__dirname}/snapshot.py`]);
 
 execution
     .stdout
     .on(`data`, (data) => {
         const snapshot = JSON.parse(data);
-        appSocket.broadcast({
+        socket.broadcast({
             type: `snapshot`,
             data: snapshot
         }, `json`);

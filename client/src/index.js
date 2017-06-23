@@ -6,4 +6,4 @@ import 'bootstrap/dist/css/bootstrap.css';
 import './index.css';
 
 ReactDOM.render(
-    <App cameraPort={9000} appPort={9001}/>, document.getElementById('root'));
+    <App port={9000}/>, document.getElementById('root'));

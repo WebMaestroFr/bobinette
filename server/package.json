@@ -8,8 +8,6 @@
     },
     "license": "ISC",
     "dependencies": {
-        "camera": "file:./camera",
-        "vision": "file:./vision",
         "websocket": "file:./websocket"
     }
 }

@@ -9,13 +9,15 @@ apt-get dist-upgrade -y -q
 apt-get autoremove -y
 apt-get clean -y
 
-npm i -g npm@latest
+npm install -g npm
+npm update -g
+npm install -g fsevents
 
 git submodule init
 git submodule update
 
 cd client
-npm install
+npm install --unsafe-perm
 cd ../server
-npm install
+npm install --unsafe-perm
 cd ..

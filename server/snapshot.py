@@ -7,10 +7,12 @@ import sys
 from datetime import datetime
 
 import cv2
+import cv2.face
 import picamera
+import picamera.array
 
 CAMERA = picamera.PiCamera()
-CAMERA.resolution = (480, 360)
+CAMERA.resolution = (480, 368)
 CAMERA.framerate = 12
 CAPTURE = picamera.array.PiRGBArray(CAMERA, size=CAMERA.resolution)
 
@@ -24,7 +26,7 @@ MODEL = "%s/faces.xml" % (PATH)
 if os.path.isfile(MODEL):
     RECOGNIZER.load(MODEL)
 
-CLAHE = cv2.createCLAHE()
+# CLAHE = cv2.createCLAHE()
 
 
 def face(gray, (x, y, width, height)):
@@ -43,19 +45,20 @@ def face(gray, (x, y, width, height)):
 
 try:
     for FRAME in CAMERA.capture_continuous(CAPTURE, format="bgr", use_video_port=True):
-        IMAGE = CLAHE.apply(FRAME.array)
-        GRAY = cv2.cvtColor(IMAGE, cv2.COLOR_BGR2GRAY)
-        RETVAL, BUFFER = cv2.imencode(".jpg", IMAGE)
+        _, IMAGE = cv2.imencode(".jpg", FRAME.array)
+        # IMAGE = CLAHE.apply(IMAGE)
+        GRAY = cv2.cvtColor(FRAME.array, cv2.COLOR_BGR2GRAY)
+        # GRAY = CLAHE.apply(GRAY)
         RESULT = {
             "date": datetime.utcnow(),
             "faces": [face(GRAY, d) for d in CLASSIFIER.detectMultiScale(
                 GRAY,
-                scaleFactor=1.1,
+                scaleFactor=1.2,
                 minNeighbors=4,
                 flags=cv2.CASCADE_SCALE_IMAGE,
-                minSize=(64, 64)
+                minSize=(48, 48)
             )],
-            "image": base64.b64encode(BUFFER)
+            "image": base64.b64encode(IMAGE)
         }
         OUTPUT = json.dumps(RESULT)
         sys.stdout.write(OUTPUT)

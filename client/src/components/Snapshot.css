@@ -1,9 +1,16 @@
-.Snapshot {
+.Detection {
     position: relative;
-    overflow: hidden;
-    border-radius: 4px;
 }
 
-.Snapshot-image {
+.Detection-image {
+    width: 100%;
+    height: auto;
+}
+
+.Detection-detections {
     position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
 }
