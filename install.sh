@@ -11,13 +11,6 @@ apt-get clean -y
 
 npm install -g npm
 npm update -g
-npm install -g create-react-app
 
 git submodule init
 git submodule update
-
-cd client
-npm install
-cd ../server
-npm install
-cd ..
