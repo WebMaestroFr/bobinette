@@ -11,13 +11,13 @@ apt-get clean -y
 
 npm install -g npm
 npm update -g
-npm install -g fsevents
+npm install -g create-react-app
 
 git submodule init
 git submodule update
 
 cd client
-npm install --unsafe-perm
+npm install
 cd ../server
-npm install --unsafe-perm
+npm install
 cd ..
