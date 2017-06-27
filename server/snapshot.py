@@ -11,6 +11,15 @@ import cv2.face
 import picamera
 import picamera.array
 
+
+def json_serial(obj):
+    """JSON serializer for objects not serializable by default json code"""
+
+    if isinstance(obj, (datetime)):
+        serial = obj.isoformat()
+        return serial
+    raise TypeError("Type %s not serializable" % type(obj))
+
 CAMERA = picamera.PiCamera()
 CAMERA.resolution = (480, 368)
 CAMERA.framerate = 12
@@ -21,17 +30,23 @@ PATH = os.path.dirname(os.path.realpath(__file__))
 CLASSIFIER = cv2.CascadeClassifier(
     "%s/opencv/data/haarcascades/haarcascade_%s.xml" % (PATH, "frontalface_default"))
 
-RECOGNIZER = cv2.face.createLBPHFaceRecognizer()
+RECOGNIZER = cv2.face.LBPHFaceRecognizer_create()
 MODEL = "%s/faces.xml" % (PATH)
 if os.path.isfile(MODEL):
     RECOGNIZER.load(MODEL)
 
-# CLAHE = cv2.createCLAHE()
+CLAHE = cv2.createCLAHE()
+
+LABELS = RECOGNIZER.getLabelsByString("")
 
 
 def face(gray, (x, y, width, height)):
     gray = gray[y:y + height, x:x + width]
-    label, confidence = RECOGNIZER.predict(gray)
+    if len(LABELS):
+        label, confidence = RECOGNIZER.predict(gray)
+    else:
+        label = None
+        confidence = None
     return {
         "x": int(x),
         "y": int(y),
@@ -45,13 +60,14 @@ def face(gray, (x, y, width, height)):
 
 try:
     for FRAME in CAMERA.capture_continuous(CAPTURE, format="bgr", use_video_port=True):
-        _, IMAGE = cv2.imencode(".jpg", FRAME.array)
+        _, IMAGE = cv2.imencode(".jpg", FRAME.array,
+                                (cv2.IMWRITE_JPEG_QUALITY, 75))
         # IMAGE = CLAHE.apply(IMAGE)
         GRAY = cv2.cvtColor(FRAME.array, cv2.COLOR_BGR2GRAY)
         # GRAY = CLAHE.apply(GRAY)
         RESULT = {
             "date": datetime.utcnow(),
-            "faces": [face(GRAY, d) for d in CLASSIFIER.detectMultiScale(
+            "detections": [face(GRAY, d) for d in CLASSIFIER.detectMultiScale(
                 GRAY,
                 scaleFactor=1.2,
                 minNeighbors=4,
@@ -60,7 +76,7 @@ try:
             )],
             "image": base64.b64encode(IMAGE)
         }
-        OUTPUT = json.dumps(RESULT)
+        OUTPUT = json.dumps(RESULT, default=json_serial)
         sys.stdout.write(OUTPUT)
         sys.stdout.flush()
         CAPTURE.truncate(0)

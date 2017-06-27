@@ -26,22 +26,26 @@ class Snapshot extends React.Component {
             .refs
             .image
             .getContext(`2d`);
-        const image = new Image(this.props.width, this.props.height);
-        image.onload = () => {
-            imageContext.drawImage(image, 0, 0, this.props.width, this.props.height);
+        this.image = new Image(this.props.width, this.props.height);
+        this.image.onload = () => {
+            imageContext.drawImage(this.image, 0, 0, this.props.width, this.props.height);
         };
-        const detectionsContext = this
+        this.detectionsContext = this
             .refs
             .detections
             .getContext(`2d`);
-        detectionsContext.strokeStyle = `rgba(255,255,255,0.5)`;
+        this.detectionsContext.strokeStyle = `rgba(255,255,255,0.5)`;
     }
 
     componentWillReceiveProps(props) {
-        image.src = `data:image/jpeg;base64,${props.instance.image}`;
-        detectionsContext.clearRect(0, 0, this.props.width, this.props.height);
+        this.image.src = `data:image/jpeg;base64,${props.instance.image}`;
+        this
+            .detectionsContext
+            .clearRect(0, 0, this.props.width, this.props.height);
         for (let detection of props.instance.detections) {
-            detectionsContext.strokeRoundRect(detection.x, detection.y, detection.width, detection.height);
+            this
+                .detectionsContext
+                .strokeRoundRect(detection.x, detection.y, detection.width, detection.height);
         }
     }
 
@@ -64,7 +68,7 @@ class Snapshot extends React.Component {
 }
 
 Snapshot.propTypes = {
-    instance: PropTypes.array,
+    instance: PropTypes.object,
     width: PropTypes.number,
     height: PropTypes.number
 };

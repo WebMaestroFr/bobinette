@@ -1,13 +1,13 @@
-.Detection {
+.Snapshot {
     position: relative;
 }
 
-.Detection-image {
+.Snapshot-image {
     width: 100%;
     height: auto;
 }
 
-.Detection-detections {
+.Snapshot-detections {
     position: absolute;
     top: 0;
     left: 0;

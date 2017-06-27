@@ -6,10 +6,15 @@ import Snapshot from './components/Snapshot';
 
 class App extends Component {
 
+    constructor(props) {
+        super(props);
+        this.state = {};
+    }
+
     componentDidMount() {
         this.updateState = (e) => {
             const message = JSON.parse(e.data);
-            console.log(message.type, message.data);
+            // console.log(message.type, message.data);
             this.setState({
                 [message.type]: message.data
             });
@@ -30,7 +35,7 @@ class App extends Component {
         return (
             <Grid className="App">
                 <Row>
-                    <Col md={12}>
+                    <Col md={8} mdOffset={2}>
                         <h1>Snapshots</h1>
                         <Snapshot instance={this.state.snapshot} width={480} height={368}/>
                     </Col>
