@@ -12,19 +12,16 @@ import numpy
 import picamera
 import picamera.array
 
-
-def json_serial(obj):
-    """JSON serializer for objects not serializable by default json code"""
-
-    if isinstance(obj, (datetime)):
-        serial = obj.isoformat()
-        return serial
-    raise TypeError("Type %s not serializable" % type(obj))
+THRESHOLD_TRAIN = 2.0 / 3.0
+THRESHOLD_CREATE = 4.0 / 7.0
+RESOLUTION = (480, 368)
+FRAMERATE = 12
+THUMBNAIL_SIZE = (64, 64)
 
 CAMERA = picamera.PiCamera()
-CAMERA.resolution = (480, 368)
+CAMERA.resolution = RESOLUTION
 CAMERA.framerate = 12
-CAPTURE = picamera.array.PiRGBArray(CAMERA, size=CAMERA.resolution)
+CAPTURE = picamera.array.PiRGBArray(CAMERA, size=RESOLUTION)
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -37,8 +34,7 @@ RECOGNIZER = cv2.face.LBPHFaceRecognizer_create()
 #     RECOGNIZER.load(MODEL)
 
 LABELS = list(RECOGNIZER.getLabelsByString(""))
-sys.stderr.write("\x1b[1mLabels\x1b[0m %s" %
-                 json.dumps(LABELS, default=json_serial))
+sys.stderr.write("\x1b[1mLabels\x1b[0m %s" % json.dumps(LABELS))
 
 
 def add_label(thumbnail):
@@ -50,22 +46,17 @@ def add_label(thumbnail):
 
 
 def face(gray, (x, y, width, height)):
-    thumbnail = cv2.resize(gray[y:y + height, x:x + width], (64, 64))
+    thumbnail = cv2.resize(gray[y:y + height, x:x + width], THUMBNAIL_SIZE)
     if len(LABELS):
         label, distance = RECOGNIZER.predict(thumbnail)
-        confidence = 1.0 - int(100 * distance / 255) / 100.0
-        if confidence > (2.0 / 3.0):
-            sys.stderr.write("\x1b[1m%s\x1b[0m => \x1b[32m%s\x1b[0m" % (
-                label, confidence))
-        elif confidence > (1.0 / 2.0):
+        confidence = round(1.0 - distance / 255.0, 2)
+        if confidence > THRESHOLD_TRAIN:
+            pass
+        elif confidence > THRESHOLD_CREATE:
             RECOGNIZER.update([thumbnail], numpy.array([label]))
             # RECOGNIZER.save(MODEL)
-            sys.stderr.write("\x1b[1m%s\x1b[0m => \x1b[33m%s\x1b[0m" % (
-                label, confidence))
         else:
             label, confidence = add_label(thumbnail)
-            sys.stderr.write("\x1b[1m%s\x1b[0m => \x1b[31mNEW\x1b[0m" % (
-                label))
     else:
         label, confidence = add_label(thumbnail)
     return {
@@ -81,23 +72,22 @@ def face(gray, (x, y, width, height)):
 
 try:
     for FRAME in CAMERA.capture_continuous(CAPTURE, format="bgr", use_video_port=True):
+        DATE = datetime.utcnow()
         _, IMAGE = cv2.imencode(".jpg", FRAME.array,
                                 (cv2.IMWRITE_JPEG_OPTIMIZE, True, cv2.IMWRITE_JPEG_QUALITY, 70))
-        # IMAGE = CLAHE.apply(IMAGE)
         GRAY = cv2.cvtColor(FRAME.array, cv2.COLOR_BGR2GRAY)
-        # GRAY = CLAHE.apply(GRAY)
         RESULT = {
-            "date": datetime.utcnow(),
+            "date": DATE.isoformat(),
             "detections": [face(GRAY, d) for d in CLASSIFIER.detectMultiScale(
                 GRAY,
                 scaleFactor=1.2,
                 minNeighbors=6,
                 flags=cv2.CASCADE_SCALE_IMAGE,
-                minSize=(64, 64)
+                minSize=THUMBNAIL_SIZE
             )],
             "image": base64.b64encode(IMAGE)
         }
-        OUTPUT = json.dumps(RESULT, default=json_serial)
+        OUTPUT = json.dumps(RESULT)
         sys.stdout.write(OUTPUT)
         sys.stdout.flush()
         CAPTURE.truncate(0)

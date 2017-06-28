@@ -26,9 +26,9 @@ class Snapshot extends React.Component {
             .refs
             .image
             .getContext(`2d`);
-        this.image = new Image(this.props.width, this.props.height);
+        this.image = new Image();
         this.image.onload = () => {
-            imageContext.drawImage(this.image, 0, 0, this.props.width, this.props.height);
+            imageContext.drawImage(this.image, 0, 0);
         };
         this.detectionsContext = this
             .refs

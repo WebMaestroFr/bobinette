@@ -35,9 +35,12 @@ class App extends Component {
         return (
             <Grid className="App">
                 <Row>
-                    <Col md={8} mdOffset={2}>
+                    <Col md={8}>
                         <h1>Snapshots</h1>
                         <Snapshot instance={this.state.snapshot} width={480} height={368}/>
+                    </Col>
+                    <Col md={4}>
+                        <h1>Detections</h1>
                     </Col>
                 </Row>
             </Grid>

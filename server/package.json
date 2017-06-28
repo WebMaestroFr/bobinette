@@ -8,6 +8,7 @@
     },
     "license": "ISC",
     "dependencies": {
-        "websocket": "file:./websocket"
+        "websocket": "file:./websocket",
+        "mongodb": "latest"
     }
 }
