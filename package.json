@@ -6,7 +6,8 @@
         "start": "npm run client | npm run server",
         "client": "npm start --prefix client",
         "server": "npm start --prefix server",
-        "install": "sudo bash ./install.sh"
+        "install": "sudo bash ./install.sh",
+        "postinstall": "cd ./client && npm install && cd ../server && npm install",
     },
     "repository": {
         "type": "git",
