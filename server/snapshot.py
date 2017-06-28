@@ -8,6 +8,7 @@ from datetime import datetime
 
 import cv2
 import cv2.face
+import numpy
 import picamera
 import picamera.array
 
@@ -31,22 +32,42 @@ CLASSIFIER = cv2.CascadeClassifier(
     "%s/opencv/data/haarcascades/haarcascade_%s.xml" % (PATH, "frontalface_default"))
 
 RECOGNIZER = cv2.face.LBPHFaceRecognizer_create()
-MODEL = "%s/faces.xml" % (PATH)
-if os.path.isfile(MODEL):
-    RECOGNIZER.load(MODEL)
+# MODEL = "%s/faces.xml" % (PATH)
+# if os.path.isfile(MODEL):
+#     RECOGNIZER.load(MODEL)
 
-CLAHE = cv2.createCLAHE()
+LABELS = list(RECOGNIZER.getLabelsByString(""))
+sys.stderr.write("\x1b[1mLabels\x1b[0m %s" %
+                 json.dumps(LABELS, default=json_serial))
 
-LABELS = RECOGNIZER.getLabelsByString("")
+
+def add_label(thumbnail):
+    label = len(LABELS)
+    LABELS.append(label)
+    RECOGNIZER.update([thumbnail], numpy.array([label]))
+    # RECOGNIZER.save(MODEL)
+    return label, 1.0
 
 
 def face(gray, (x, y, width, height)):
-    gray = gray[y:y + height, x:x + width]
+    thumbnail = cv2.resize(gray[y:y + height, x:x + width], (64, 64))
     if len(LABELS):
-        label, confidence = RECOGNIZER.predict(gray)
+        label, distance = RECOGNIZER.predict(thumbnail)
+        confidence = 1.0 - int(100 * distance / 255) / 100.0
+        if confidence > (2.0 / 3.0):
+            sys.stderr.write("\x1b[1m%s\x1b[0m => \x1b[32m%s\x1b[0m" % (
+                label, confidence))
+        elif confidence > (1.0 / 2.0):
+            RECOGNIZER.update([thumbnail], numpy.array([label]))
+            # RECOGNIZER.save(MODEL)
+            sys.stderr.write("\x1b[1m%s\x1b[0m => \x1b[33m%s\x1b[0m" % (
+                label, confidence))
+        else:
+            label, confidence = add_label(thumbnail)
+            sys.stderr.write("\x1b[1m%s\x1b[0m => \x1b[31mNEW\x1b[0m" % (
+                label))
     else:
-        label = None
-        confidence = None
+        label, confidence = add_label(thumbnail)
     return {
         "x": int(x),
         "y": int(y),
@@ -61,7 +82,7 @@ def face(gray, (x, y, width, height)):
 try:
     for FRAME in CAMERA.capture_continuous(CAPTURE, format="bgr", use_video_port=True):
         _, IMAGE = cv2.imencode(".jpg", FRAME.array,
-                                (cv2.IMWRITE_JPEG_QUALITY, 75))
+                                (cv2.IMWRITE_JPEG_OPTIMIZE, True, cv2.IMWRITE_JPEG_QUALITY, 70))
         # IMAGE = CLAHE.apply(IMAGE)
         GRAY = cv2.cvtColor(FRAME.array, cv2.COLOR_BGR2GRAY)
         # GRAY = CLAHE.apply(GRAY)
@@ -70,9 +91,9 @@ try:
             "detections": [face(GRAY, d) for d in CLASSIFIER.detectMultiScale(
                 GRAY,
                 scaleFactor=1.2,
-                minNeighbors=4,
+                minNeighbors=6,
                 flags=cv2.CASCADE_SCALE_IMAGE,
-                minSize=(48, 48)
+                minSize=(64, 64)
             )],
             "image": base64.b64encode(IMAGE)
         }

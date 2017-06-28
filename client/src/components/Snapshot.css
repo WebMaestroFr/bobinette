@@ -1,5 +1,8 @@
 .Snapshot {
     position: relative;
+    overflow: hidden;
+    border-radius: 5px;
+    line-height: 0;
 }
 
 .Snapshot-image {

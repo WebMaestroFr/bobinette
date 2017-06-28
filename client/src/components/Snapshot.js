@@ -41,7 +41,7 @@ class Snapshot extends React.Component {
         this.image.src = `data:image/jpeg;base64,${props.instance.image}`;
         this
             .detectionsContext
-            .clearRect(0, 0, this.props.width, this.props.height);
+            .clearRect(0, 0, props.width, props.height);
         for (let detection of props.instance.detections) {
             this
                 .detectionsContext
