@@ -1,9 +1,19 @@
 .Snapshot {
     position: relative;
     overflow: hidden;
-    border-radius: 4px;
+    border-radius: 5px;
+    line-height: 0;
 }
 
 .Snapshot-image {
+    width: 100%;
+    height: auto;
+}
+
+.Snapshot-detections {
     position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
 }

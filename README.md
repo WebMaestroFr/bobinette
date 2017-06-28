@@ -49,7 +49,6 @@ sudo raspi-config
 * Set _Hostname_ to `bobinette` (Pi Zero) or `bobinette-dev` (Pi 3)
 * Set "Console Autologin" as _Boot Option_
 * Enable "Camera" and "SSH" _Interfacing Options_
-* _Expand Filesystem_
 
 ### Update Package Manager and Install Git
 ```
@@ -75,12 +74,16 @@ sudo apt-get install -y nodejs
 git clone http://github.com/WebMaestroFr/bobinette.git
 cd bobinette
 ```
-##### Raspberry Pi Zero (`bobinette`)
-```
-npm install
-```
 ##### Raspberry Pi 3 (`bobinette-dev`)
 ```
 git checkout bobinette-dev
+```
+
+### Install Application
+
+```
+cd client
+npm install
+cd ../server
 npm install
 ```

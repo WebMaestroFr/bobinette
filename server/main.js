@@ -1,68 +1,32 @@
-const cpus = require(`os`).cpus();
-
-const Camera = require(`./camera`);
+const spawn = require(`child_process`).spawn;
 const WebSocket = require(`./websocket`);
-const Snapshot = require(`./snapshot`);
 
-const cameraSocket = new WebSocket(9000);
-const appSocket = new WebSocket(9001);
+const socket = new WebSocket(9000);
 
-console.error(`\x1b[32m✔ CPU\x1b[0m`, cpus.length);
+const execution = spawn(`python`, [`${__dirname}/snapshot.py`]);
 
-const camera = new Camera({width: 480, height: 360, framerate: 8});
+let stdout = "";
 
-let countProcess = cpus.length > 2
-    ? cpus.length - 2
-    : 1;
-
-camera.mjpeg((buffer) => {
-    cameraSocket.broadcast(buffer, `base64`);
-    const snapshot = new Snapshot(buffer);
-    if (0 === countProcess) {
-        return null;
-    }
-    countProcess -= 1;
-    return snapshot
-        .setDetections({
-        cascade: `frontalface_default`,
-        scale: 1.2,
-        neighbors: 2,
-        size: [48, 48]
-    })
-        .then((detections) => {
-            countProcess += 1;
-            appSocket.broadcast({
-                type: `detections`,
-                data: detections
-            }, `json`).then((message) => {
-                return console.error(`✔ Detection`, detections.map(({x, y, width, height}) => {
-                    return {x, y, width, height};
-                }));
+execution
+    .stdout
+    .on(`data`, (data) => {
+        try {
+            stdout += data.toString();
+            const snapshot = JSON.parse(stdout);
+            stdout = "";
+            return socket.broadcast({
+                type: `snapshot`,
+                data: snapshot
+            }, `json`).then(() => {
+                return console.error(`\x1b[32m✔\x1b[0m ${snapshot.date} / \x1b[1m${snapshot.detections.length} faces\x1b[0m`);
             });
-            if (0 === detections.length) {
-                return null;
-            }
-            return snapshot.setFeatures({
-                cascade: `eye`,
-                scale: 1.1,
-                neighbors: 2,
-                size: [12, 12]
-            }, {
-                x: 1 / 4,
-                y: 1 / 4
-            }, {
-                x: 3 / 4,
-                y: 1 / 4
-            }).then((results) => {
-                snapshot.detections = results.filter(Boolean);
-                appSocket.broadcast({
-                    type: `snapshot`,
-                    data: snapshot
-                }, `json`).then((message) => {
-                    return console.error(`\x1b[32m✔ Snapshot`, snapshot.detections.map(({x, y, width, height}) => {
-                        return {x, y, width, height};
-                    }), `\x1b[0m`);
-                });
-            }).catch(console.error);
-        });
-});
+        } catch (e) {
+            return console.error(`\x1b[31m✘\x1b[0m Buffering ...`);
+        }
+    });
+execution
+    .stderr
+    .on(`data`, (data) => {
+        const response = data.toString();
+        return console.error(response);
+    });

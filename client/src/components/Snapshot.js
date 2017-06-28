@@ -3,37 +3,80 @@ import PropTypes from 'prop-types';
 
 import './Snapshot.css';
 
+CanvasRenderingContext2D.prototype.strokeRoundRect = function(x, y, width, height, radius = 4) {
+    if (width < 2 * radius) 
+        radius = width / 2;
+    if (height < 2 * radius) 
+        radius = height / 2;
+    this.beginPath();
+    this.moveTo(x + radius, y);
+    this.arcTo(x + width, y, x + width, y + height, radius);
+    this.arcTo(x + width, y + height, x, y + height, radius);
+    this.arcTo(x, y + height, x, y, radius);
+    this.arcTo(x, y, x + width, y, radius);
+    this.closePath();
+    this.stroke();
+    return this;
+};
+
 class Snapshot extends React.Component {
 
+    componentDidMount() {
+        const imageContext = this
+            .refs
+            .image
+            .getContext(`2d`);
+        this.image = new Image(this.props.width, this.props.height);
+        this.image.onload = () => {
+            imageContext.drawImage(this.image, 0, 0, this.props.width, this.props.height);
+        };
+        this.detectionsContext = this
+            .refs
+            .detections
+            .getContext(`2d`);
+        this.detectionsContext.strokeStyle = `rgba(255,255,255,0.5)`;
+    }
+
+    componentWillReceiveProps(props) {
+        this.image.src = `data:image/jpeg;base64,${props.instance.image}`;
+        this
+            .detectionsContext
+            .clearRect(0, 0, props.width, props.height);
+        for (let detection of props.instance.detections) {
+            this
+                .detectionsContext
+                .strokeRoundRect(detection.x, detection.y, detection.width, detection.height);
+        }
+    }
+
+    shouldComponentUpdate() {
+        return false;
+    }
+
     render() {
-        const ratio = {
-            x: this.props.width / this.props.region.width,
-            y: this.props.height / this.props.region.height
-        };
-        const size = {
-            width: this.props.width,
-            height: this.props.height
-        };
-        const style = {
-            left: -this.props.region.x,
-            top: -this.props.region.y,
-            transform: "scale(" + ratio.x + "," + ratio.y + ")",
-            transformOrigin: this.props.region.x + "px " + this.props.region.y + "px"
-        };
         return (
-            <div className="Snapshot" style={size}>
-                <img className="Snapshot-image" alt={this.props.date} src={this.props.image} style={style}/>
+            <div className="Snapshot">
+                <canvas ref="image" className="Snapshot-image" width={this.props.width} height={this.props.height}/>
+                <canvas
+                    ref="detections"
+                    className="Snapshot-detections"
+                    width={this.props.width}
+                    height={this.props.height}/>
             </div>
         );
     }
 }
 
 Snapshot.propTypes = {
-    date: PropTypes.instanceOf(Date),
-    image: PropTypes.string,
-    region: PropTypes.object,
-    height: PropTypes.number,
-    width: PropTypes.number
+    instance: PropTypes.object,
+    width: PropTypes.number,
+    height: PropTypes.number
+};
+
+Snapshot.defaultProps = {
+    instance: null,
+    width: 640,
+    height: 480
 };
 
 export default Snapshot;

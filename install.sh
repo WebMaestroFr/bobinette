@@ -9,13 +9,8 @@ apt-get dist-upgrade -y -q
 apt-get autoremove -y
 apt-get clean -y
 
-npm i -g npm@latest
+npm install -g npm
+npm update -g
 
 git submodule init
 git submodule update
-
-cd client
-npm install
-cd ../server
-npm install
-cd ..
