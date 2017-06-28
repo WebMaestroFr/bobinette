@@ -74,12 +74,17 @@ sudo apt-get install -y nodejs
 git clone http://github.com/WebMaestroFr/bobinette.git
 cd bobinette
 ```
-##### Raspberry Pi Zero (`bobinette`)
-```
-npm install
-```
 ##### Raspberry Pi 3 (`bobinette-dev`)
 ```
 git checkout bobinette-dev
+```
+
+### Install Application
+
+```
+npm install
+cd client
+npm install
+cd ../server
 npm install
 ```
