@@ -10,7 +10,7 @@ const logSnapshot = (snapshot) => {
         const label = `\x1b[1m${face.prediction.label}: `;
         if (face.prediction.confidence === 1.0) {
             return label + `\x1b[31mNEW\x1b[0m`;
-        } else if (face.prediction.confidence > 2 / 3) {
+        } else if (face.prediction.confidence > 0.67) {
             return label + `\x1b[32m${face.prediction.confidence * 100}%\x1b[0m`;
         } else {
             return label + `\x1b[33m${face.prediction.confidence * 100}%\x1b[0m`;

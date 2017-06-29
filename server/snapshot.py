@@ -12,8 +12,8 @@ import numpy
 import picamera
 import picamera.array
 
-THRESHOLD_TRAIN = 2.0 / 3.0
-THRESHOLD_CREATE = 4.0 / 7.0
+THRESHOLD_TRAIN = 0.67
+THRESHOLD_CREATE = 0.5
 RESOLUTION = (480, 368)
 FRAMERATE = 12
 THUMBNAIL_SIZE = (64, 64)
@@ -80,8 +80,8 @@ try:
             "date": DATE.isoformat(),
             "detections": [face(GRAY, d) for d in CLASSIFIER.detectMultiScale(
                 GRAY,
-                scaleFactor=1.2,
-                minNeighbors=6,
+                scaleFactor=1.25,
+                minNeighbors=5,
                 flags=cv2.CASCADE_SCALE_IMAGE,
                 minSize=THUMBNAIL_SIZE
             )],

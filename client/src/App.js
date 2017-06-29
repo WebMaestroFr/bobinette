@@ -8,16 +8,22 @@ class App extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {};
+        this.state = {
+            snapshot: {}
+        };
     }
 
     componentDidMount() {
         this.updateState = (e) => {
             const message = JSON.parse(e.data);
-            // console.log(message.type, message.data);
-            this.setState({
-                [message.type]: message.data
-            });
+            switch (message.type) {
+                case `snapshot`:
+                    return this.setState((state) => {
+                        return {snapshot: message.data}
+                    });
+                default:
+                    return this.state;
+            }
         };
         this.socket = new WebSocket(`ws://${document.location.hostname}:${this.props.port}`);
         this
@@ -35,12 +41,12 @@ class App extends Component {
         return (
             <Grid className="App">
                 <Row>
-                    <Col md={8}>
+                    <Col md={6}>
                         <h1>Snapshots</h1>
-                        <Snapshot instance={this.state.snapshot} width={480} height={368}/>
+                        <Snapshot {...this.state.snapshot} width={480} height={368}/>
                     </Col>
-                    <Col md={4}>
-                        <h1>Detections</h1>
+                    <Col md={6}>
+                        <h1>Labels</h1>
                     </Col>
                 </Row>
             </Grid>
