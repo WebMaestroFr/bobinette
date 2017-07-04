@@ -9,7 +9,8 @@ class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            snapshot: {}
+            snapshot: {},
+            labels: []
         };
     }
 
@@ -17,12 +18,18 @@ class App extends Component {
         this.updateState = (e) => {
             const message = JSON.parse(e.data);
             switch (message.type) {
-                case `snapshot`:
+                case `label`:
                     return this.setState((state) => {
-                        return {snapshot: message.data}
+                        return {
+                            labels: state
+                                .labels
+                                .concat([message.data])
+                        }
                     });
                 default:
-                    return this.state;
+                    return this.setState({
+                        [message.type]: message.data
+                    });
             }
         };
         this.socket = new WebSocket(`ws://${document.location.hostname}:${this.props.port}`);
@@ -38,6 +45,10 @@ class App extends Component {
     }
 
     render() {
+        const listLabels = this
+            .state
+            .labels
+            .map((detection) => <li>{detection.label}</li>);
         return (
             <Grid className="App">
                 <Row>
@@ -47,6 +58,7 @@ class App extends Component {
                     </Col>
                     <Col md={6}>
                         <h1>Labels</h1>
+                        <ul>{listLabels}</ul>
                     </Col>
                 </Row>
             </Grid>

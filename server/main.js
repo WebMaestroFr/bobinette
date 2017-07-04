@@ -6,14 +6,14 @@ const socket = new WebSocket(9000);
 const execution = spawn(`python`, [`${__dirname}/snapshot.py`]);
 
 const logSnapshot = (snapshot) => {
-    console.error(`\x1b[32m✔\x1b[0m ${snapshot.date} => {`, snapshot.detections.map((face) => {
-        const label = `\x1b[1m${face.prediction.label}: `;
-        if (face.prediction.confidence === 1.0) {
+    console.error(`\x1b[32m✔\x1b[0m ${snapshot.date} => {`, snapshot.detections.map((detection) => {
+        const label = `\x1b[1m${detection.label}: `;
+        if (detection.confidence === 1.0) {
             return label + `\x1b[31mNEW\x1b[0m`;
-        } else if (face.prediction.confidence > 0.67) {
-            return label + `\x1b[32m${face.prediction.confidence * 100}%\x1b[0m`;
+        } else if (detection.confidence > 0.67) {
+            return label + `\x1b[32m${detection.confidence * 100}%\x1b[0m`;
         } else {
-            return label + `\x1b[33m${face.prediction.confidence * 100}%\x1b[0m`;
+            return label + `\x1b[33m${detection.confidence * 100}%\x1b[0m`;
         }
     }).join(", "), `}`);
 };
@@ -26,7 +26,17 @@ execution
         try {
             stdout += data.toString();
             const snapshot = JSON.parse(stdout);
-            stdout = "";
+            stdout = ``;
+            for (const detection of snapshot.detections) {
+                if (detection.confidence === 1.0) {
+                    socket.broadcast({
+                        type: `label`,
+                        data: Object.assign({
+                            snapshot: snapshot
+                        }, detection)
+                    }, `json`);
+                }
+            }
             return socket.broadcast({
                 type: `snapshot`,
                 data: snapshot

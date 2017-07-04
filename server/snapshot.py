@@ -29,32 +29,36 @@ CLASSIFIER = cv2.CascadeClassifier(
     "%s/opencv/data/haarcascades/haarcascade_%s.xml" % (PATH, "frontalface_default"))
 
 RECOGNIZER = cv2.face.LBPHFaceRecognizer_create()
-# MODEL = "%s/faces.xml" % (PATH)
-# if os.path.isfile(MODEL):
-#     RECOGNIZER.load(MODEL)
-
-LABELS = list(RECOGNIZER.getLabelsByString(""))
-sys.stderr.write("\x1b[1mLabels\x1b[0m %s" % json.dumps(LABELS))
+MODEL = "%s/faces.xml" % (PATH)
+if os.path.isfile(MODEL):
+    RECOGNIZER.read(MODEL)
 
 
-def add_label(thumbnail):
-    label = len(LABELS)
-    LABELS.append(label)
-    RECOGNIZER.update([thumbnail], numpy.array([label]))
-    # RECOGNIZER.save(MODEL)
-    return label, 1.0
+def get_index():
+    labels = RECOGNIZER.getLabels()
+    if labels is None:
+        return 0
+    else:
+        return len(set(labels.flatten()))
+
+
+def add_label(thumbnail, ):
+    index = get_index()
+    RECOGNIZER.update([thumbnail], numpy.array([index]))
+    RECOGNIZER.write(MODEL)
+    return index, 1.0
 
 
 def face(gray, (x, y, width, height)):
     thumbnail = cv2.resize(gray[y:y + height, x:x + width], THUMBNAIL_SIZE)
-    if len(LABELS):
+    if get_index() > 0:
         label, distance = RECOGNIZER.predict(thumbnail)
         confidence = round(1.0 - distance / 255.0, 2)
         if confidence > THRESHOLD_TRAIN:
             pass
         elif confidence > THRESHOLD_CREATE:
             RECOGNIZER.update([thumbnail], numpy.array([label]))
-            # RECOGNIZER.save(MODEL)
+            RECOGNIZER.write(MODEL)
         else:
             label, confidence = add_label(thumbnail)
     else:
@@ -64,10 +68,8 @@ def face(gray, (x, y, width, height)):
         "y": int(y),
         "width": int(width),
         "height": int(height),
-        "prediction": {
-            "label": label,
-            "confidence": confidence
-        }
+        "label": label,
+        "confidence": confidence
     }
 
 try:

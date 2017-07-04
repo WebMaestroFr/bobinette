@@ -9,6 +9,6 @@
     "license": "ISC",
     "dependencies": {
         "websocket": "file:./websocket",
-        "mongodb": "latest"
+        "sqlite3": "latest"
     }
 }
