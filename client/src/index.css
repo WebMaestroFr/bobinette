@@ -5,6 +5,10 @@ body {
     color: #444;
 }
 
+h1 {
+    line-height: 1.618;
+}
+
 .modal-content {
     z-index: 1;
     overflow: hidden;

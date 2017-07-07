@@ -20,7 +20,7 @@ THUMBNAIL_SIZE = (64, 64)
 
 CAMERA = picamera.PiCamera()
 CAMERA.resolution = RESOLUTION
-CAMERA.framerate = 12
+CAMERA.framerate = FRAMERATE
 CAPTURE = picamera.array.PiRGBArray(CAMERA, size=RESOLUTION)
 
 PATH = os.path.dirname(os.path.realpath(__file__))
@@ -42,7 +42,7 @@ def get_index():
         return len(set(labels.flatten()))
 
 
-def add_label(thumbnail, ):
+def add_label(thumbnail):
     index = get_index()
     RECOGNIZER.update([thumbnail], numpy.array([index]))
     RECOGNIZER.write(MODEL)
@@ -78,6 +78,7 @@ try:
         _, IMAGE = cv2.imencode(".jpg", FRAME.array,
                                 (cv2.IMWRITE_JPEG_OPTIMIZE, True, cv2.IMWRITE_JPEG_QUALITY, 70))
         GRAY = cv2.cvtColor(FRAME.array, cv2.COLOR_BGR2GRAY)
+
         RESULT = {
             "date": DATE.isoformat(),
             "detections": [face(GRAY, d) for d in CLASSIFIER.detectMultiScale(
@@ -90,8 +91,14 @@ try:
             "image": base64.b64encode(IMAGE)
         }
         OUTPUT = json.dumps(RESULT)
+
+        sys.stderr.write("\x1b[32m%s\x1b[0m %s" %
+                         (u"\u2714".encode("utf8"), DATE.isoformat()))
+        sys.stderr.flush()
+
         sys.stdout.write(OUTPUT)
         sys.stdout.flush()
+
         CAPTURE.truncate(0)
 finally:
     CAMERA.close()

@@ -1,0 +1,11 @@
+{
+    "name": "database",
+    "version": "1.0.0",
+    "description": "SQLite3 Database.",
+    "author": "Etienne Baudry <etienne@webmaestro.fr>",
+    "main": "main.js",
+    "scripts": {},
+    "dependencies": {
+        "sqlite3": "latest"
+    }
+}

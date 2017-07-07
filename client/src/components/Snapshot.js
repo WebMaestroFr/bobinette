@@ -87,7 +87,7 @@ class Snapshot extends React.Component {
                     className="Snapshot-detections"
                     width={this.props.width}
                     height={this.props.height}/>
-                <time ref="time" className="Snapshot-date" datetime={this.props.date}>{new Date(this.props.date).toLocaleString()}</time>
+                <time ref="time" className="Snapshot-date" dateTime={this.props.date}>{new Date(this.props.date).toLocaleString()}</time>
             </div>
         );
     }

@@ -9,6 +9,7 @@
     "license": "ISC",
     "dependencies": {
         "websocket": "file:./websocket",
-        "sqlite3": "latest"
+        "database": "file:./database",
+        "api": "file:./api"
     }
 }

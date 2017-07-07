@@ -10,27 +10,18 @@ class App extends Component {
         super(props);
         this.state = {
             snapshot: {},
-            labels: []
+            labels: [],
+            detections: []
         };
     }
 
     componentDidMount() {
         this.updateState = (e) => {
             const message = JSON.parse(e.data);
-            switch (message.type) {
-                case `label`:
-                    return this.setState((state) => {
-                        return {
-                            labels: state
-                                .labels
-                                .concat([message.data])
-                        }
-                    });
-                default:
-                    return this.setState({
-                        [message.type]: message.data
-                    });
-            }
+            console.log(message.type, message.data);
+            return this.setState({
+                [message.type]: message.data
+            });
         };
         this.socket = new WebSocket(`ws://${document.location.hostname}:${this.props.port}`);
         this
@@ -48,17 +39,23 @@ class App extends Component {
         const listLabels = this
             .state
             .labels
-            .map((detection) => <li>{detection.label}</li>);
+            .map((label) => <li key={label.id}>{label.name}</li>);
+        const listDetections = this
+            .state
+            .detections
+            .map((detection, index) => <li key={index}>{new Date(detection.date).toLocaleString()}</li>);
         return (
             <Grid className="App">
                 <Row>
                     <Col md={6}>
                         <h1>Snapshots</h1>
                         <Snapshot {...this.state.snapshot} width={480} height={368}/>
-                    </Col>
-                    <Col md={6}>
                         <h1>Labels</h1>
                         <ul>{listLabels}</ul>
+                    </Col>
+                    <Col md={6}>
+                        <h1>Detections</h1>
+                        <ul>{listDetections}</ul>
                     </Col>
                 </Row>
             </Grid>

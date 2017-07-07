@@ -1,9 +1,9 @@
 const ws = require(`ws`);
 
 class WebSocket {
-    constructor(port) {
-        this.server = new ws.Server({port: port, perMessageDeflate: false});
-        console.error(`\x1b[32m✔ WebSocket Server\x1b[0m`, port);
+    constructor(server) {
+        this.server = new ws.Server({server: server, perMessageDeflate: false});
+        console.error(`\x1b[32m✔ WebSocket\x1b[0m`);
     }
     broadcast(message, encoding = null) {
         return new Promise((resolve) => {

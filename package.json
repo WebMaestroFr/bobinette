@@ -6,6 +6,7 @@
         "start": "npm run client | npm run server",
         "client": "npm start --prefix client",
         "server": "npm start --prefix server",
+        "clear": "rm -f server/*.xml && rm -f server/database/*.sqlite3 && sudo rm -f -r static/*",
         "install": "sudo bash ./install.sh"
     },
     "repository": {
