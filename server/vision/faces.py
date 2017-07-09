@@ -17,6 +17,8 @@ THRESHOLD_CREATE = 0.5
 RESOLUTION = (480, 368)
 FRAMERATE = 12
 THUMBNAIL_SIZE = (64, 64)
+SCALE = 1.3
+NEIGHBORS = 5
 
 CAMERA = picamera.PiCamera()
 CAMERA.resolution = RESOLUTION
@@ -83,8 +85,8 @@ try:
             "date": DATE.isoformat(),
             "detections": [face(GRAY, d) for d in CLASSIFIER.detectMultiScale(
                 GRAY,
-                scaleFactor=1.25,
-                minNeighbors=5,
+                scaleFactor=SCALE,
+                minNeighbors=NEIGHBORS,
                 flags=cv2.CASCADE_SCALE_IMAGE,
                 minSize=THUMBNAIL_SIZE
             )],

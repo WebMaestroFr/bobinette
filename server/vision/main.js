@@ -58,7 +58,7 @@ const processStdout = (data, callback) => {
     } finally {
         return (results.length === 1)
             ? ``
-            : processStdout(`{${results[1]}`);
+            : processStdout(`{${results[1]}`, callback);
     }
 };
 

@@ -43,9 +43,9 @@ class App extends Component {
                         if (l < 0) {
                             continue;
                         }
-                        labels[l]
+                        labels[l].detections = labels[l]
                             .detections
-                            .push(detection);
+                            .concat([detection]);
                     }
                     return this.setState({snapshot: message.data, labels: labels});
 

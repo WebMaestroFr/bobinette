@@ -34,7 +34,7 @@ Database
         api
             .socket
             .on(`connection`, (client) => {
-                console.error(`\x1b[32m✔\x1b[0m Socket Connection (${api.socket.clients.length})`);
+                console.error(`\x1b[32m✔\x1b[0m Socket Connection (${api.socket.clients.size})`);
                 db
                     .select(`label`)
                     .then((labels) => {
@@ -52,9 +52,8 @@ Database
             .get(`/label/:id`, function(req, res) {
                 db
                     .get(`label`, `WHERE id = ${req.params.id}`)
-                    .then((label) => {
-                        extendLabel(label).then(res.json);
-                    });
+                    .then(extendLabel)
+                    .then(res.json);
             });
 
         Vision.detect(`faces`, ({snapshot, detections, image}) => {
@@ -67,15 +66,18 @@ Database
                     console.error(`\x1b[1m${detection.label}\x1b[0m => ${detection.confidence * 100}%`);
 
                     if (detection.confidence === 1.0) {
-                        let label = {
+                        db
+                            .insert(`label`, {
                             id: detection.label,
                             name: ``
-                        };
-                        db.insert(`label`, label);
-                        api.broadcast({
-                            type: `labels`,
-                            data: [extendLabel(label)]
-                        }, `json`);
+                        })
+                            .then(extendLabel)
+                            .then((label) => {
+                                api.broadcast({
+                                    type: `labels`,
+                                    data: [label]
+                                }, `json`);
+                            });
                     }
 
                     db.insert(`detection`, Object.assign(detection, {

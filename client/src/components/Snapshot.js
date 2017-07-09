@@ -5,10 +5,6 @@ import './Snapshot.css';
 
 class SnapshotImage extends React.Component {
 
-    render() {
-        return <canvas ref="canvas" className="SnapshotImage" width={this.props.width} height={this.props.height}/>;
-    }
-
     componentDidMount() {
         this.image = new Image();
         this.image.onload = () => {
@@ -31,6 +27,10 @@ class SnapshotImage extends React.Component {
 
     shouldComponentUpdate(props) {
         return this.props.width !== props.width || this.props.height !== props.height;
+    }
+
+    render() {
+        return <canvas ref="canvas" className="SnapshotImage" width={this.props.width} height={this.props.height}/>;
     }
 }
 
@@ -65,30 +65,6 @@ CanvasRenderingContext2D.prototype.strokeRoundRect = function(x, y, width, heigh
 };
 
 class Snapshot extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            date: new Date(props.date)
-        };
-    }
-
-    render() {
-        return <div ref="container" className="Snapshot">
-            <SnapshotImage
-                ref="image"
-                className="Snapshot-image"
-                base64={this.props.image}
-                type="jpeg"
-                width={this.props.width}
-                height={this.props.height}/>
-            <canvas
-                ref="canvas"
-                className="Snapshot-detections"
-                width={this.props.width}
-                height={this.props.height}/>
-            <time ref="time" className="Snapshot-date" dateTime={this.props.date}>{new Date(this.props.date).toLocaleString()}</time>
-        </div>;
-    }
 
     componentDidMount() {
         this.updateDetections = () => {
@@ -111,6 +87,24 @@ class Snapshot extends React.Component {
 
     componentDidUpdate() {
         this.updateDetections();
+    }
+
+    render() {
+        return <div ref="container" className="Snapshot">
+            <SnapshotImage
+                ref="image"
+                className="Snapshot-image"
+                base64={this.props.image}
+                type="jpeg"
+                width={this.props.width}
+                height={this.props.height}/>
+            <canvas
+                ref="canvas"
+                className="Snapshot-detections"
+                width={this.props.width}
+                height={this.props.height}/>
+            <time ref="time" className="Snapshot-date" dateTime={this.props.date}>{new Date(this.props.date).toLocaleString()}</time>
+        </div>;
     }
 }
 
