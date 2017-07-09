@@ -17,54 +17,58 @@ class App extends Component {
                 image: null
             }
         };
+        this.handleMessage = this
+            .handleMessage
+            .bind(this);
+    }
+
+    handleMessage(e) {
+        const message = JSON.parse(e.data);
+
+        switch (message.type) {
+
+            case `labels`:
+                return this.setState({
+                    labels: this
+                        .state
+                        .labels
+                        .concat(message.data)
+                });
+
+            case `snapshot`:
+                const labels = [...this.state.labels];
+                let l;
+                for (let detection of message.data.detections) {
+                    l = labels.findIndex((label) => {
+                        return label.id === detection.label;
+                    });
+                    if (l < 0) {
+                        continue;
+                    }
+                    labels[l].detections = labels[l]
+                        .detections
+                        .concat([detection]);
+                }
+                return this.setState({snapshot: message.data, labels: labels});
+
+            default:
+                return this.setState({
+                    [message.type]: message.data
+                });
+        }
     }
 
     componentDidMount() {
-        this.updateState = (e) => {
-            const message = JSON.parse(e.data);
-
-            switch (message.type) {
-
-                case `labels`:
-                    return this.setState({
-                        labels: this
-                            .state
-                            .labels
-                            .concat(message.data)
-                    });
-
-                case `snapshot`:
-                    const labels = [...this.state.labels];
-                    let l;
-                    for (let detection of message.data.detections) {
-                        l = labels.findIndex((label) => {
-                            return label.id === detection.label;
-                        });
-                        if (l < 0) {
-                            continue;
-                        }
-                        labels[l].detections = labels[l]
-                            .detections
-                            .concat([detection]);
-                    }
-                    return this.setState({snapshot: message.data, labels: labels});
-
-                default:
-                    return this.setState({
-                        [message.type]: message.data
-                    });
-            }
-        };
         this.socket = new WebSocket(`ws://${document.location.hostname}:${this.props.port}`);
         this
             .socket
-            .addEventListener(`message`, this.updateState);
+            .addEventListener(`message`, this.handleMessage);
     }
 
     componentWillUnmount() {
         this
             .socket
-            .removeEventListener(`message`, this.updateState);
+            .removeEventListener(`message`, this.handleMessage);
     }
 
     render() {
@@ -76,7 +80,7 @@ class App extends Component {
                         <Snapshot {...this.state.snapshot} width={480} height={368}/>
                     </Col>
                     <Col md={6}>
-                        <h1>Detections</h1>
+                        <h1>Labels</h1>
                         <Detection labels={this.state.labels}/>
                     </Col>
                 </Row>

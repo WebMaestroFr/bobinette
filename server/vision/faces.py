@@ -19,6 +19,7 @@ FRAMERATE = 12
 THUMBNAIL_SIZE = (64, 64)
 SCALE = 1.3
 NEIGHBORS = 5
+JPEG_QUALITY = 70
 
 CAMERA = picamera.PiCamera()
 CAMERA.resolution = RESOLUTION
@@ -51,7 +52,7 @@ def add_label(thumbnail):
     return index, 1.0
 
 
-def face(gray, (x, y, width, height)):
+def face(gray, frame, (x, y, width, height)):
     thumbnail = cv2.resize(gray[y:y + height, x:x + width], THUMBNAIL_SIZE)
     if get_index() > 0:
         label, distance = RECOGNIZER.predict(thumbnail)
@@ -65,25 +66,29 @@ def face(gray, (x, y, width, height)):
             label, confidence = add_label(thumbnail)
     else:
         label, confidence = add_label(thumbnail)
+
+    _, image = cv2.imencode(".jpg", frame[y:y + height, x:x + width],
+                            (cv2.IMWRITE_JPEG_OPTIMIZE, True, cv2.IMWRITE_JPEG_QUALITY, JPEG_QUALITY))
     return {
         "x": int(x),
         "y": int(y),
         "width": int(width),
         "height": int(height),
         "label": label,
-        "confidence": confidence
+        "confidence": confidence,
+        "image": base64.b64encode(image)
     }
 
 try:
     for FRAME in CAMERA.capture_continuous(CAPTURE, format="bgr", use_video_port=True):
         DATE = datetime.utcnow()
         _, IMAGE = cv2.imencode(".jpg", FRAME.array,
-                                (cv2.IMWRITE_JPEG_OPTIMIZE, True, cv2.IMWRITE_JPEG_QUALITY, 70))
+                                (cv2.IMWRITE_JPEG_OPTIMIZE, True, cv2.IMWRITE_JPEG_QUALITY, JPEG_QUALITY))
         GRAY = cv2.cvtColor(FRAME.array, cv2.COLOR_BGR2GRAY)
 
         RESULT = {
             "date": DATE.isoformat(),
-            "detections": [face(GRAY, d) for d in CLASSIFIER.detectMultiScale(
+            "detections": [face(GRAY, FRAME.array, d) for d in CLASSIFIER.detectMultiScale(
                 GRAY,
                 scaleFactor=SCALE,
                 minNeighbors=NEIGHBORS,
@@ -94,9 +99,9 @@ try:
         }
         OUTPUT = json.dumps(RESULT)
 
-        # sys.stderr.write("\x1b[32m%s\x1b[0m %s" %
-        #                  (u"\u2714".encode("utf8"), DATE.isoformat()))
-        # sys.stderr.flush()
+        sys.stderr.write("\x1b[32m%s\x1b[0m %s" %
+                         (u"\u2714".encode("utf8"), DATE.isoformat()))
+        sys.stderr.flush()
 
         sys.stdout.write(OUTPUT)
         sys.stdout.flush()

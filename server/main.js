@@ -20,12 +20,13 @@ Database
             `height INTEGER`,
             `label INTEGER`,
             `confidence REAL`,
+            `image TEXT`,
             `FOREIGN KEY(label) REFERENCES label(id)`
         ]);
 
         const extendLabel = (label) => {
             return db
-                .select(`detection`, `WHERE label = ${label.id}`)
+                .select(`detection`, `WHERE label = ${label.id} ORDER BY date DESC LIMIT 1`)
                 .then((detections) => {
                     return Object.assign(label, {detections: detections});
                 });
@@ -56,46 +57,50 @@ Database
                     .then(res.json);
             });
 
-        Vision.detect(`faces`, ({snapshot, detections, image}) => {
-
+        Vision.detect(`faces`, ({date, detections, image}) => {
             if (detections.length) {
-                snapshot.write(staticDirectory, image);
-                console.error(`\x1b[32m✔\x1b[0m Snapshot \x1b[1m${snapshot.image}\x1b[0m`);
+                const detectionsLog = detections.map((detection) => {
+                    return `\x1b[1m${detection.label}\x1b[0m: ${detection.confidence * 100}%`;
+                }).join(", ");
+                console.error(`\x1b[32m✔\x1b[0m Snapshot {${detectionsLog}}`);
+
+                const insertLabel = (id) => {
+                    const label = {
+                        id: id,
+                        name: ``
+                    };
+                    return db.insert(`label`, label);
+                };
+
+                const insertDetection = (detection) => {
+                    Object.assign(detection, {date});
+                    return db.insert(`detection`, detection);
+                };
 
                 for (let detection of detections) {
                     console.error(`\x1b[1m${detection.label}\x1b[0m => ${detection.confidence * 100}%`);
 
                     if (detection.confidence === 1.0) {
-                        db
-                            .insert(`label`, {
-                            id: detection.label,
-                            name: ``
-                        })
-                            .then(extendLabel)
-                            .then((label) => {
-                                api.broadcast({
-                                    type: `labels`,
-                                    data: [label]
-                                }, `json`);
-                            });
+                        insertLabel(detection.label).then((label) => {
+                            insertDetection(detection);
+                            Object.assign(label, {detections: [detection]})
+                            api.broadcast({
+                                type: `labels`,
+                                data: [label]
+                            }, `json`);
+                        });
+                    } else {
+                        insertDetection(detection);
                     }
-
-                    db.insert(`detection`, Object.assign(detection, {
-                        date: snapshot
-                            .date
-                            .valueOf()
-                    }));
                 }
             }
 
             api.broadcast({
                 type: `snapshot`,
                 data: {
-                    date: snapshot
-                        .date
-                        .valueOf(),
-                    detections: detections,
-                    image: image
+                    date,
+                    detections,
+                    image
                 }
             }, `json`);
         });

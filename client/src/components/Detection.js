@@ -1,111 +1,80 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Image, Media} from 'react-bootstrap';
+import {Form, FormGroup, FormControl, Media} from 'react-bootstrap';
+
+import Base64Canvas from './Base64Canvas'
 
 import './Detection.css';
 
-const ISO8601Regex = /^.*(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})Z$/;
-const pathDateFormat = `$1/$2/$3/$4-$5-$6_$7`;
+class Label extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            date: 0,
+            image: null
+        };
+        this.updateDetections = this
+            .updateDetections
+            .bind(this);
+    }
 
-const staticPort = 9000;
-
-class DetectionLabelImage extends React.Component {
+    updateDetections(detections) {
+        const detection = detections.reduce((a, b) => {
+            return a.date > b.date
+                ? a
+                : b;
+        });
+        if (detection.date > this.state.date) {
+            this.setState({date: detection.date, image: detection.image});
+        }
+    }
 
     componentDidMount() {
-        this.image = new Image();
-        this.image.onload = () => {
-            console.log("loaded");
-            this
-                .refs
-                .canvas
-                .getContext(`2d`)
-                .drawImage(this.image, this.props.detection.x, this.props.detection.y, this.props.detection.width, this.props.detection.height, 0, 0, this.props.width, this.props.height);
-        };
-        this.image.onerror = () => {
-            console.log("error");
-        }
-        this.updateImage = (detection) => {
-            this.image.src = `http://${window
-                .location
-                .hostname}:${staticPort}/${detection
-                .date
-                .toISOString()
-                .replace(ISO8601Regex, pathDateFormat)}.jpg`;
-            // console.log(this.image);
-        }
-        this.updateImage(this.props.detection);
+        this.updateDetections(this.props.detections);
     }
 
     componentWillReceiveProps(props) {
-        if (this.props.detection.date !== props.detection.date) {
-            this.updateImage(props.detection);
-        }
-    }
-
-    shouldComponentUpdate(props) {
-        return this.props.width !== props.width || this.props.height !== props.height;
+        this.updateDetections(props.detections);
     }
 
     render() {
-        return <canvas
-            ref="canvas"
-            className="DetectionLabelImage"
-            width={this.props.width}
-            height={this.props.height}/>;
-    }
-}
-
-DetectionLabelImage.propTypes = {
-    detection: PropTypes.object,
-    width: PropTypes.number,
-    height: PropTypes.number
-};
-
-DetectionLabelImage.defaultProps = {
-    detection: null,
-    width: 64,
-    height: 64
-};
-
-class DetectionLabel extends React.Component {
-
-    shouldComponentUpdate(props) {
-        return this.props.detections.length !== props.detections.length;
-    }
-
-    render() {
-        const detection = this
-            .props
-            .detections
-            .reduce((a, b) => {
-                return a.date > b.date
-                    ? a
-                    : b;
-            });
-        detection.date = new Date(detection.date);
-        return <Media className="DetectionLabel">
+        const date = new Date(this.state.date);
+        return <Media className="Label">
             <Media.Left>
-                <DetectionLabelImage detection={detection} width={64} height={64}/>
+                <Base64Canvas
+                    ref="image"
+                    className="Label-image"
+                    base64={this.state.image}
+                    type="jpeg"
+                    width={64}
+                    height={64}/>
             </Media.Left>
             <Media.Body>
-                <Media.Heading>
-                    {this.props.name || `Label #${this.props.id}`}
-                </Media.Heading>
-                <time ref="time" dateTime={detection.date}>{detection
-                        .date
-                        .toLocaleString()}</time>
+                <Form className="Label-name">
+                    <FormGroup controlId="labelName">
+                        <FormControl
+                            ref="name"
+                            type="text"
+                            value={this.props.name}
+                            placeholder={`Label #${this.props.id}`}
+                            onChange={this.props.onChange}/>
+                    </FormGroup>
+                </Form>
+                <time ref="date" className="Label-date" dateTime={date}>
+                    {date.toLocaleString()}
+                </time>
             </Media.Body>
         </Media>;
     }
 }
 
-DetectionLabel.propTypes = {
+Label.propTypes = {
     id: PropTypes.number,
     name: PropTypes.string,
     detections: PropTypes.array
 };
 
-DetectionLabel.defaultProps = {
+Label.defaultProps = {
     id: null,
     name: null,
     detections: []
@@ -118,7 +87,7 @@ class Detection extends React.Component {
             .props
             .labels
             .map((label) => {
-                return <DetectionLabel className="Detection-label" key={label.id} {...label}/>;
+                return <Label className="Detection-label" key={label.id} {...label}/>;
             });
         return <div className="Detection">{listLabels}</div>;
     }
