@@ -6,7 +6,7 @@ import './Snapshot.css';
 class SnapshotImage extends React.Component {
 
     render() {
-        return (<canvas ref="canvas" className="SnapshotImage" width={this.props.width} height={this.props.height}/>);
+        return <canvas ref="canvas" className="SnapshotImage" width={this.props.width} height={this.props.height}/>;
     }
 
     componentDidMount() {
@@ -73,23 +73,21 @@ class Snapshot extends React.Component {
     }
 
     render() {
-        return (
-            <div ref="container" className="Snapshot">
-                <SnapshotImage
-                    ref="image"
-                    className="Snapshot-image"
-                    base64={this.props.image}
-                    type="jpeg"
-                    width={this.props.width}
-                    height={this.props.height}/>
-                <canvas
-                    ref="canvas"
-                    className="Snapshot-detections"
-                    width={this.props.width}
-                    height={this.props.height}/>
-                <time ref="time" className="Snapshot-date" dateTime={this.props.date}>{new Date(this.props.date).toLocaleString()}</time>
-            </div>
-        );
+        return <div ref="container" className="Snapshot">
+            <SnapshotImage
+                ref="image"
+                className="Snapshot-image"
+                base64={this.props.image}
+                type="jpeg"
+                width={this.props.width}
+                height={this.props.height}/>
+            <canvas
+                ref="canvas"
+                className="Snapshot-detections"
+                width={this.props.width}
+                height={this.props.height}/>
+            <time ref="time" className="Snapshot-date" dateTime={this.props.date}>{new Date(this.props.date).toLocaleString()}</time>
+        </div>;
     }
 
     componentDidMount() {
@@ -99,9 +97,13 @@ class Snapshot extends React.Component {
                 .canvas
                 .getContext(`2d`);
             context.strokeStyle = `rgba(255, 255, 255, 0.67)`;
+            context.fillStyle = `rgba(255, 255, 255, 0.67)`;
             context.clearRect(0, 0, this.props.width, this.props.height);
             for (const detection of this.props.detections) {
                 context.strokeRoundRect(detection.x, detection.y, detection.width, detection.height);
+                if (detection.legend) {
+                    context.fillText(detection.legend, detection.x, detection.y, detection.width);
+                }
             }
         };
         this.updateDetections();
@@ -113,7 +115,7 @@ class Snapshot extends React.Component {
 }
 
 Snapshot.propTypes = {
-    date: PropTypes.string,
+    date: PropTypes.number,
     detections: PropTypes.array,
     image: PropTypes.string,
     width: PropTypes.number,

@@ -8,8 +8,9 @@
     },
     "license": "ISC",
     "dependencies": {
-        "websocket": "file:./websocket",
+        "api": "file:./api",
         "database": "file:./database",
-        "api": "file:./api"
+        "vision": "file:./vision",
+        "websocket": "file:./websocket"
     }
 }

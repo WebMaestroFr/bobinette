@@ -1,15 +1,14 @@
 const path = require(`path`);
-const spawn = require(`child_process`).spawn;
 
 const Database = require(`./database`);
-const WebSocket = require(`./websocket`);
 const API = require(`./api`);
-const Snapshot = require(`./snapshot`);
+const Vision = require(`./vision`);
 
 const staticDirectory = path.resolve(__dirname, `../static`);
+const api = new API(9000, staticDirectory);
 
 Database
-    .open(`snapshot`)
+    .open(`faces`)
     .then((db) => {
 
         db.createTable(`label`, [`id INTEGER PRIMARY KEY`, `name TEXT`]);
@@ -24,112 +23,78 @@ Database
             `FOREIGN KEY(label) REFERENCES label(id)`
         ]);
 
-        const api = new API(8001, staticDirectory);
-        const socket = new WebSocket(api.server);
+        const extendLabel = (label) => {
+            return db
+                .select(`detection`, `WHERE label = ${label.id}`)
+                .then((detections) => {
+                    return Object.assign(label, {detections: detections});
+                });
+        };
 
-        socket
-            .server
-            .on(`connection`, function connection(client) {
-                console.error(`Socket Connection`);
+        api
+            .socket
+            .on(`connection`, (client) => {
+                console.error(`\x1b[32m✔\x1b[0m Socket Connection (${api.socket.clients.length})`);
                 db
                     .select(`label`)
                     .then((labels) => {
-                        const message = JSON.stringify({type: `labels`, data: labels});
-                        client.send(message);
-                    });
-                db
-                    .select(`detection`)
-                    .then((detections) => {
-                        const message = JSON.stringify({type: `detections`, data: detections});
-                        client.send(message);
+                        Promise
+                            .all(labels.map(extendLabel))
+                            .then((labels) => {
+                                const message = JSON.stringify({type: `labels`, data: labels});
+                                client.send(message);
+                            });
                     });
             });
 
         api
             .router
-            .get(`/label`, (req, res) => {
-                return db
-                    .select(`label`)
-                    .then((labels) => {
-                        return res.json(labels);
+            .get(`/label/:id`, function(req, res) {
+                db
+                    .get(`label`, `WHERE id = ${req.params.id}`)
+                    .then((label) => {
+                        extendLabel(label).then(res.json);
                     });
             });
 
-        api
-            .router
-            .get(`/detection`, (req, res) => {
-                return db
-                    .select(`detection`)
-                    .then((detections) => {
-                        return res.json(detections);
-                    })
-                    .catch(console.error);
-            });
-
-        const execution = spawn(`python`, [`${__dirname}/snapshot.py`]);
-
-        const handleSnapshot = ({date, image, detections}) => {
-            socket.broadcast({
-                type: `snapshot`,
-                data: {
-                    date,
-                    image,
-                    detections
-                }
-            }, `json`);
+        Vision.detect(`faces`, ({snapshot, detections, image}) => {
 
             if (detections.length) {
-                const snapshot = new Snapshot(date);
                 snapshot.write(staticDirectory, image);
+                console.error(`\x1b[32m✔\x1b[0m Snapshot \x1b[1m${snapshot.image}\x1b[0m`);
 
-                for (detection of detections) {
-                    console.error(`\x1b[1m${detection.label}\x1b[0m => ${detection.confidence}`);
+                for (let detection of detections) {
+                    console.error(`\x1b[1m${detection.label}\x1b[0m => ${detection.confidence * 100}%`);
+
                     if (detection.confidence === 1.0) {
-                        db.insert(`label`, {
+                        let label = {
                             id: detection.label,
-                            name: `Label #${detection.label}`
-                        });
+                            name: ``
+                        };
+                        db.insert(`label`, label);
+                        api.broadcast({
+                            type: `labels`,
+                            data: [extendLabel(label)]
+                        }, `json`);
                     }
-                    db.insert(`detection`, Object.assign({
-                        date: snapshot.date
-                    }, detection));
+
+                    db.insert(`detection`, Object.assign(detection, {
+                        date: snapshot
+                            .date
+                            .valueOf()
+                    }));
                 }
             }
-        };
 
-        const processStdout = (data) => {
-            const results = data.split(/}\s*{/);
-            const subject = results.length === 1
-                ? results[0]
-                : `${results[0]}}`;
-            try {
-                const snapshot = JSON.parse(subject);
-                handleSnapshot(snapshot);
-            } catch (e) {
-                if (e instanceof SyntaxError && results.length === 1) {
-                    console.error(`\x1b[33m✘\x1b[0m Buffering ...`);
-                    return data;
-                } else {
-                    console.error(e, subject);
+            api.broadcast({
+                type: `snapshot`,
+                data: {
+                    date: snapshot
+                        .date
+                        .valueOf(),
+                    detections: detections,
+                    image: image
                 }
-            } finally {
-                return (results.length === 1)
-                    ? ``
-                    : processStdout(`{${results[1]}`);
-            }
-        };
-
-        let stdout = ``;
-        execution
-            .stdout
-            .on(`data`, (data) => {
-                stdout = processStdout(stdout + data.toString());
-            });
-
-        execution
-            .stderr
-            .on(`data`, (data) => {
-                const response = data.toString();
-                return console.error(response);
-            });
+            }, `json`);
+        });
     });

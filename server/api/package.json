@@ -1,11 +1,12 @@
 {
     "name": "api",
     "version": "1.0.0",
-    "description": "Application Programming Interface.",
+    "description": "Application Programming Interface and WebSockets.",
     "author": "Etienne Baudry <etienne@webmaestro.fr>",
     "main": "main.js",
     "scripts": {},
     "dependencies": {
-        "express": "latest"
+        "express": "latest",
+        "ws": "latest"
     }
 }

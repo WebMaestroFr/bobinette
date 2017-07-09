@@ -92,9 +92,9 @@ try:
         }
         OUTPUT = json.dumps(RESULT)
 
-        sys.stderr.write("\x1b[32m%s\x1b[0m %s" %
-                         (u"\u2714".encode("utf8"), DATE.isoformat()))
-        sys.stderr.flush()
+        # sys.stderr.write("\x1b[32m%s\x1b[0m %s" %
+        #                  (u"\u2714".encode("utf8"), DATE.isoformat()))
+        # sys.stderr.flush()
 
         sys.stdout.write(OUTPUT)
         sys.stdout.flush()
