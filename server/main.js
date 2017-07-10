@@ -4,8 +4,7 @@ const Database = require(`./database`);
 const API = require(`./api`);
 const Vision = require(`./vision`);
 
-const staticDirectory = path.resolve(__dirname, `../static`);
-const api = new API(9000, staticDirectory);
+const api = new API(9000);
 
 Database
     .open(`faces`)
@@ -24,14 +23,6 @@ Database
             `FOREIGN KEY(label) REFERENCES label(id)`
         ]);
 
-        const extendLabel = (label) => {
-            return db
-                .select(`detection`, `WHERE label = ${label.id} ORDER BY date DESC LIMIT 1`)
-                .then((detections) => {
-                    return Object.assign(label, {detections: detections});
-                });
-        };
-
         api
             .socket
             .on(`connection`, (client) => {
@@ -39,59 +30,39 @@ Database
                 db
                     .select(`label`)
                     .then((labels) => {
-                        Promise
-                            .all(labels.map(extendLabel))
-                            .then((labels) => {
-                                const message = JSON.stringify({type: `labels`, data: labels});
-                                client.send(message);
-                            });
+                        const message = JSON.stringify({type: `labels`, data: labels});
+                        client.send(message);
+                    });
+                db
+                    .select(`detection`)
+                    .then((detections) => {
+                        const message = JSON.stringify({type: `detections`, data: detections});
+                        client.send(message);
                     });
             });
 
-        api
-            .router
-            .get(`/label/:id`, function(req, res) {
-                db
-                    .get(`label`, `WHERE id = ${req.params.id}`)
-                    .then(extendLabel)
-                    .then(res.json);
-            });
-
         Vision.detect(`faces`, ({date, detections, image}) => {
-            if (detections.length) {
-                const detectionsLog = detections.map((detection) => {
-                    return `\x1b[1m${detection.label}\x1b[0m: ${detection.confidence * 100}%`;
-                }).join(", ");
-                console.error(`\x1b[32m✔\x1b[0m Snapshot {${detectionsLog}}`);
+            const logLabel = (detection) => `\x1b[1m${detection.label}\x1b[0m: ${detection.confidence * 100}%`;
+            console.error(`\x1b[32m✔\x1b[0m Snapshot {${detections.map(logLabel).join(", ")}}`);
 
-                const insertLabel = (id) => {
-                    const label = {
-                        id: id,
+            const insertDetection = (detection) => {
+                Object.assign(detection, {date});
+                return db.insert(`detection`, detection);
+            };
+
+            for (const detection of detections) {
+                if (detection.confidence === 1.0) {
+                    db
+                        .insert(`label`, {
+                        id: detection.label,
                         name: ``
-                    };
-                    return db.insert(`label`, label);
-                };
-
-                const insertDetection = (detection) => {
-                    Object.assign(detection, {date});
-                    return db.insert(`detection`, detection);
-                };
-
-                for (let detection of detections) {
-                    console.error(`\x1b[1m${detection.label}\x1b[0m => ${detection.confidence * 100}%`);
-
-                    if (detection.confidence === 1.0) {
-                        insertLabel(detection.label).then((label) => {
+                    })
+                        .then((label) => {
+                            api.broadcast({type: `labels`, data: [label]});
                             insertDetection(detection);
-                            Object.assign(label, {detections: [detection]})
-                            api.broadcast({
-                                type: `labels`,
-                                data: [label]
-                            }, `json`);
                         });
-                    } else {
-                        insertDetection(detection);
-                    }
+                } else {
+                    insertDetection(detection);
                 }
             }
 
@@ -102,6 +73,6 @@ Database
                     detections,
                     image
                 }
-            }, `json`);
+            });
         });
     });

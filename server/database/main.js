@@ -58,7 +58,7 @@ class Database {
                     if (err) {
                         return reject(err);
                     }
-                    console.error(`\x1b[32m✔\x1b[0m Select \x1b[1m${table}\x1b[0m (${rows.length} results)`);
+                    console.error(`\x1b[32m✔\x1b[0m SELECT \x1b[1m${table}\x1b[0m (${rows.length} results)`);
                     return resolve(rows);
                 });
         });

@@ -12,13 +12,13 @@ import numpy
 import picamera
 import picamera.array
 
-THRESHOLD_TRAIN = 0.67
-THRESHOLD_CREATE = 0.5
+THRESHOLD_TRAIN = 0.75
+THRESHOLD_CREATE = 0.625
 RESOLUTION = (480, 368)
-FRAMERATE = 12
+FRAMERATE = 4
 THUMBNAIL_SIZE = (64, 64)
 SCALE = 1.3
-NEIGHBORS = 5
+NEIGHBORS = 8
 JPEG_QUALITY = 70
 
 CAMERA = picamera.PiCamera()
@@ -45,30 +45,30 @@ def get_index():
         return len(set(labels.flatten()))
 
 
-def add_label(thumbnail):
+def add_label(image_gray):
     index = get_index()
-    RECOGNIZER.update([thumbnail], numpy.array([index]))
+    RECOGNIZER.update([image_gray], numpy.array([index]))
     RECOGNIZER.write(MODEL)
     return index, 1.0
 
 
 def face(gray, frame, (x, y, width, height)):
-    thumbnail = cv2.resize(gray[y:y + height, x:x + width], THUMBNAIL_SIZE)
+    image_gray = cv2.resize(gray[y:y + height, x:x + width], THUMBNAIL_SIZE)
     if get_index() > 0:
-        label, distance = RECOGNIZER.predict(thumbnail)
+        label, distance = RECOGNIZER.predict(image_gray)
         confidence = round(1.0 - distance / 255.0, 2)
-        if confidence > THRESHOLD_TRAIN:
-            pass
-        elif confidence > THRESHOLD_CREATE:
-            RECOGNIZER.update([thumbnail], numpy.array([label]))
+        if confidence < THRESHOLD_CREATE:
+            label, confidence = add_label(image_gray)
+        elif confidence < THRESHOLD_TRAIN:
+            RECOGNIZER.update([image_gray], numpy.array([label]))
             RECOGNIZER.write(MODEL)
-        else:
-            label, confidence = add_label(thumbnail)
     else:
-        label, confidence = add_label(thumbnail)
+        label, confidence = add_label(image_gray)
 
-    _, image = cv2.imencode(".jpg", frame[y:y + height, x:x + width],
+    image = cv2.resize(frame[y:y + height, x:x + width], THUMBNAIL_SIZE)
+    _, image = cv2.imencode(".jpg", image,
                             (cv2.IMWRITE_JPEG_OPTIMIZE, True, cv2.IMWRITE_JPEG_QUALITY, JPEG_QUALITY))
+
     return {
         "x": int(x),
         "y": int(y),
@@ -107,5 +107,9 @@ try:
         sys.stdout.flush()
 
         CAPTURE.truncate(0)
+except Exception, error:
+    sys.stderr.write("\x1b[31m%s\x1b[0m %s" %
+                     (u"\u2718".encode("utf8"), error))
+    sys.stderr.flush()
 finally:
     CAMERA.close()

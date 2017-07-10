@@ -28,12 +28,17 @@ const processStdout = (data, callback) => {
 
 module.exports = {
     detect: (cascade, callback) => {
-        const execution = spawn(`python`, [`${__dirname}/${cascade}.py`]);
+        const execution = spawn(`python`, [`-u`, `${__dirname}/${cascade}.py`]);
         let stdout = ``;
         execution
             .stdout
             .on(`data`, (data) => {
                 stdout = processStdout(stdout + data.toString(), callback);
+            });
+        execution
+            .stdout
+            .on('end', function() {
+                console.error(`\x1b[31m✘\x1b[0m Python Process`);
             });
         execution
             .stderr

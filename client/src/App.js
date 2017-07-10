@@ -1,16 +1,17 @@
-import React, {Component} from 'react';
-import {Grid, Row, Col} from 'react-bootstrap';
+import React from 'react';
 import PropTypes from 'prop-types';
+import {Grid, Row, Col} from 'react-bootstrap';
 
-import Detection from './components/Detection';
+import LabelList from './components/Label';
 import Snapshot from './components/Snapshot';
 
-class App extends Component {
+class App extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {
             labels: [],
+            detections: [],
             snapshot: {
                 date: 0,
                 detections: [],
@@ -20,42 +21,37 @@ class App extends Component {
         this.handleMessage = this
             .handleMessage
             .bind(this);
+        this.handleLabelChange = this
+            .handleLabelChange
+            .bind(this);
     }
 
-    handleMessage(e) {
-        const message = JSON.parse(e.data);
-
+    handleMessage({data}) {
+        const message = JSON.parse(data);
         switch (message.type) {
-
-            case `labels`:
-                return this.setState({
-                    labels: this
-                        .state
-                        .labels
-                        .concat(message.data)
-                });
-
             case `snapshot`:
-                const labels = [...this.state.labels];
-                let l;
-                for (let detection of message.data.detections) {
-                    l = labels.findIndex((label) => {
-                        return label.id === detection.label;
-                    });
-                    if (l < 0) {
-                        continue;
-                    }
-                    labels[l].detections = labels[l]
+                return this.setState({
+                    snapshot: message.data,
+                    detections: this
+                        .state
                         .detections
-                        .concat([detection]);
-                }
-                return this.setState({snapshot: message.data, labels: labels});
-
+                        .concat(message.data.detections)
+                });
             default:
                 return this.setState({
-                    [message.type]: message.data
+                    [message.type]: this
+                        .state[message.type]
+                        .concat(message.data)
                 });
         }
+    }
+
+    handleLabelChange({id, name}) {
+        const labels = [...this.state.labels];
+        Object.assign(labels.find((label) => {
+            return label.id === id;
+        }), {name});
+        return this.setState({labels});
     }
 
     componentDidMount() {
@@ -72,20 +68,21 @@ class App extends Component {
     }
 
     render() {
-        return (
-            <Grid className="App">
-                <Row>
-                    <Col md={6}>
-                        <h1>Snapshots</h1>
-                        <Snapshot {...this.state.snapshot} width={480} height={368}/>
-                    </Col>
-                    <Col md={6}>
-                        <h1>Labels</h1>
-                        <Detection labels={this.state.labels}/>
-                    </Col>
-                </Row>
-            </Grid>
-        );
+        return <Grid className="App">
+            <Row>
+                <Col md={6}>
+                    <h1>Snapshots</h1>
+                    <Snapshot ref="snapshot" {...this.state.snapshot} width={480} height={368}/>
+                </Col>
+                <Col md={6}>
+                    <h1>Labels</h1>
+                    <LabelList
+                        labels={this.state.labels}
+                        detections={this.state.detections}
+                        onChange={this.handleLabelChange}/>
+                </Col>
+            </Row>
+        </Grid>;
     }
 }
 

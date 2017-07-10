@@ -2,16 +2,10 @@ const express = require(`express`);
 const ws = require(`ws`);
 
 class API {
-    constructor(port, staticDirectory) {
-        const appStatic = express.static(staticDirectory);
+    constructor(port) {
         this.router = express();
-        this
-            .router
-            .use(appStatic);
-
         this.server = require(`http`).createServer(this.router);
         this.socket = new ws.Server({server: this.server, perMessageDeflate: false});
-
         this
             .server
             .listen(port, () => {
@@ -19,7 +13,7 @@ class API {
             });
     }
 
-    broadcast(message, encoding = null) {
+    broadcast(message, encoding = `json`) {
         return new Promise((resolve) => {
             switch (encoding) {
                 case null:
@@ -31,7 +25,7 @@ class API {
                     message = message.toString(encoding);
             }
             try {
-                for (const client of this.socket.clients) {
+                for (let client of this.socket.clients) {
                     if (client.readyState === ws.OPEN) {
                         client.send(message);
                     }

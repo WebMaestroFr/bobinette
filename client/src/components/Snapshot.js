@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import Base64Canvas from './Base64Canvas';
+import Canvas from './Canvas';
 
 import './Snapshot.css';
 
-CanvasRenderingContext2D.prototype.strokeRoundRect = function(x, y, width, height, radius = 3) {
+CanvasRenderingContext2D.prototype.strokeRoundRect = function(x, y, width, height, radius = 4) {
     if (width < 2 * radius) 
         radius = width / 2;
     if (height < 2 * radius) 
@@ -35,11 +35,8 @@ class Snapshot extends React.Component {
         context.strokeStyle = `rgba(255, 255, 255, 0.67)`;
         context.fillStyle = `rgba(255, 255, 255, 0.67)`;
         context.clearRect(0, 0, canvas.width, canvas.height);
-        for (const detection of detections) {
+        for (let detection of detections) {
             context.strokeRoundRect(detection.x, detection.y, detection.width, detection.height);
-            if (detection.legend) {
-                context.fillText(detection.legend, detection.x, detection.y, detection.width);
-            }
         }
     }
 
@@ -47,18 +44,18 @@ class Snapshot extends React.Component {
         this.drawDetections(this.props.detections);
     }
 
-    componentWillReceiveProps(props) {
-        this.drawDetections(props.detections);
+    componentWillReceiveProps({detections}) {
+        this.drawDetections(detections);
     }
 
-    shouldComponentUpdate(props) {
-        return this.props.date < props.date;
+    shouldComponentUpdate({date}) {
+        return date > this.props.date;
     }
 
     render() {
         const date = new Date(this.props.date);
         return <div ref="container" className="Snapshot">
-            <Base64Canvas
+            <Canvas
                 ref="image"
                 className="Snapshot-image"
                 base64={this.props.image}
@@ -70,7 +67,9 @@ class Snapshot extends React.Component {
                 className="Snapshot-detections"
                 width={this.props.width}
                 height={this.props.height}/>
-            <time ref="date" className="Snapshot-date" dateTime={date}>{date.toLocaleString()}</time>
+            <time ref="date" className="Snapshot-date" dateTime={date}>
+                {date.toLocaleString()}
+            </time>
         </div>;
     }
 }
