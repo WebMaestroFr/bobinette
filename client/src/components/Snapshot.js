@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import Canvas from './Canvas';
+
 import './Snapshot.css';
 
 CanvasRenderingContext2D.prototype.strokeRoundRect = function(x, y, width, height, radius = 4) {
@@ -20,61 +22,70 @@ CanvasRenderingContext2D.prototype.strokeRoundRect = function(x, y, width, heigh
 };
 
 class Snapshot extends React.Component {
-
-    componentDidMount() {
-        const imageContext = this
-            .refs
-            .image
-            .getContext(`2d`);
-        this.image = new Image(this.props.width, this.props.height);
-        this.image.onload = () => {
-            imageContext.drawImage(this.image, 0, 0, this.props.width, this.props.height);
-        };
-        this.detectionsContext = this
-            .refs
-            .detections
-            .getContext(`2d`);
-        this.detectionsContext.strokeStyle = `rgba(255,255,255,0.5)`;
+    constructor(props) {
+        super(props);
+        this.drawDetections = this
+            .drawDetections
+            .bind(this);
     }
 
-    componentWillReceiveProps(props) {
-        this.image.src = `data:image/jpeg;base64,${props.instance.image}`;
-        this
-            .detectionsContext
-            .clearRect(0, 0, props.width, props.height);
-        for (let detection of props.instance.detections) {
-            this
-                .detectionsContext
-                .strokeRoundRect(detection.x, detection.y, detection.width, detection.height);
+    drawDetections(detections) {
+        const canvas = this.refs.detections;
+        const context = canvas.getContext(`2d`);
+        context.strokeStyle = `rgba(255, 255, 255, 0.67)`;
+        context.fillStyle = `rgba(255, 255, 255, 0.67)`;
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        for (let detection of detections) {
+            context.strokeRoundRect(detection.x, detection.y, detection.width, detection.height);
         }
     }
 
-    shouldComponentUpdate() {
-        return false;
+    componentDidMount() {
+        this.drawDetections(this.props.detections);
+    }
+
+    componentWillReceiveProps({detections}) {
+        this.drawDetections(detections);
+    }
+
+    shouldComponentUpdate({date}) {
+        return date > this.props.date;
     }
 
     render() {
-        return (
-            <div className="Snapshot">
-                <canvas ref="image" className="Snapshot-image" width={this.props.width} height={this.props.height}/>
-                <canvas
-                    ref="detections"
-                    className="Snapshot-detections"
-                    width={this.props.width}
-                    height={this.props.height}/>
-            </div>
-        );
+        const date = new Date(this.props.date);
+        return <div ref="container" className="Snapshot">
+            <Canvas
+                ref="image"
+                className="Snapshot-image"
+                base64={this.props.image}
+                type="jpeg"
+                width={this.props.width}
+                height={this.props.height}/>
+            <canvas
+                ref="detections"
+                className="Snapshot-detections"
+                width={this.props.width}
+                height={this.props.height}/>
+            <time ref="date" className="Snapshot-date" dateTime={date}>
+                {date.toLocaleString()}
+            </time>
+        </div>;
     }
 }
 
 Snapshot.propTypes = {
-    instance: PropTypes.object,
+    date: PropTypes.number,
+    detections: PropTypes.array,
+    image: PropTypes.string,
     width: PropTypes.number,
     height: PropTypes.number
 };
 
 Snapshot.defaultProps = {
-    instance: null,
+    date: null,
+    detections: [],
+    image: null,
     width: 640,
     height: 480
 };

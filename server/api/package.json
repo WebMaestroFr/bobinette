@@ -1,11 +1,12 @@
 {
-    "name": "websocket",
+    "name": "api",
     "version": "1.0.0",
-    "description": "WebSockets Broadcast Server.",
+    "description": "Application Programming Interface and WebSockets.",
     "author": "Etienne Baudry <etienne@webmaestro.fr>",
     "main": "main.js",
     "scripts": {},
     "dependencies": {
+        "express": "latest",
         "ws": "latest"
     }
 }
