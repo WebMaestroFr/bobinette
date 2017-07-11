@@ -1,5 +1,7 @@
 const spawn = require(`child_process`).spawn;
 
+const debug = require(`../debug`);
+
 const processStdout = (data, callback) => {
     const results = data.split(/}\s*{/);
     const subject = results.length === 1
@@ -12,12 +14,12 @@ const processStdout = (data, callback) => {
             detections,
             image
         });
-    } catch (e) {
-        if (e instanceof SyntaxError && results.length === 1) {
-            console.error(`\x1b[33m✘\x1b[0m Buffering ...`);
+    } catch (err) {
+        if (err instanceof SyntaxError && results.length === 1) {
+            debug.warning(`Buffering ...`);
             return data;
         } else {
-            console.error(e, subject);
+            debug.error(err);
         }
     } finally {
         return (results.length === 1)
@@ -38,13 +40,13 @@ module.exports = {
         execution
             .stdout
             .on('end', function() {
-                console.error(`\x1b[31m✘\x1b[0m Python Process`);
+                debug.error(`Python Process`);
             });
         execution
             .stderr
             .on(`data`, (data) => {
                 const response = data.toString();
-                return console.error(response);
+                debug.error(response);
             });
     }
 };

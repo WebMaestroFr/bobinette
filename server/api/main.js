@@ -6,15 +6,10 @@ class API {
         this.router = express();
         this.server = require(`http`).createServer(this.router);
         this.socket = new ws.Server({server: this.server, perMessageDeflate: false});
-        this
-            .server
-            .listen(port, () => {
-                console.error(`\x1b[32m✔\x1b[0m API Server (port \x1b[1m${port}\x1b[0m)`);
-            });
     }
 
     broadcast(message, encoding = `json`) {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             switch (encoding) {
                 case null:
                     break;
@@ -32,7 +27,7 @@ class API {
                 }
                 return resolve(message);
             } catch (err) {
-                return console.error(`\x1b[31m✘\x1b[0m WebSocket`, err);
+                return reject(err);
             }
         });
     }

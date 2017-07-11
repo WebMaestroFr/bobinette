@@ -17,7 +17,7 @@ THRESHOLD_CREATE = 0.625
 RESOLUTION = (480, 368)
 FRAMERATE = 4
 THUMBNAIL_SIZE = (64, 64)
-SCALE = 1.3
+SCALE = 1.33
 NEIGHBORS = 8
 JPEG_QUALITY = 70
 
@@ -99,17 +99,12 @@ try:
         }
         OUTPUT = json.dumps(RESULT)
 
-        sys.stderr.write("\x1b[32m%s\x1b[0m %s" %
-                         (u"\u2714".encode("utf8"), DATE.isoformat()))
-        sys.stderr.flush()
-
         sys.stdout.write(OUTPUT)
         sys.stdout.flush()
 
         CAPTURE.truncate(0)
 except Exception, error:
-    sys.stderr.write("\x1b[31m%s\x1b[0m %s" %
-                     (u"\u2718".encode("utf8"), error))
+    sys.stderr.write(error)
     sys.stderr.flush()
 finally:
     CAMERA.close()

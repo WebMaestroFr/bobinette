@@ -2,13 +2,12 @@ const path = require(`path`);
 const sqlite3 = require(`sqlite3`).verbose();
 
 class Database {
-    static open(name, tables) {
+    static open(base, tables) {
         return new Promise((resolve, reject) => {
-            const destination = path.resolve(__dirname, `${name}.sqlite3`);
+            const destination = path.resolve(__dirname, `${base}.sqlite3`);
             const db = new sqlite3.Database(destination);
             db.on(`error`, reject);
             return db.on(`open`, () => {
-                console.error(`\x1b[32m✔\x1b[0m Database \x1b[1m${name}\x1b[0m`);
                 const instance = new Database(db);
                 return resolve(instance);
             });
@@ -21,13 +20,14 @@ class Database {
 
     createTable(name, definition) {
         return new Promise((resolve, reject) => {
+            const query = `CREATE TABLE IF NOT EXISTS ${name} (${definition.join(", ")})`;
             return this
                 ._db
-                .run(`CREATE TABLE IF NOT EXISTS ${name} (${definition.join(", ")})`, (err) => {
+                .run(query, (err) => {
                     if (err) {
                         return reject(err);
                     }
-                    return resolve();
+                    return resolve(query);
                 });
         });
     }
@@ -39,9 +39,12 @@ class Database {
             for (let column of columns) {
                 data[`:${column}`] = values[column];
             }
+            const query = `INSERT INTO ${table} (${columns.join(", ")}) VALUES (${Object
+                .keys(data)
+                .join(", ")})`;
             return this
                 ._db
-                .run(`INSERT INTO ${table} (${columns.join(", ")}) VALUES (${Object.keys(data).join(", ")})`, data, (err) => {
+                .run(query, data, (err) => {
                     if (err) {
                         return reject(err);
                     }
@@ -58,7 +61,6 @@ class Database {
                     if (err) {
                         return reject(err);
                     }
-                    console.error(`\x1b[32m✔\x1b[0m SELECT \x1b[1m${table}\x1b[0m (${rows.length} results)`);
                     return resolve(rows);
                 });
         });
@@ -72,8 +74,26 @@ class Database {
                     if (err) {
                         return reject(err);
                     }
-                    console.error(`\x1b[32m✔\x1b[0m Get \x1b[1m${table}\x1b[0m`);
                     return resolve(rows);
+                });
+        });
+    }
+
+    update(table, values, key = `id`) {
+        return new Promise((resolve, reject) => {
+            const columns = Object.keys(values);
+            const data = {};
+            for (let column of columns) {
+                data[`:${column}`] = values[column];
+            }
+            const query = `UPDATE ${table} SET ${columns.map((column) => `${column} = :${column}`).join(", ")} WHERE ${key} = :${key}`;
+            return this
+                ._db
+                .run(query, data, (err) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    return resolve(values);
                 });
         });
     }

@@ -1,6 +1,7 @@
 {
     "name": "server",
     "version": "1.0.0",
+    "description": "Raspberry Pi Facial Recognition API.",
     "main": "main.js",
     "scripts": {
         "start": "node main.js",

@@ -48,9 +48,13 @@ class App extends React.Component {
 
     handleLabelChange({id, name}) {
         const labels = [...this.state.labels];
-        Object.assign(labels.find((label) => {
+        const label = Object.assign(labels.find((label) => {
             return label.id === id;
         }), {name});
+        const message = JSON.stringify({type: `label`, data: label});
+        this
+            .socket
+            .send(message);
         return this.setState({labels});
     }
 

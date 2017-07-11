@@ -4,14 +4,26 @@ const Database = require(`./database`);
 const API = require(`./api`);
 const Vision = require(`./vision`);
 
-const api = new API(9000);
+const debug = require(`./debug`);
+
+const api = new API();
+api
+    .server
+    .listen(9000, () => {
+        debug.success(`API Server (port \x1b[1m9000\x1b[0m)`);
+    });
 
 Database
     .open(`faces`)
-    .then((db) => {
+    .then((db, base) => {
+        debug.success(`Database \x1b[1mfaces\x1b[0m`);
 
-        db.createTable(`label`, [`id INTEGER PRIMARY KEY`, `name TEXT`]);
-        db.createTable(`detection`, [
+        db
+            .createTable(`label`, [`id INTEGER PRIMARY KEY`, `name TEXT`])
+            .then(debug.warning)
+            .catch(debug.error);
+        db
+            .createTable(`detection`, [
             `date INTEGER`,
             `x INTEGER`,
             `y INTEGER`,
@@ -21,36 +33,51 @@ Database
             `confidence REAL`,
             `image TEXT`,
             `FOREIGN KEY(label) REFERENCES label(id)`
-        ]);
+        ])
+            .then(debug.warning)
+            .catch(debug.error);
 
         api
             .socket
             .on(`connection`, (client) => {
-                console.error(`\x1b[32m✔\x1b[0m Socket Connection (${api.socket.clients.size})`);
+                debug.warning(`Socket Connection (${api.socket.clients.size})`);
                 db
                     .select(`label`)
                     .then((labels) => {
                         const message = JSON.stringify({type: `labels`, data: labels});
                         client.send(message);
-                    });
+                    })
+                    .catch(debug.error);
                 db
                     .select(`detection`)
                     .then((detections) => {
                         const message = JSON.stringify({type: `detections`, data: detections});
                         client.send(message);
-                    });
+                    })
+                    .catch(debug.error);
+
+                client.on(`message`, (data) => {
+                    const message = JSON.parse(data);
+                    debug.warning(`Client Update \x1b[1m${message.type}\x1b[0m`);
+                    return db
+                        .update(message.type, message.data)
+                        .catch(debug.error);
+                });
             });
 
         Vision.detect(`faces`, ({date, detections, image}) => {
-            const logLabel = (detection) => `\x1b[1m${detection.label}\x1b[0m: ${detection.confidence * 100}%`;
-            console.error(`\x1b[32m✔\x1b[0m Snapshot {${detections.map(logLabel).join(", ")}}`);
+            debug.success(`Snapshot ${date}`);
 
             const insertDetection = (detection) => {
                 Object.assign(detection, {date});
-                return db.insert(`detection`, detection);
+                return db
+                    .insert(`detection`, detection)
+                    .catch(debug.error);
             };
 
             for (const detection of detections) {
+                debug.warning(`\x1b[1m${detection.label}\x1b[0m => ${detection.confidence * 100}%`);
+
                 if (detection.confidence === 1.0) {
                     db
                         .insert(`label`, {
@@ -58,21 +85,27 @@ Database
                         name: ``
                     })
                         .then((label) => {
-                            api.broadcast({type: `labels`, data: [label]});
+                            api
+                                .broadcast({type: `labels`, data: [label]})
+                                .catch(debug.error);
                             insertDetection(detection);
-                        });
+                        })
+                        .catch(debug.error);
                 } else {
                     insertDetection(detection);
                 }
             }
 
-            api.broadcast({
+            api
+                .broadcast({
                 type: `snapshot`,
                 data: {
                     date,
                     detections,
                     image
                 }
-            });
+            })
+                .catch(debug.error);
         });
-    });
+    })
+    .catch(debug.error);

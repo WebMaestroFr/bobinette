@@ -110,22 +110,22 @@ class LabelList extends React.Component {
     }
 
     render() {
-        const byDate = (a, b) => b.date - a.date;
+        const byDate = (a, b) => b.props.date - a.props.date;
         const renderItem = (item) => {
             const byId = ({id}) => id === item.id;
             const label = this
                 .props
                 .labels
                 .find(byId);
-            return <Col key={item.id} md={6}>
+            return <Col key={item.id} md={6} date={item.date}>
                 <Label ref="label" {...item} name={label.name} onChange={this.props.onChange}/>
             </Col>;
         }
         return <Row>{this
                 .state
                 .items
-                .sort(byDate)
-                .map(renderItem)}</Row>;
+                .map(renderItem)
+                .sort(byDate)}</Row>;
     }
 }
 
