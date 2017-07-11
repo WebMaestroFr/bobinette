@@ -3,10 +3,10 @@
     "version": "1.0.0",
     "description": "Raspberry Pi Facial Recognition Access Control System.",
     "scripts": {
-        "start": "npm run client | npm run server",
-        "client": "npm start --prefix client",
-        "server": "npm start --prefix server",
-        "clear": "rm -f server/vision/*.xml && rm -f server/database/*.sqlite3",
+        "start": "sudo npm run client | sudo npm run server",
+        "client": "sudo npm start --prefix client",
+        "server": "sudo npm start --prefix server",
+        "clear": "sudo rm -f server/vision/*.xml && sudo rm -f server/database/*.sqlite3",
         "install": "sudo bash ./install.sh"
     },
     "repository": {

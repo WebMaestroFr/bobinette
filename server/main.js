@@ -6,16 +6,18 @@ const Vision = require(`./vision`);
 
 const debug = require(`./debug`);
 
-const api = new API();
+const build = path.resolve(__dirname, `../client/build`);
+const api = new API(build);
+
 api
     .server
-    .listen(9000, () => {
-        debug.success(`API Server (port \x1b[1m9000\x1b[0m)`);
+    .listen(80, () => {
+        debug.success(`API Server (port \x1b[1m80\x1b[0m)`);
     });
 
 Database
     .open(`faces`)
-    .then((db, base) => {
+    .then((db) => {
         debug.success(`Database \x1b[1mfaces\x1b[0m`);
 
         db

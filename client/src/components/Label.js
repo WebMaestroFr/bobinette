@@ -1,13 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {
-    Row,
-    Col,
-    Form,
-    FormGroup,
-    FormControl,
-    Media
-} from 'react-bootstrap';
+import {Form, FormGroup, FormControl, Media} from 'react-bootstrap';
 
 import Canvas from './Canvas'
 
@@ -117,15 +110,18 @@ class LabelList extends React.Component {
                 .props
                 .labels
                 .find(byId);
-            return <Col key={item.id} md={6} date={item.date}>
-                <Label ref="label" {...item} name={label.name} onChange={this.props.onChange}/>
-            </Col>;
+            return <Label
+                key={item.id}
+                className="LabelList-item"
+                {...item}
+                name={label.name}
+                onChange={this.props.onChange}/>;
         }
-        return <Row>{this
+        return <div className="LabelList">{this
                 .state
                 .items
                 .map(renderItem)
-                .sort(byDate)}</Row>;
+                .sort(byDate)}</div>;
     }
 }
 

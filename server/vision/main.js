@@ -30,7 +30,12 @@ const processStdout = (data, callback) => {
 
 module.exports = {
     detect: (cascade, callback) => {
-        const execution = spawn(`python`, [`-u`, `${__dirname}/${cascade}.py`]);
+        const execution = spawn(`python`, [
+            `-u`, `${__dirname}/${cascade}.py`
+        ], {
+            detached: true,
+            stdio: [`ignore`, `pipe`, `pipe`]
+        });
         let stdout = ``;
         execution
             .stdout

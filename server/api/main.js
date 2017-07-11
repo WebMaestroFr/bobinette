@@ -1,9 +1,19 @@
 const express = require(`express`);
+const path = require(`path`);
 const ws = require(`ws`);
 
 class API {
-    constructor(port) {
+    constructor(build) {
+        const buildStatic = express.static(build);
         this.router = express();
+        this
+            .router
+            .use(buildStatic);
+        this
+            .router
+            .get('/', function(req, res) {
+                res.sendFile(path.join(build, 'index.html'));
+            });
         this.server = require(`http`).createServer(this.router);
         this.socket = new ws.Server({server: this.server, perMessageDeflate: false});
     }

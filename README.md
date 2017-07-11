@@ -1,6 +1,6 @@
 # Bobinette
 
-## Start
+## Start Development (`bobinette-dev`)
 ```
 cd ~/bobinette
 ```
@@ -80,11 +80,20 @@ git checkout bobinette-dev
 ```
 
 ### Install Application
-
 ```
 npm install
 cd client
 npm install
+npm run build
 cd ../server
 npm install
+```
+
+### Run On Boot (`bobinette`)
+```
+sudo nano /etc/rc.local
+```
+And to that file, add the run command.
+```
+sudo npm start --prefix ~/bobinette/server
 ```
