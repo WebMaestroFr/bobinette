@@ -7,9 +7,7 @@
         "prop-types": "latest",
         "react": "latest",
         "react-bootstrap": "latest",
-        "react-dom": "latest"
-    },
-    "devDependencies": {
+        "react-dom": "latest",
         "react-scripts": "latest"
     },
     "scripts": {
