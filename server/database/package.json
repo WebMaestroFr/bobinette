@@ -5,6 +5,7 @@
     "author": "Etienne Baudry <etienne@webmaestro.fr>",
     "main": "main.js",
     "scripts": {},
+    "license": "ISC",
     "dependencies": {
         "sqlite3": "^3.1.8"
     }
