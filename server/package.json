@@ -11,7 +11,6 @@
     "dependencies": {
         "api": "file:./api",
         "database": "file:./database",
-        "vision": "file:./vision",
-        "websocket": "file:./websocket"
+        "vision": "file:./vision"
     }
 }
