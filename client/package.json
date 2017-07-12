@@ -3,12 +3,12 @@
     "version": "0.1.0",
     "private": true,
     "dependencies": {
-        "bootstrap": "latest",
-        "prop-types": "latest",
-        "react": "latest",
-        "react-bootstrap": "latest",
-        "react-dom": "latest",
-        "react-scripts": "latest"
+        "bootstrap": "^3.3.7",
+        "prop-types": "^15.5.10",
+        "react": "^15.6.1",
+        "react-bootstrap": "^0.31.0",
+        "react-dom": "^15.6.1",
+        "react-scripts": "^1.0.10"
     },
     "scripts": {
         "start": "PORT=8000 react-scripts start",

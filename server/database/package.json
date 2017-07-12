@@ -6,6 +6,6 @@
     "main": "main.js",
     "scripts": {},
     "dependencies": {
-        "sqlite3": "latest"
+        "sqlite3": "^3.1.8"
     }
 }

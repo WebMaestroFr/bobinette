@@ -6,7 +6,7 @@
     "main": "main.js",
     "scripts": {},
     "dependencies": {
-        "express": "latest",
-        "ws": "latest"
+        "express": "^4.15.3",
+        "ws": "^3.0.0"
     }
 }
