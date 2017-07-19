@@ -2,10 +2,10 @@
 
 cd "$(dirname "$0")"
 
-apt-get update -y
-apt-get dist-upgrade -y -q
-apt-get autoremove -y
-apt-get clean -y
+sudo apt-get update -y
+sudo apt-get dist-upgrade -y -q
+sudo apt-get autoremove -y
+sudo apt-get clean -y
 
 git submodule init
 git submodule update

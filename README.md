@@ -89,7 +89,7 @@ git checkout bobinette-dev
 
 ### Install Application
 ```
-npm install
+bash ./install.sh
 ```
 
 ### Run On Boot (`bobinette`)
