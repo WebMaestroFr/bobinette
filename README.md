@@ -52,16 +52,12 @@ sudo raspi-config
 
 ### Update Package Manager and Install Git
 ```
-sudo apt-get update
+sudo apt-get update -y
 sudo apt-get install -y git
 git config --global credential.helper 'cache --timeout=28800'
 ```
 
 ### Install NodeJS
-Remove Debian packages.
-```
-sudo apt-get remove --purge npm node nodejs
-```
 ##### Raspberry Pi Zero (`bobinette`)
 ```
 wget -O - https://raw.githubusercontent.com/sdesalas/node-pi-zero/master/install-node-v6.9.1.sh | bash
@@ -70,11 +66,6 @@ wget -O - https://raw.githubusercontent.com/sdesalas/node-pi-zero/master/install
 ```
 curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
 sudo apt-get install -y nodejs
-```
-
-### Update NPM
-```
-npm install -g npm@4.6.1
 ```
 
 ### Install Repository

@@ -5,8 +5,7 @@
     "author": "Etienne Baudry <etienne@webmaestro.fr>",
     "main": "main.js",
     "scripts": {
-        "start": "node main.js",
-        "install": "sudo bash ./install.sh"
+        "start": "node main.js"
     },
     "license": "ISC",
     "dependencies": {
