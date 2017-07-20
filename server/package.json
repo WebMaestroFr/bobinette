@@ -2,16 +2,15 @@
     "name": "server",
     "version": "1.0.0",
     "description": "Raspberry Pi Facial Recognition API.",
+    "author": "Etienne Baudry <etienne@webmaestro.fr>",
     "main": "main.js",
     "scripts": {
-        "start": "node main.js",
-        "install": "sudo bash ./install.sh"
+        "start": "node main.js"
     },
     "license": "ISC",
     "dependencies": {
         "api": "file:./api",
         "database": "file:./database",
-        "vision": "file:./vision",
-        "websocket": "file:./websocket"
+        "vision": "file:./vision"
     }
 }

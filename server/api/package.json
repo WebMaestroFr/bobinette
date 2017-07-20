@@ -5,8 +5,9 @@
     "author": "Etienne Baudry <etienne@webmaestro.fr>",
     "main": "main.js",
     "scripts": {},
+    "license": "ISC",
     "dependencies": {
-        "express": "latest",
-        "ws": "latest"
+        "express": "^4.15.3",
+        "ws": "^3.0.0"
     }
 }

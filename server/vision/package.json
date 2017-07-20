@@ -7,5 +7,6 @@
     "scripts": {
         "install": "sudo bash ./install.sh"
     },
+    "license": "ISC",
     "dependencies": {}
 }

@@ -2,18 +2,17 @@
     "name": "bobinette",
     "version": "1.0.0",
     "description": "Raspberry Pi Facial Recognition Access Control System.",
+    "author": "Etienne Baudry <etienne@webmaestro.fr>",
     "scripts": {
-        "start": "sudo npm run client | sudo npm run server",
-        "client": "sudo npm start --prefix client",
-        "server": "sudo npm start --prefix server",
-        "clear": "sudo rm -f server/vision/*.xml && sudo rm -f server/database/*.sqlite3",
-        "install": "sudo bash ./install.sh"
+        "start": "npm run client | npm run server",
+        "client": "npm start --prefix client",
+        "server": "npm start --prefix server",
+        "clear": "sudo rm -f server/vision/*.xml && sudo rm -f server/database/*.sqlite3"
     },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/WebMaestroFr/bobinette.git"
     },
-    "author": "etienne@webmaestro.fr",
     "license": "ISC",
     "bugs": {
         "url": "https://github.com/WebMaestroFr/bobinette/issues"

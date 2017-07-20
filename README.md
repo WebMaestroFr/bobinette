@@ -52,7 +52,7 @@ sudo raspi-config
 
 ### Update Package Manager and Install Git
 ```
-sudo apt-get update
+sudo apt-get update -y
 sudo apt-get install -y git
 git config --global credential.helper 'cache --timeout=28800'
 ```
@@ -60,12 +60,11 @@ git config --global credential.helper 'cache --timeout=28800'
 ### Install NodeJS
 ##### Raspberry Pi Zero (`bobinette`)
 ```
-wget -O - https://raw.githubusercontent.com/sdesalas/node-pi-zero/master/install-node-v.last.sh | bash
-sudo apt-get install -y nodejs
+wget -O - https://raw.githubusercontent.com/sdesalas/node-pi-zero/master/install-node-v6.9.1.sh | bash
 ```
 ##### Raspberry Pi 3 (`bobinette-dev`)
 ```
-curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
 sudo apt-get install -y nodejs
 ```
 
@@ -81,19 +80,14 @@ git checkout bobinette-dev
 
 ### Install Application
 ```
-npm install
-cd client
-npm install
-npm run build
-cd ../server
-npm install
+bash ./install.sh
 ```
 
 ### Run On Boot (`bobinette`)
 ```
 sudo nano /etc/rc.local
 ```
-And to that file, add the run command.
+Write command at the end of the file, save and exit (`ctrl+X`).
 ```
-sudo npm start --prefix ~/bobinette/server
+npm start --prefix ~/bobinette/server
 ```
