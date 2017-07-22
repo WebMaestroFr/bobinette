@@ -11,8 +11,8 @@ const api = new API(build);
 
 api
     .server
-    .listen(80, () => {
-        debug.success(`API Server (port \x1b[1m80\x1b[0m)`);
+    .listen(8000, () => {
+        debug.success(`API Server (port \x1b[1m8000\x1b[0m)`);
     });
 
 Database

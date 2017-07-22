@@ -7,7 +7,7 @@
         "start": "npm run client | npm run server",
         "client": "npm start --prefix client",
         "server": "npm start --prefix server",
-        "clear": "sudo rm -f server/vision/*.xml && sudo rm -f server/database/*.sqlite3"
+        "clear": "sudo rm -f data/*.xml && sudo rm -f data/*.sqlite3"
     },
     "repository": {
         "type": "git",

@@ -26,18 +26,21 @@ CAMERA.resolution = RESOLUTION
 CAMERA.framerate = FRAMERATE
 CAPTURE = picamera.array.PiRGBArray(CAMERA, size=RESOLUTION)
 
-PATH = os.path.dirname(os.path.realpath(__file__))
+DATA_PATH = os.path.realpath("%s/../../data" % (os.path.dirname(__file__)))
+OPENCV_PATH = os.path.realpath(
+    "%s/../../libraries/opencv" % (os.path.dirname(__file__)))
 
 CLASSIFIER = cv2.CascadeClassifier(
-    "%s/opencv/data/haarcascades/haarcascade_%s.xml" % (PATH, "frontalface_default"))
+    "%s/data/haarcascades/haarcascade_%s.xml" % (OPENCV_PATH, "frontalface_default"))
 
 RECOGNIZER = cv2.face.LBPHFaceRecognizer_create()
-MODEL = "%s/faces.xml" % (PATH)
+MODEL = "%s/faces.xml" % (DATA_PATH)
 if os.path.isfile(MODEL):
     RECOGNIZER.read(MODEL)
 
 
 def get_index():
+    """Returns Next Label Index"""
     labels = RECOGNIZER.getLabels()
     if labels is None:
         return 0
@@ -45,33 +48,38 @@ def get_index():
         return len(set(labels.flatten()))
 
 
-def add_label(image_gray):
+def write_label(image_gray):
+    """Writes New Label"""
     index = get_index()
     RECOGNIZER.update([image_gray], numpy.array([index]))
     RECOGNIZER.write(MODEL)
     return index, 1.0
 
 
-def face(gray, frame, (x, y, width, height)):
-    image_gray = cv2.resize(gray[y:y + height, x:x + width], THUMBNAIL_SIZE)
+def get_face(gray, frame, (f_x, f_y, width, height)):
+    """Returns Face Detection"""
+    image_gray = cv2.resize(
+        gray[f_y:f_y + height, f_x:f_x + width], THUMBNAIL_SIZE)
     if get_index() > 0:
         label, distance = RECOGNIZER.predict(image_gray)
         confidence = round(1.0 - distance / 255.0, 2)
         if confidence < THRESHOLD_CREATE:
-            label, confidence = add_label(image_gray)
+            label, confidence = write_label(image_gray)
         elif confidence < THRESHOLD_TRAIN:
             RECOGNIZER.update([image_gray], numpy.array([label]))
             RECOGNIZER.write(MODEL)
     else:
-        label, confidence = add_label(image_gray)
-
-    image = cv2.resize(frame[y:y + height, x:x + width], THUMBNAIL_SIZE)
+        label, confidence = write_label(image_gray)
+    image = cv2.resize(
+        frame[f_y:f_y + height, f_x:f_x + width], THUMBNAIL_SIZE)
     _, image = cv2.imencode(".jpg", image,
-                            (cv2.IMWRITE_JPEG_OPTIMIZE, True, cv2.IMWRITE_JPEG_QUALITY, JPEG_QUALITY))
-
+                            (cv2.IMWRITE_JPEG_OPTIMIZE,
+                             True,
+                             cv2.IMWRITE_JPEG_QUALITY,
+                             JPEG_QUALITY))
     return {
-        "x": int(x),
-        "y": int(y),
+        "x": int(f_x),
+        "y": int(f_y),
         "width": int(width),
         "height": int(height),
         "label": label,
@@ -83,12 +91,14 @@ try:
     for FRAME in CAMERA.capture_continuous(CAPTURE, format="bgr", use_video_port=True):
         DATE = datetime.utcnow()
         _, IMAGE = cv2.imencode(".jpg", FRAME.array,
-                                (cv2.IMWRITE_JPEG_OPTIMIZE, True, cv2.IMWRITE_JPEG_QUALITY, JPEG_QUALITY))
+                                (cv2.IMWRITE_JPEG_OPTIMIZE,
+                                 True,
+                                 cv2.IMWRITE_JPEG_QUALITY,
+                                 JPEG_QUALITY))
         GRAY = cv2.cvtColor(FRAME.array, cv2.COLOR_BGR2GRAY)
-
         RESULT = {
             "date": DATE.isoformat(),
-            "detections": [face(GRAY, FRAME.array, d) for d in CLASSIFIER.detectMultiScale(
+            "detections": [get_face(GRAY, FRAME.array, d) for d in CLASSIFIER.detectMultiScale(
                 GRAY,
                 scaleFactor=SCALE,
                 minNeighbors=NEIGHBORS,
@@ -103,8 +113,5 @@ try:
         sys.stdout.flush()
 
         CAPTURE.truncate(0)
-except Exception, error:
-    sys.stderr.write(error)
-    sys.stderr.flush()
 finally:
     CAMERA.close()
