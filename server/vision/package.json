@@ -4,9 +4,7 @@
     "description": "Computer Vision.",
     "author": "Etienne Baudry <etienne@webmaestro.fr>",
     "main": "main.js",
-    "scripts": {
-        "install": "sudo bash ./install.sh"
-    },
+    "scripts": {},
     "license": "ISC",
     "dependencies": {}
 }

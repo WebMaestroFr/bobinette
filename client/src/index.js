@@ -7,6 +7,6 @@ import 'bootstrap/dist/css/bootstrap.css';
 import './index.css';
 
 ReactDOM.render(
-    <App port={80}/>, document.getElementById("root"));
+    <App port={8000}/>, document.getElementById("root"));
 
 registerServiceWorker();
