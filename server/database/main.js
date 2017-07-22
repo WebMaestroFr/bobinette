@@ -4,7 +4,7 @@ const sqlite3 = require(`sqlite3`).verbose();
 class Database {
     static open(base, tables) {
         return new Promise((resolve, reject) => {
-            const destination = path.resolve(__dirname, `${base}.sqlite3`);
+            const destination = path.resolve(__dirname, `../../data/${base}.sqlite3`);
             const db = new sqlite3.Database(destination);
             db.on(`error`, reject);
             return db.on(`open`, () => {

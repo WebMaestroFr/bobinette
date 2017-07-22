@@ -26,13 +26,15 @@ CAMERA.resolution = RESOLUTION
 CAMERA.framerate = FRAMERATE
 CAPTURE = picamera.array.PiRGBArray(CAMERA, size=RESOLUTION)
 
-PATH = os.path.dirname(os.path.realpath(__file__))
+DATA_PATH = os.path.realpath("%s/../../data" % (os.path.dirname(__file__)))
+OPENCV_PATH = os.path.realpath(
+    "%s/../../libraries/opencv" % (os.path.dirname(__file__)))
 
 CLASSIFIER = cv2.CascadeClassifier(
-    "%s/opencv/data/haarcascades/haarcascade_%s.xml" % (PATH, "frontalface_default"))
+    "%s/data/haarcascades/haarcascade_%s.xml" % (OPENCV_PATH, "frontalface_default"))
 
 RECOGNIZER = cv2.face.LBPHFaceRecognizer_create()
-MODEL = "%s/faces.xml" % (PATH)
+MODEL = "%s/faces.xml" % (DATA_PATH)
 if os.path.isfile(MODEL):
     RECOGNIZER.read(MODEL)
 
@@ -94,7 +96,6 @@ try:
                                  cv2.IMWRITE_JPEG_QUALITY,
                                  JPEG_QUALITY))
         GRAY = cv2.cvtColor(FRAME.array, cv2.COLOR_BGR2GRAY)
-
         RESULT = {
             "date": DATE.isoformat(),
             "detections": [get_face(GRAY, FRAME.array, d) for d in CLASSIFIER.detectMultiScale(
@@ -112,8 +113,5 @@ try:
         sys.stdout.flush()
 
         CAPTURE.truncate(0)
-except Exception, error:
-    sys.stderr.write(error)
-    sys.stderr.flush()
 finally:
     CAMERA.close()
