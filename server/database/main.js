@@ -18,6 +18,12 @@ class Database {
         this._db = db;
     }
 
+    close() {
+        this
+            ._db
+            .close();
+    }
+
     createTable(name, definition) {
         return new Promise((resolve, reject) => {
             const query = `CREATE TABLE IF NOT EXISTS ${name} (${definition.join(", ")})`;

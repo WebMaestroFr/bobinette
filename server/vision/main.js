@@ -43,15 +43,11 @@ module.exports = {
                 stdout = processStdout(stdout + data.toString(), callback);
             });
         execution
-            .stdout
-            .on('end', function() {
-                debug.error(`Python Process`);
-            });
-        execution
             .stderr
             .on(`data`, (data) => {
                 const response = data.toString();
                 debug.error(response);
             });
+        return execution;
     }
 };

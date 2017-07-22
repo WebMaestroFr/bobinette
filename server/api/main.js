@@ -3,19 +3,28 @@ const path = require(`path`);
 const ws = require(`ws`);
 
 class API {
-    constructor(build) {
-        const buildStatic = express.static(build);
+    constructor(application) {
+        const staticApplication = express.static(application);
         this.router = express();
         this
             .router
-            .use(buildStatic);
+            .use(staticApplication);
         this
             .router
             .get('/', function(req, res) {
-                res.sendFile(path.join(build, 'index.html'));
+                res.sendFile(path.join(application, 'index.html'));
             });
         this.server = require(`http`).createServer(this.router);
         this.socket = new ws.Server({server: this.server, perMessageDeflate: false});
+    }
+
+    close() {
+        this
+            .server
+            .close();
+        this
+            .socket
+            .close();
     }
 
     broadcast(message, encoding = `json`) {
