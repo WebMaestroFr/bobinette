@@ -20,12 +20,13 @@ Database
     .then((db) => {
         debug.success(`Database \x1b[1mfaces\x1b[0m`);
 
+        const labelDefinition = [`id INTEGER PRIMARY KEY`, `name TEXT`];
         db
-            .createTable(`label`, [`id INTEGER PRIMARY KEY`, `name TEXT`])
+            .createTable(`label`, labelDefinition)
             .then(debug.warning)
             .catch(debug.error);
-        db
-            .createTable(`detection`, [
+
+        const detectionDefinition = [
             `date INTEGER`,
             `x INTEGER`,
             `y INTEGER`,
@@ -35,7 +36,9 @@ Database
             `confidence REAL`,
             `image TEXT`,
             `FOREIGN KEY(label) REFERENCES label(id)`
-        ])
+        ];
+        db
+            .createTable(`detection`, detectionDefinition)
             .then(debug.warning)
             .catch(debug.error);
 
