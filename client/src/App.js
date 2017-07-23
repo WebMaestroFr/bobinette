@@ -26,31 +26,33 @@ class App extends React.Component {
             .bind(this);
     }
 
-    handleMessage({data}) {
-        const message = JSON.parse(data);
-        switch (message.type) {
+    handleMessage(message) {
+        const {type, data} = JSON.parse(message.data);
+        console.log("MESSAGE", message);
+        switch (type) {
             case `snapshot`:
                 return this.setState({
-                    snapshot: message.data,
+                    snapshot: data,
                     detections: this
                         .state
                         .detections
-                        .concat(message.data.detections)
+                        .concat(data.detections)
                 });
             default:
                 return this.setState({
-                    [message.type]: this
-                        .state[message.type]
-                        .concat(message.data)
+                    [type]: this
+                        .state[type]
+                        .concat(data)
                 });
         }
     }
 
     handleLabelChange({id, name}) {
         const labels = [...this.state.labels];
-        const label = Object.assign(labels.find((label) => {
+        const label = labels.find((label) => {
             return label.id === id;
-        }), {name});
+        });
+        Object.assign(label, {name});
         const message = JSON.stringify({type: `label`, data: label});
         this
             .socket

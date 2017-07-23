@@ -47,10 +47,10 @@ class Label extends React.Component {
 }
 
 Label.propTypes = {
-    id: PropTypes.number,
-    name: PropTypes.string,
-    date: PropTypes.number,
-    image: PropTypes.string,
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+    date: PropTypes.number.isRequired,
+    image: PropTypes.string.isRequired,
     onChange: PropTypes.func.isRequired
 };
 
@@ -126,8 +126,8 @@ class LabelList extends React.Component {
 }
 
 LabelList.propTypes = {
-    labels: PropTypes.array,
-    detections: PropTypes.array,
+    labels: PropTypes.array.isRequired,
+    detections: PropTypes.array.isRequired,
     onChange: PropTypes.func.isRequired
 };
 
