@@ -6,8 +6,8 @@ const Vision = require(`./vision`);
 
 const debug = require(`./debug`);
 
-const build = path.resolve(__dirname, `../client/build`);
-const api = new API(build);
+const application = path.resolve(__dirname, `../client/build`);
+const api = new API(application);
 
 api
     .server
@@ -17,15 +17,16 @@ api
 
 Database
     .open(`faces`)
-    .then((db) => {
+    .then((database) => {
         debug.success(`Database \x1b[1mfaces\x1b[0m`);
 
-        db
-            .createTable(`label`, [`id INTEGER PRIMARY KEY`, `name TEXT`])
+        const labelDefinition = [`id INTEGER PRIMARY KEY`, `name TEXT`];
+        database
+            .createTable(`label`, labelDefinition)
             .then(debug.warning)
             .catch(debug.error);
-        db
-            .createTable(`detection`, [
+
+        const detectionDefinition = [
             `date INTEGER`,
             `x INTEGER`,
             `y INTEGER`,
@@ -35,7 +36,9 @@ Database
             `confidence REAL`,
             `image TEXT`,
             `FOREIGN KEY(label) REFERENCES label(id)`
-        ])
+        ];
+        database
+            .createTable(`detection`, detectionDefinition)
             .then(debug.warning)
             .catch(debug.error);
 
@@ -43,14 +46,14 @@ Database
             .socket
             .on(`connection`, (client) => {
                 debug.warning(`Socket Connection (${api.socket.clients.size})`);
-                db
+                database
                     .select(`label`)
                     .then((labels) => {
                         const message = JSON.stringify({type: `labels`, data: labels});
                         client.send(message);
                     })
                     .catch(debug.error);
-                db
+                database
                     .select(`detection`)
                     .then((detections) => {
                         const message = JSON.stringify({type: `detections`, data: detections});
@@ -58,21 +61,21 @@ Database
                     })
                     .catch(debug.error);
 
-                client.on(`message`, (data) => {
-                    const message = JSON.parse(data);
-                    debug.warning(`Client Update \x1b[1m${message.type}\x1b[0m`);
-                    return db
-                        .update(message.type, message.data)
+                client.on(`message`, (message) => {
+                    const {type, data} = JSON.parse(message);
+                    debug.warning(`Client Update \x1b[1m${type}\x1b[0m`);
+                    return database
+                        .update(type, data)
                         .catch(debug.error);
                 });
             });
 
-        Vision.detect(`faces`, ({date, detections, image}) => {
+        const detection = Vision.detect(`faces`, ({date, detections, image}) => {
             debug.success(`Snapshot ${date}`);
 
             const insertDetection = (detection) => {
                 Object.assign(detection, {date});
-                return db
+                return database
                     .insert(`detection`, detection)
                     .catch(debug.error);
             };
@@ -81,7 +84,7 @@ Database
                 debug.warning(`\x1b[1m${detection.label}\x1b[0m => ${detection.confidence * 100}%`);
 
                 if (detection.confidence === 1.0) {
-                    db
+                    database
                         .insert(`label`, {
                         id: detection.label,
                         name: ``
@@ -109,5 +112,14 @@ Database
             })
                 .catch(debug.error);
         });
+
+        const terminate = () => {
+            api.close();
+            database.close();
+            detection.kill(`SIGTERM`);
+            debug.error(`Exit Process`);
+        };
+        process.on(`SIGTERM`, terminate);
+        process.on(`SIGINT`, terminate);
     })
     .catch(debug.error);
