@@ -1,41 +1,30 @@
 """Object Detection"""
 
-import base64
-import json
-import os
-import sys
-from datetime import datetime
+from base64 import b64encode
+from os import path
 
-import cv2
-import cv2.face
-import numpy
-import picamera
-import picamera.array
+from cv2 import (CASCADE_SCALE_IMAGE, COLOR_BGR2GRAY, IMWRITE_JPEG_OPTIMIZE,
+                 IMWRITE_JPEG_QUALITY, CascadeClassifier, cvtColor, face,
+                 imencode, resize)
+from numpy import array
 
 THRESHOLD_TRAIN = 0.75
+THRESHOLD_PASS = 0.67
 THRESHOLD_CREATE = 0.625
-RESOLUTION = (480, 368)
-FRAMERATE = 4
 THUMBNAIL_SIZE = (64, 64)
-SCALE = 1.33
-NEIGHBORS = 8
-JPEG_QUALITY = 70
 
-CAMERA = picamera.PiCamera()
-CAMERA.resolution = RESOLUTION
-CAMERA.framerate = FRAMERATE
-CAPTURE = picamera.array.PiRGBArray(CAMERA, size=RESOLUTION)
+CURRENT_PATH = path.dirname(__file__)
+DATA_PATH = path.realpath("%s/../../data" % (CURRENT_PATH))
+OPENCV_PATH = path.realpath("%s/../../libraries/opencv" % (CURRENT_PATH))
 
-CURRENT_PATH = os.path.dirname(__file__)
-DATA_PATH = os.path.realpath("%s/../../data" % (CURRENT_PATH))
-OPENCV_PATH = os.path.realpath("%s/../../libraries/opencv" % (CURRENT_PATH))
-
-CLASSIFIER = cv2.CascadeClassifier(
+CLASSIFIER_FACE = CascadeClassifier(
     "%s/data/haarcascades/haarcascade_%s.xml" % (OPENCV_PATH, "frontalface_default"))
+CLASSIFIER_EYE = CascadeClassifier(
+    "%s/data/haarcascades/haarcascade_%s.xml" % (OPENCV_PATH, "eye"))
 
-RECOGNIZER = cv2.face.LBPHFaceRecognizer_create()
+RECOGNIZER = face.LBPHFaceRecognizer_create()
 MODEL = "%s/faces.xml" % (DATA_PATH)
-if os.path.isfile(MODEL):
+if path.isfile(MODEL):
     RECOGNIZER.read(MODEL)
 
 
@@ -48,32 +37,43 @@ def get_index():
         return len(set(labels.flatten()))
 
 
-def write_label(image_gray):
+def write_label(thumbnail):
     """Writes New Label"""
     index = get_index()
-    RECOGNIZER.update([image_gray], numpy.array([index]))
+    RECOGNIZER.update([thumbnail], array([index]))
     RECOGNIZER.write(MODEL)
     return index, 1.0
 
 
 def get_face(gray, frame, (f_x, f_y, width, height)):
     """Returns Face Detection"""
-    image_gray = cv2.resize(
-        gray[f_y:f_y + height, f_x:f_x + width], THUMBNAIL_SIZE)
-    if get_index() > 0:
-        label, distance = RECOGNIZER.predict(image_gray)
-        confidence = round(1.0 - distance / 255.0, 2)
-        if confidence <= THRESHOLD_CREATE:
-            label, confidence = write_label(image_gray)
-        elif confidence <= THRESHOLD_TRAIN:
-            RECOGNIZER.update([image_gray], numpy.array([label]))
-            RECOGNIZER.write(MODEL)
+    face_gray = gray[f_y:f_y + height, f_x:f_x + width]
+    features = CLASSIFIER_EYE.detectMultiScale(
+        face_gray,
+        scaleFactor=1.1,
+        minNeighbors=4,
+        flags=CASCADE_SCALE_IMAGE,
+        minSize=(16, 16)
+    )
+    thumbnail = resize(face_gray, THUMBNAIL_SIZE)
+    if len(features) == 2:
+        if get_index() > 0:
+            label, distance = RECOGNIZER.predict(thumbnail)
+            confidence = round(1.0 - distance / 255.0, 2)
+            if confidence <= THRESHOLD_CREATE:
+                label, confidence = write_label(thumbnail)
+            elif confidence >= THRESHOLD_PASS and confidence <= THRESHOLD_TRAIN:
+                RECOGNIZER.update([thumbnail], array([label]))
+                RECOGNIZER.write(MODEL)
+        else:
+            label, confidence = write_label(thumbnail)
     else:
-        label, confidence = write_label(image_gray)
-    image = cv2.resize(
+        label = None
+        confidence = 0
+    image = resize(
         frame[f_y:f_y + height, f_x:f_x + width], THUMBNAIL_SIZE)
-    _, image = cv2.imencode(".jpg", image, (cv2.IMWRITE_JPEG_OPTIMIZE, True,
-                                            cv2.IMWRITE_JPEG_QUALITY, JPEG_QUALITY))
+    _, image = imencode(".jpg", image, (IMWRITE_JPEG_OPTIMIZE, True,
+                                        IMWRITE_JPEG_QUALITY, 70))
     return {
         "x": int(f_x),
         "y": int(f_y),
@@ -81,33 +81,19 @@ def get_face(gray, frame, (f_x, f_y, width, height)):
         "height": int(height),
         "label": label,
         "confidence": confidence,
-        "image": base64.b64encode(image)
+        "image": b64encode(image),
+        "features": [f.tolist() for f in features]
     }
 
-try:
-    for FRAME in CAMERA.capture_continuous(CAPTURE, format="bgr", use_video_port=True):
-        DATE = datetime.utcnow()
-        _, IMAGE = cv2.imencode(".jpg", FRAME.array,
-                                (cv2.IMWRITE_JPEG_OPTIMIZE, True,
-                                 cv2.IMWRITE_JPEG_QUALITY, JPEG_QUALITY))
-        GRAY = cv2.cvtColor(FRAME.array, cv2.COLOR_BGR2GRAY)
-        DETECTIONS = CLASSIFIER.detectMultiScale(
-            GRAY,
-            scaleFactor=SCALE,
-            minNeighbors=NEIGHBORS,
-            flags=cv2.CASCADE_SCALE_IMAGE,
-            minSize=THUMBNAIL_SIZE
-        )
-        RESULT = {
-            "date": DATE.isoformat(),
-            "detections": [get_face(GRAY, FRAME.array, d) for d in DETECTIONS],
-            "image": base64.b64encode(IMAGE)
-        }
-        OUTPUT = json.dumps(RESULT)
 
-        sys.stdout.write(OUTPUT)
-        sys.stdout.flush()
-
-        CAPTURE.truncate(0)
-finally:
-    CAMERA.close()
+def detect(frame):
+    """Face Detection"""
+    gray = cvtColor(frame, COLOR_BGR2GRAY)
+    detections = CLASSIFIER_FACE.detectMultiScale(
+        gray,
+        scaleFactor=1.3,
+        minNeighbors=6,
+        flags=CASCADE_SCALE_IMAGE,
+        minSize=(64, 64)
+    )
+    return [get_face(gray, frame, d) for d in detections]

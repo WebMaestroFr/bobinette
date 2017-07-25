@@ -35,6 +35,7 @@ Database
             `label INTEGER`,
             `confidence REAL`,
             `image TEXT`,
+            `features TEXT`,
             `FOREIGN KEY(label) REFERENCES label(id)`
         ];
         database
@@ -81,7 +82,7 @@ Database
             };
 
             for (const detection of detections) {
-                debug.warning(`\x1b[1m${detection.label}\x1b[0m => ${detection.confidence * 100}%`);
+                debug.warning(`\x1b[1m${detection.label}\x1b[0m => ${detection.confidence * 100}% (${detection.features.length}/2)`);
 
                 if (detection.confidence === 1.0) {
                     database
@@ -96,7 +97,7 @@ Database
                             insertDetection(detection);
                         })
                         .catch(debug.error);
-                } else {
+                } else if (detection.features.length === 2) {
                     insertDetection(detection);
                 }
             }

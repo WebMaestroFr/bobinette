@@ -8,12 +8,8 @@ const processStdout = (data, callback) => {
         ? results[0]
         : `${results[0]}}`;
     try {
-        const {date, detections, image} = JSON.parse(subject);
-        callback({
-            date: (new Date(date)).valueOf(),
-            detections,
-            image
-        });
+        const frame = JSON.parse(subject);
+        callback(frame);
     } catch (err) {
         if (err instanceof SyntaxError && results.length === 1) {
             debug.warning(`Buffering ...`);
@@ -29,9 +25,9 @@ const processStdout = (data, callback) => {
 };
 
 module.exports = {
-    detect: (cascade, callback) => {
+    detect: (subject, callback) => {
         const execution = spawn(`python`, [
-            `-u`, `${__dirname}/${cascade}.py`
+            `-u`, `${__dirname}/__main__.py`, subject
         ], {
             detached: true,
             stdio: [`ignore`, `pipe`, `pipe`]
