@@ -45,7 +45,7 @@ def write_label(thumbnail):
     return index, 1.0
 
 
-def get_face(gray, frame, (f_x, f_y, width, height)):
+def get_face(bgr, gray, (f_x, f_y, width, height)):
     """Returns Face Detection"""
     face_gray = gray[f_y:f_y + height, f_x:f_x + width]
     features = CLASSIFIER_EYE.detectMultiScale(
@@ -71,7 +71,7 @@ def get_face(gray, frame, (f_x, f_y, width, height)):
         label = None
         confidence = 0
     image = resize(
-        frame[f_y:f_y + height, f_x:f_x + width], THUMBNAIL_SIZE)
+        bgr[f_y:f_y + height, f_x:f_x + width], THUMBNAIL_SIZE)
     _, image = imencode(".jpg", image, (IMWRITE_JPEG_OPTIMIZE, True,
                                         IMWRITE_JPEG_QUALITY, 70))
     return {
@@ -86,9 +86,9 @@ def get_face(gray, frame, (f_x, f_y, width, height)):
     }
 
 
-def detect(frame):
+def detect(bgr):
     """Face Detection"""
-    gray = cvtColor(frame, COLOR_BGR2GRAY)
+    gray = cvtColor(bgr, COLOR_BGR2GRAY)
     detections = CLASSIFIER_FACE.detectMultiScale(
         gray,
         scaleFactor=1.3,
@@ -96,4 +96,4 @@ def detect(frame):
         flags=CASCADE_SCALE_IMAGE,
         minSize=(64, 64)
     )
-    return [get_face(gray, frame, d) for d in detections]
+    return [get_face(bgr, gray, d) for d in detections]

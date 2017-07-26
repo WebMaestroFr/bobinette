@@ -5,8 +5,9 @@ from datetime import datetime
 from json import dumps
 from sys import argv, stdout
 
-from cv2 import (IMWRITE_JPEG_OPTIMIZE, IMWRITE_JPEG_QUALITY,  # createCLAHE,
-                 imencode)
+from cv2 import (COLOR_BGR2LAB, COLOR_LAB2BGR, IMWRITE_JPEG_OPTIMIZE,
+                 IMWRITE_JPEG_QUALITY, createCLAHE, cvtColor, imencode, merge,
+                 split)
 from picamera import PiCamera, array
 
 RESOLUTION = (480, 368)
@@ -20,7 +21,16 @@ CAPTURE = array.PiRGBArray(CAMERA, size=RESOLUTION)
 
 EPOCH = datetime.utcfromtimestamp(0)
 
-# CLAHE = createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+CLAHE = createCLAHE(clipLimit=8.0, tileGridSize=(16, 16))
+
+
+def correct_bgr(bgr):
+    """Apply Contrast Limited Adaptive Histogram Equalization"""
+    lab = cvtColor(bgr, COLOR_BGR2LAB)
+    lightness, green_red, blue_yellow = split(lab)
+    correct = CLAHE.apply(lightness)
+    image = merge((correct, green_red, blue_yellow))
+    return cvtColor(image, COLOR_LAB2BGR)
 
 
 def main(name):
@@ -29,14 +39,13 @@ def main(name):
     try:
         for frame in CAMERA.capture_continuous(CAPTURE, format="bgr", use_video_port=True):
             date = datetime.utcnow()
-            # source = CLAHE.apply(frame.array)
-            _, image = imencode(".jpg", frame.array,
-                                (IMWRITE_JPEG_OPTIMIZE, True,
-                                 IMWRITE_JPEG_QUALITY, JPEG_QUALITY))
+            bgr = correct_bgr(frame.array)
+            _, jpeg = imencode(".jpg", bgr, (IMWRITE_JPEG_OPTIMIZE, True,
+                                             IMWRITE_JPEG_QUALITY, JPEG_QUALITY))
             result = {
                 "date": int((date - EPOCH).total_seconds() * 1000.0),
-                "detections": subject.detect(frame.array),
-                "image": b64encode(image)
+                "detections": subject.detect(bgr),
+                "image": b64encode(jpeg)
             }
             output = dumps(result)
 
