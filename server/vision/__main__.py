@@ -30,7 +30,10 @@ def correct_bgr(bgr):
     lightness, green_red, blue_yellow = split(lab)
     correct = CLAHE.apply(lightness)
     image = merge((correct, green_red, blue_yellow))
-    return cvtColor(image, COLOR_LAB2BGR)
+    bgr = cvtColor(image, COLOR_LAB2BGR)
+    _, jpeg = imencode(".jpg", bgr, (IMWRITE_JPEG_OPTIMIZE, True,
+                                     IMWRITE_JPEG_QUALITY, JPEG_QUALITY))
+    return bgr, b64encode(jpeg)
 
 
 def main(name):
@@ -39,13 +42,11 @@ def main(name):
     try:
         for frame in CAMERA.capture_continuous(CAPTURE, format="bgr", use_video_port=True):
             date = datetime.utcnow()
-            bgr = correct_bgr(frame.array)
-            _, jpeg = imencode(".jpg", bgr, (IMWRITE_JPEG_OPTIMIZE, True,
-                                             IMWRITE_JPEG_QUALITY, JPEG_QUALITY))
+            bgr, b64_jpeg = correct_bgr(frame.array)
             result = {
                 "date": int((date - EPOCH).total_seconds() * 1000.0),
                 "detections": subject.detect(bgr),
-                "image": b64encode(jpeg)
+                "image": b64_jpeg
             }
             output = dumps(result)
 

@@ -20,7 +20,7 @@ sudo apt-get autoremove -y
 sudo apt-get clean -y
 
 printf "\n${GREEN}Installing Camera Library ...${BLANK}\n"
-sudo pip install "picamera[array]"
+sudo pip install -r server/vision/requirements.txt
 
 printf "\n${GREEN}Initializing Submodules ...${BLANK}\n"
 git submodule init
