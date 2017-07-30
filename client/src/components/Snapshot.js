@@ -48,9 +48,7 @@ class Snapshot extends React.Component {
         this.drawDetections(detections);
     }
 
-    shouldComponentUpdate({date}) {
-        return date > this.props.date;
-    }
+    // shouldComponentUpdate({date}) { return date > this.props.date; }
 
     render() {
         const date = new Date(this.props.date);
@@ -74,18 +72,23 @@ class Snapshot extends React.Component {
     }
 }
 
+const detectionPropTypes = {
+    x: PropTypes.number.isRequired,
+    y: PropTypes.number.isRequired,
+    width: PropTypes.number.isRequired,
+    height: PropTypes.number.isRequired
+};
 Snapshot.propTypes = {
-    date: PropTypes.number,
-    detections: PropTypes.array,
+    date: PropTypes.number.isRequired,
+    detections: PropTypes
+        .arrayOf(PropTypes.shape(detectionPropTypes).isRequired)
+        .isRequired,
     image: PropTypes.string,
     width: PropTypes.number,
     height: PropTypes.number
 };
 
 Snapshot.defaultProps = {
-    date: null,
-    detections: [],
-    image: null,
     width: 640,
     height: 480
 };

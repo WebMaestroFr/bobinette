@@ -21,7 +21,7 @@ CAPTURE = array.PiRGBArray(CAMERA, size=RESOLUTION)
 
 EPOCH = datetime.utcfromtimestamp(0)
 
-CLAHE = createCLAHE(clipLimit=8.0, tileGridSize=(16, 16))
+CLAHE = createCLAHE(clipLimit=4.0, tileGridSize=(16, 16))
 
 
 def correct_bgr(bgr):

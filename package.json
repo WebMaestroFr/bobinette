@@ -18,17 +18,5 @@
         "url": "https://github.com/WebMaestroFr/bobinette/issues"
     },
     "homepage": "https://github.com/WebMaestroFr/bobinette#readme",
-    "eslintConfig": {
-        "env": {
-            "browser": true,
-            "es6": true
-        },
-        "parserOptions": {
-            "sourceType": "module",
-            "ecmaFeatures": {
-                "jsx": true,
-                "experimentalObjectRestSpread": true
-            }
-        }
-    }
+    "dependencies": {}
 }

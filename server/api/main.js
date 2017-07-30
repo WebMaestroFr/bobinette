@@ -27,24 +27,30 @@ class API {
             .close();
     }
 
-    broadcast(message, encoding = `json`) {
+    sendAction(client, type, data) {
         return new Promise((resolve, reject) => {
-            switch (encoding) {
-                case null:
-                    break;
-                case `json`:
-                    message = JSON.stringify(message);
-                    break;
-                default:
-                    message = message.toString(encoding);
+            const message = JSON.stringify({type, data});
+            try {
+                if (client.readyState === ws.OPEN) {
+                    client.send(message);
+                }
+                return resolve(data);
+            } catch (err) {
+                return reject(err);
             }
+        });
+    }
+
+    broadcastAction(type, data) {
+        return new Promise((resolve, reject) => {
+            const message = JSON.stringify({type, data});
             try {
                 for (let client of this.socket.clients) {
                     if (client.readyState === ws.OPEN) {
                         client.send(message);
                     }
                 }
-                return resolve(message);
+                return resolve(data);
             } catch (err) {
                 return reject(err);
             }
