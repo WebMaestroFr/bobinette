@@ -1,4 +1,17 @@
-.LabelList {
-    list-style: none;
-    padding-left: 0;
+.LabelList-enter {
+    opacity: 0.01;
+}
+
+.LabelList-enter.LabelList-enter-active {
+    opacity: 1;
+    transition: opacity 400ms ease-in;
+}
+
+.LabelList-leave {
+    opacity: 1;
+}
+
+.LabelList-leave.LabelList-leave-active {
+    opacity: 0.01;
+    transition: opacity 400ms ease-in;
 }
