@@ -87,7 +87,7 @@ bash ./install.sh
 ```
 sudo nano /etc/rc.local
 ```
-Write command at the end of the file, save and exit (`ctrl+X`).
+Write commands before `exit 0`, save and exit (`ctrl+X`).
 ```
 iptables -t nat -I PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8000
 npm start --prefix /home/pi/bobinette/server
