@@ -4,15 +4,18 @@ from base64 import b64encode
 from math import atan2, degrees, sqrt
 from os import path
 
-from cv2 import (CASCADE_SCALE_IMAGE, IMWRITE_JPEG_OPTIMIZE,
+from cv2 import (BORDER_CONSTANT, CASCADE_SCALE_IMAGE, IMWRITE_JPEG_OPTIMIZE,
                  IMWRITE_JPEG_QUALITY, CascadeClassifier, face,
                  getRotationMatrix2D, imencode, resize, warpAffine)
 from numpy import array
 
-THRESHOLD_CREATE = 0.6
+THRESHOLD_CREATE = 0.65
 THRESHOLD_PASS = 0.7
 THRESHOLD_TRAIN = 0.8
 THUMBNAIL_SIZE = (64, 64)
+EYES_OFFSET = (0.25, 0.25)
+ANGLE_MAX = 30
+SCALE_MIN = 64 / 368
 
 CURRENT_PATH = path.dirname(__file__)
 DATA_PATH = path.realpath("%s/../../data" % (CURRENT_PATH))
@@ -51,9 +54,9 @@ def get_eye(eye_gray):
     eyes = CLASSIFIER_EYE.detectMultiScale(
         eye_gray,
         scaleFactor=1.1,
-        minNeighbors=4,
+        minNeighbors=2,
         flags=CASCADE_SCALE_IMAGE,
-        minSize=(16, 16)
+        minSize=(THUMBNAIL_SIZE[0] / 4, THUMBNAIL_SIZE[1] / 4)
     )
     if len(eyes) == 1:
         return (eyes[0][0] + eyes[0][2] / 2, eyes[0][1] + eyes[0][3] / 2)
@@ -66,7 +69,7 @@ def get_eyes(face_gray, width, height):
     eye_h = int(3 * height / 5.0)
     left = get_eye(face_gray[0:eye_h, 0:eye_w])
     right = get_eye(face_gray[0:eye_h, width - eye_w:width])
-    return left, None if right is None else (right[0] + width - eye_w, right[1])
+    return left, (right[0] + width - eye_w, right[1]) if right else None
 
 
 def get_distance((o_x, o_y), (d_x, d_y)):
@@ -79,7 +82,7 @@ def get_face_rotation(image, (o_x, o_y), (d_x, d_y), reference):
     angle = degrees(atan2(d_y - o_y, d_x - o_x))
     scale = reference / get_distance((o_x, o_y), (d_x, d_y))
     matrix = getRotationMatrix2D((o_x, o_y), angle, scale)
-    return warpAffine(image, matrix, image.shape), angle, scale
+    return warpAffine(image, matrix, image.shape, borderMode=BORDER_CONSTANT, borderValue=(127, 127, 127)), angle, scale
 
 
 def get_face_transformation(image, (left_x, left_y), right, (offset_x, offset_y), (width, height)):
@@ -104,8 +107,8 @@ def get_face(gray, (f_x, f_y, width, height)):
     scale = 1.0
     if left and right:
         thumbnail, angle, scale = get_face_transformation(
-            face_gray, left, right, (0.25, 0.25), THUMBNAIL_SIZE)
-        if abs(angle) < 30 and scale > 0.2 and scale < 1.2:
+            face_gray, left, right, EYES_OFFSET, THUMBNAIL_SIZE)
+        if left != right and abs(angle) < ANGLE_MAX and scale <= 1 and scale >= SCALE_MIN:
             if get_index() == 0:
                 label, confidence = write_label(thumbnail)
             else:
@@ -141,8 +144,8 @@ def detect(gray):
     detections = CLASSIFIER_FACE.detectMultiScale(
         gray,
         scaleFactor=1.3,
-        minNeighbors=6,
+        minNeighbors=5,
         flags=CASCADE_SCALE_IMAGE,
-        minSize=(64, 64)
+        minSize=THUMBNAIL_SIZE
     )
     return [get_face(gray, d) for d in detections]

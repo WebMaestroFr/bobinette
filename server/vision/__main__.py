@@ -20,7 +20,7 @@ CAPTURE = array.PiRGBArray(CAMERA, size=RESOLUTION)
 
 EPOCH = datetime.utcfromtimestamp(0)
 
-CLAHE = createCLAHE(clipLimit=8.0, tileGridSize=(16, 16))
+CLAHE = createCLAHE(clipLimit=6.0, tileGridSize=(12, 12))
 
 
 def equalize_gray(bgr):
