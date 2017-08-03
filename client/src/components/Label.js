@@ -17,6 +17,11 @@ class Label extends React.Component {
         const onNameChange = ({target}) => this
             .props
             .onNameChange({id: this.props.id, name: target.value});
+        const onNameFocus = this.props.onNameFocus
+            ? () => this
+                .props
+                .onNameFocus(this.props.id)
+            : null;
         return <Media className="Label">
             <Media.Left>
                 <Canvas
@@ -39,20 +44,23 @@ class Label extends React.Component {
                             type="text"
                             value={this.props.name}
                             placeholder={`Label #${this.props.id}`}
-                            onChange={onNameChange}/>
+                            onChange={onNameChange}
+                            onFocus={onNameFocus}
+                            onBlur={this.props.onNameBlur}/>
                     </FormGroup>
                 </Form>
             </Media.Body>
         </Media>;
     }
 }
-
 Label.propTypes = {
     id: PropTypes.number.isRequired,
     date: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
     image: PropTypes.string.isRequired,
-    onNameChange: PropTypes.func.isRequired
+    onNameChange: PropTypes.func.isRequired,
+    onNameBlur: PropTypes.func,
+    onNameFocus: PropTypes.func
 };
 
 export default Label;

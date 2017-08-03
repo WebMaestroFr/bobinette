@@ -37,6 +37,12 @@ class Snapshot extends React.Component {
         context.clearRect(0, 0, canvas.width, canvas.height);
         for (let detection of detections) {
             context.strokeRoundRect(detection.x, detection.y, detection.width, detection.height);
+            // Specific to Faces
+            for (let eye of Object.values(detection.eyes).filter(Boolean)) {
+                context.beginPath();
+                context.arc(detection.x + eye.x, detection.y + eye.y, 4, 0, Math.PI * 2, true);
+                context.stroke();
+            }
         }
     }
 

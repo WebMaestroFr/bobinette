@@ -27,3 +27,9 @@ export const SET_SNAPSHOT = 'SET_SNAPSHOT';
 export function setSnapshot(data) {
     return {type: SET_SNAPSHOT, data};
 }
+
+export const SET_ACTIVE_ITEM = 'SET_ACTIVE_ITEM';
+
+export function setActiveItem(value) {
+    return {type: SET_ACTIVE_ITEM, value};
+}

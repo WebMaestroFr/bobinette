@@ -9,7 +9,13 @@ class LabelList extends React.Component {
 
     render() {
         const renderItem = (item) => {
-            return <Label key={item.id} className="LabelList-item" {...item} onNameChange={this.props.onNameChange}/>;
+            return <Label
+                key={item.id}
+                className="LabelList-item"
+                {...item}
+                onNameChange={this.props.onNameChange}
+                onNameBlur={this.props.onNameBlur}
+                onNameFocus={this.props.onNameFocus}/>;
         }
         return <div className="LabelList">{this
                 .props
@@ -28,7 +34,9 @@ LabelList.propTypes = {
     items: PropTypes
         .arrayOf(PropTypes.shape(itemPropTypes).isRequired)
         .isRequired,
-    onNameChange: PropTypes.func.isRequired
+    onNameChange: PropTypes.func.isRequired,
+    onNameBlur: PropTypes.func,
+    onNameFocus: PropTypes.func
 };
 
 export default LabelList;

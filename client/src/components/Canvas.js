@@ -4,23 +4,15 @@ import PropTypes from 'prop-types';
 import './Canvas.css';
 
 class Canvas extends React.Component {
-    constructor(props) {
-        super(props);
-        this.image = new Image();
-        this.image.onload = this
-            .handleImageLoad
-            .bind(this);
-        this.drawImage = this
-            .drawImage
-            .bind(this);
-    }
 
     handleImageLoad() {
-        this
-            .refs
-            .canvas
-            .getContext(`2d`)
-            .drawImage(this.image, 0, 0, this.props.width, this.props.height);
+        if (this.refs.canvas) {
+            this
+                .refs
+                .canvas
+                .getContext(`2d`)
+                .drawImage(this.image, 0, 0, this.props.width, this.props.height);
+        }
     }
 
     drawImage(base64, type) {
@@ -35,6 +27,13 @@ class Canvas extends React.Component {
     }
 
     componentDidMount() {
+        this.image = new Image();
+        this.image.onload = this
+            .handleImageLoad
+            .bind(this);
+        this.drawImage = this
+            .drawImage
+            .bind(this);
         this.drawImage(this.props.base64, this.props.type);
     }
 

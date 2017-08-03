@@ -26,18 +26,7 @@ Database
             .then(debug.warning)
             .catch(debug.error);
 
-        const detectionDefinition = [
-            `date INTEGER`,
-            `x INTEGER`,
-            `y INTEGER`,
-            `width INTEGER`,
-            `height INTEGER`,
-            `label INTEGER`,
-            `confidence REAL`,
-            `image TEXT`,
-            `features TEXT`,
-            `FOREIGN KEY(label) REFERENCES label(id)`
-        ];
+        const detectionDefinition = [`date INTEGER`, `label INTEGER`, `confidence REAL`, `image TEXT`, `FOREIGN KEY(label) REFERENCES label(id)`];
         database
             .createTable(`detection`, detectionDefinition)
             .then(debug.warning)
@@ -64,23 +53,23 @@ Database
             });
 
         const vision = Vision.detect(`faces`, ({date, detections, image}) => {
-            debug.success(`Snapshot ${date}`);
+            debug.success(`Snapshot ${date} (\x1b[1m${detections.length}\x1b[0m faces)`);
 
             api
                 .broadcastAction(`SET_SNAPSHOT`, {date, detections, image})
                 .catch(debug.error);
 
-            const insertDetection = (detection) => database
-                .insert(`detection`, Object.assign(detection, {date}))
+            const insertDetection = ({label, confidence, image}) => database
+                .insert(`detection`, {label, confidence, image, date})
                 .then((d) => {
                     api.broadcastAction(`ADD_DETECTIONS`, [d]);
                 })
                 .catch(debug.error);
 
             for (const detection of detections) {
-                debug.warning(`Label \x1b[1m${detection.label}\x1b[0m => ${detection.confidence * 100}% (${detection.features.length}/2)`);
 
                 if (detection.confidence === 1.0) {
+                    debug.warning(`Label \x1b[1m${detection.label}\x1b[0m => NEW`);
                     database
                         .insert(`label`, {
                         id: detection.label,
@@ -93,7 +82,8 @@ Database
                                 .catch(debug.error);
                         })
                         .catch(debug.error);
-                } else if (detection.features.length === 2) {
+                } else if (detection.confidence > 0) {
+                    debug.warning(`Label \x1b[1m${detection.label}\x1b[0m => ${detection.confidence * 100}%`);
                     insertDetection(detection);
                 }
             }

@@ -1,5 +1,5 @@
 import {connect} from 'react-redux';
-import {updateLabelName} from '../actions';
+import {updateLabelName, setActiveItem} from '../actions';
 import {serverAction} from '../socket';
 import LabelList from '../components/LabelList';
 
@@ -20,11 +20,16 @@ const mapStateToProps = state => {
         const {date, image} = labelDetections.reduce(toLatest);
         return {id, date, name, image};
     };
+    const byName = (element, index, array) => {
+        return element && (!element.name || state.activeItem === element.id || array.every((e, i, a) => {
+            return !e || index === i || element.name !== e.name || element.date > e.date;
+        }));
+    };
     return {
         items: state
             .labels
             .map(toItem)
-            .filter(Boolean)
+            .filter(byName)
             .sort(byDate)
     };
 };
@@ -36,6 +41,14 @@ const mapDispatchToProps = dispatch => {
             const serverUpdate = serverAction(`update`, `label`, label);
             dispatch(action);
             dispatch(serverUpdate);
+        },
+        onNameFocus: (id) => {
+            const action = setActiveItem(id);
+            dispatch(action);
+        },
+        onNameBlur: () => {
+            const action = setActiveItem(null);
+            dispatch(action);
         }
     };
 };

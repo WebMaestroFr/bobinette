@@ -10,7 +10,7 @@ class App extends React.Component {
         return <Grid className="App">
             <Row>
                 <Col md={6}>
-                    <h1>Snapshots</h1>
+                    <h1>Detections</h1>
                     <DetectionLive width={480} height={368}/>
                 </Col>
                 <Col md={6}>

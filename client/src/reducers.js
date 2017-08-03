@@ -4,8 +4,9 @@ import {
     ADD_DETECTIONS,
     SET_LABELS,
     ADD_LABELS,
+    UPDATE_LABEL_NAME,
     SET_SNAPSHOT,
-    UPDATE_LABEL_NAME
+    SET_ACTIVE_ITEM
 } from './actions';
 
 function detections(state = [], action) {
@@ -52,6 +53,15 @@ function snapshot(state = {
     }
 }
 
-const appReducers = combineReducers({detections, labels, snapshot});
+function activeItem(state = null, action) {
+    switch (action.type) {
+        case SET_ACTIVE_ITEM:
+            return action.value;
+        default:
+            return state;
+    }
+}
+
+const appReducers = combineReducers({detections, labels, snapshot, activeItem});
 
 export default appReducers;
