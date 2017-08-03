@@ -26,18 +26,7 @@ Database
             .then(debug.warning)
             .catch(debug.error);
 
-        const detectionDefinition = [
-            `date INTEGER`,
-            `x INTEGER`,
-            `y INTEGER`,
-            `width INTEGER`,
-            `height INTEGER`,
-            `label INTEGER`,
-            `confidence REAL`,
-            `image TEXT`,
-            `features TEXT`,
-            `FOREIGN KEY(label) REFERENCES label(id)`
-        ];
+        const detectionDefinition = [`date INTEGER`, `label INTEGER`, `confidence REAL`, `image TEXT`, `FOREIGN KEY(label) REFERENCES label(id)`];
         database
             .createTable(`detection`, detectionDefinition)
             .then(debug.warning)
@@ -49,75 +38,61 @@ Database
                 debug.warning(`Socket Connection (${api.socket.clients.size})`);
                 database
                     .select(`label`)
-                    .then((labels) => {
-                        const message = JSON.stringify({type: `labels`, data: labels});
-                        client.send(message);
-                    })
+                    .then((labels) => api.sendAction(client, `SET_LABELS`, labels))
                     .catch(debug.error);
                 database
                     .select(`detection`)
-                    .then((detections) => {
-                        const message = JSON.stringify({type: `detections`, data: detections});
-                        client.send(message);
-                    })
+                    .then((detections) => api.sendAction(client, `SET_DETECTIONS`, detections))
                     .catch(debug.error);
 
                 client.on(`message`, (message) => {
-                    const {type, data} = JSON.parse(message);
-                    debug.warning(`Client Update \x1b[1m${type}\x1b[0m`);
-                    return database
-                        .update(type, data)
-                        .catch(debug.error);
+                    const {method, table, data} = JSON.parse(message);
+                    debug.warning(`Client Action => \x1b[1m${method} ${table}\x1b[0m`);
+                    return database[method](table, data).catch(debug.error);
                 });
             });
 
-        const detection = Vision.detect(`faces`, ({date, detections, image}) => {
-            debug.success(`Snapshot ${date}`);
+        const vision = Vision.detect(`faces`, ({date, detections, image}) => {
+            debug.success(`Snapshot ${date} (\x1b[1m${detections.length}\x1b[0m faces)`);
 
-            const insertDetection = (detection) => {
-                Object.assign(detection, {date});
-                return database
-                    .insert(`detection`, detection)
-                    .catch(debug.error);
-            };
+            api
+                .broadcastAction(`SET_SNAPSHOT`, {date, detections, image})
+                .catch(debug.error);
+
+            const insertDetection = ({label, confidence, image}) => database
+                .insert(`detection`, {label, confidence, image, date})
+                .then((d) => {
+                    api.broadcastAction(`ADD_DETECTIONS`, [d]);
+                })
+                .catch(debug.error);
 
             for (const detection of detections) {
-                debug.warning(`\x1b[1m${detection.label}\x1b[0m => ${detection.confidence * 100}% (${detection.features.length}/2)`);
 
                 if (detection.confidence === 1.0) {
+                    debug.warning(`Label \x1b[1m${detection.label}\x1b[0m => NEW`);
                     database
                         .insert(`label`, {
                         id: detection.label,
                         name: ``
                     })
                         .then((label) => {
-                            api
-                                .broadcast({type: `labels`, data: [label]})
-                                .catch(debug.error);
                             insertDetection(detection);
+                            api
+                                .broadcastAction(`ADD_LABELS`, [label])
+                                .catch(debug.error);
                         })
                         .catch(debug.error);
-                } else if (detection.features.length === 2) {
+                } else if (detection.confidence > 0) {
+                    debug.warning(`Label \x1b[1m${detection.label}\x1b[0m => ${detection.confidence * 100}%`);
                     insertDetection(detection);
                 }
             }
-
-            api
-                .broadcast({
-                type: `snapshot`,
-                data: {
-                    date,
-                    detections,
-                    image
-                }
-            })
-                .catch(debug.error);
         });
 
         const terminate = () => {
             api.close();
             database.close();
-            detection.kill(`SIGTERM`);
+            vision.kill(`SIGTERM`);
             debug.error(`Exit Process`);
         };
         process.on(`SIGTERM`, terminate);

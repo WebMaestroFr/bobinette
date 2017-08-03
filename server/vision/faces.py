@@ -1,16 +1,17 @@
 """Object Detection"""
 
 from base64 import b64encode
+from math import atan2, degrees, sqrt
 from os import path
 
-from cv2 import (CASCADE_SCALE_IMAGE, COLOR_BGR2GRAY, IMWRITE_JPEG_OPTIMIZE,
-                 IMWRITE_JPEG_QUALITY, CascadeClassifier, cvtColor, face,
-                 imencode, resize)
+from cv2 import (CASCADE_SCALE_IMAGE, IMWRITE_JPEG_OPTIMIZE,
+                 IMWRITE_JPEG_QUALITY, CascadeClassifier, face,
+                 getRotationMatrix2D, imencode, resize, warpAffine)
 from numpy import array
 
-THRESHOLD_TRAIN = 0.75
-THRESHOLD_PASS = 0.67
-THRESHOLD_CREATE = 0.625
+THRESHOLD_CREATE = 0.6
+THRESHOLD_PASS = 0.7
+THRESHOLD_TRAIN = 0.8
 THUMBNAIL_SIZE = (64, 64)
 
 CURRENT_PATH = path.dirname(__file__)
@@ -45,35 +46,79 @@ def write_label(thumbnail):
     return index, 1.0
 
 
-def get_face(gray, frame, (f_x, f_y, width, height)):
-    """Returns Face Detection"""
-    face_gray = gray[f_y:f_y + height, f_x:f_x + width]
-    features = CLASSIFIER_EYE.detectMultiScale(
-        face_gray,
+def get_eye(eye_gray):
+    """Eye Detection"""
+    eyes = CLASSIFIER_EYE.detectMultiScale(
+        eye_gray,
         scaleFactor=1.1,
         minNeighbors=4,
         flags=CASCADE_SCALE_IMAGE,
         minSize=(16, 16)
     )
-    thumbnail = resize(face_gray, THUMBNAIL_SIZE)
-    if len(features) == 2:
-        if get_index() > 0:
-            label, distance = RECOGNIZER.predict(thumbnail)
-            confidence = round(1.0 - distance / 255.0, 2)
-            if confidence <= THRESHOLD_CREATE:
+    if len(eyes) == 1:
+        return (eyes[0][0] + eyes[0][2] / 2, eyes[0][1] + eyes[0][3] / 2)
+    return None
+
+
+def get_eyes(face_gray, width, height):
+    """Eyes Detection"""
+    eye_w = int(3 * width / 5.0)
+    eye_h = int(3 * height / 5.0)
+    left = get_eye(face_gray[0:eye_h, 0:eye_w])
+    right = get_eye(face_gray[0:eye_h, width - eye_w:width])
+    return left, None if right is None else (right[0] + width - eye_w, right[1])
+
+
+def get_distance((o_x, o_y), (d_x, d_y)):
+    """Distance Between Two Points"""
+    return sqrt((d_x - o_x)**2.0 + (d_y - o_y)**2.0)
+
+
+def get_face_rotation(image, (o_x, o_y), (d_x, d_y), reference):
+    """Scale, Rotate and Translate Image"""
+    angle = degrees(atan2(d_y - o_y, d_x - o_x))
+    scale = reference / get_distance((o_x, o_y), (d_x, d_y))
+    matrix = getRotationMatrix2D((o_x, o_y), angle, scale)
+    return warpAffine(image, matrix, image.shape), angle, scale
+
+
+def get_face_transformation(image, (left_x, left_y), right, (offset_x, offset_y), (width, height)):
+    """Scale, Rotate and Translate Image"""
+    padding_x = float(offset_x * width)
+    padding_y = float(offset_y * height)
+    image, angle, scale = get_face_rotation(
+        image, (left_x, left_y), right, width - 2.0 * padding_x)
+    crop_x = int(left_x - padding_x)
+    crop_y = int(left_y - padding_y)
+    return image[crop_y:crop_y + height, crop_x:crop_x + width], angle, scale
+
+
+def get_face(gray, (f_x, f_y, width, height)):
+    """Face Detection"""
+    face_gray = gray[f_y:f_y + height, f_x:f_x + width]
+    left, right = get_eyes(face_gray, width, height)
+    label = None
+    confidence = 0
+    image = None
+    angle = 0
+    scale = 1.0
+    if left and right:
+        thumbnail, angle, scale = get_face_transformation(
+            face_gray, left, right, (0.25, 0.25), THUMBNAIL_SIZE)
+        if abs(angle) < 30 and scale > 0.2 and scale < 1.2:
+            if get_index() == 0:
                 label, confidence = write_label(thumbnail)
-            elif confidence >= THRESHOLD_PASS and confidence <= THRESHOLD_TRAIN:
-                RECOGNIZER.update([thumbnail], array([label]))
-                RECOGNIZER.write(MODEL)
-        else:
-            label, confidence = write_label(thumbnail)
-    else:
-        label = None
-        confidence = 0
-    image = resize(
-        frame[f_y:f_y + height, f_x:f_x + width], THUMBNAIL_SIZE)
-    _, image = imencode(".jpg", image, (IMWRITE_JPEG_OPTIMIZE, True,
-                                        IMWRITE_JPEG_QUALITY, 70))
+            else:
+                label, distance = RECOGNIZER.predict(thumbnail)
+                confidence = round(1.0 - distance / 255.0, 2)
+                if confidence <= THRESHOLD_CREATE:
+                    label, confidence = write_label(thumbnail)
+                elif confidence >= THRESHOLD_PASS and confidence <= THRESHOLD_TRAIN:
+                    RECOGNIZER.update([thumbnail], array([label]))
+                    RECOGNIZER.write(MODEL)
+            _, image = imencode(
+                ".jpg", thumbnail, (IMWRITE_JPEG_OPTIMIZE, True, IMWRITE_JPEG_QUALITY, 70))
+            image = b64encode(image)
     return {
         "x": int(f_x),
         "y": int(f_y),
@@ -81,14 +126,18 @@ def get_face(gray, frame, (f_x, f_y, width, height)):
         "height": int(height),
         "label": label,
         "confidence": confidence,
-        "image": b64encode(image),
-        "features": [f.tolist() for f in features]
+        "image": image,
+        "angle": angle,
+        "scale": scale,
+        "eyes": {
+            "left": {"x": left[0], "y": left[1]} if left else None,
+            "right": {"x": right[0], "y": right[1]} if right else None
+        }
     }
 
 
-def detect(frame):
+def detect(gray):
     """Face Detection"""
-    gray = cvtColor(frame, COLOR_BGR2GRAY)
     detections = CLASSIFIER_FACE.detectMultiScale(
         gray,
         scaleFactor=1.3,
@@ -96,4 +145,4 @@ def detect(frame):
         flags=CASCADE_SCALE_IMAGE,
         minSize=(64, 64)
     )
-    return [get_face(gray, frame, d) for d in detections]
+    return [get_face(gray, d) for d in detections]

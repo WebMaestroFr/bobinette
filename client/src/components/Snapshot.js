@@ -37,6 +37,12 @@ class Snapshot extends React.Component {
         context.clearRect(0, 0, canvas.width, canvas.height);
         for (let detection of detections) {
             context.strokeRoundRect(detection.x, detection.y, detection.width, detection.height);
+            // Specific to Faces
+            for (let eye of Object.values(detection.eyes).filter(Boolean)) {
+                context.beginPath();
+                context.arc(detection.x + eye.x, detection.y + eye.y, 4, 0, Math.PI * 2, true);
+                context.stroke();
+            }
         }
     }
 
@@ -48,9 +54,7 @@ class Snapshot extends React.Component {
         this.drawDetections(detections);
     }
 
-    shouldComponentUpdate({date}) {
-        return date > this.props.date;
-    }
+    // shouldComponentUpdate({date}) { return date > this.props.date; }
 
     render() {
         const date = new Date(this.props.date);
@@ -74,18 +78,23 @@ class Snapshot extends React.Component {
     }
 }
 
+const detectionPropTypes = {
+    x: PropTypes.number.isRequired,
+    y: PropTypes.number.isRequired,
+    width: PropTypes.number.isRequired,
+    height: PropTypes.number.isRequired
+};
 Snapshot.propTypes = {
-    date: PropTypes.number,
-    detections: PropTypes.array,
+    date: PropTypes.number.isRequired,
+    detections: PropTypes
+        .arrayOf(PropTypes.shape(detectionPropTypes).isRequired)
+        .isRequired,
     image: PropTypes.string,
     width: PropTypes.number,
     height: PropTypes.number
 };
 
 Snapshot.defaultProps = {
-    date: null,
-    detections: [],
-    image: null,
     width: 640,
     height: 480
 };

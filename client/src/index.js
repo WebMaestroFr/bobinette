@@ -1,12 +1,22 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './App';
-import registerServiceWorker from './registerServiceWorker';
+import {Provider} from 'react-redux';
+import {createStore, applyMiddleware} from 'redux';
+// import logger from 'redux-logger';
+
+import appReducers from './reducers'
+import socket, {SOCKET_OPEN} from './socket';
+
+import App from './components/App';
 
 import 'bootstrap/dist/css/bootstrap.css';
 import './index.css';
 
-ReactDOM.render(
-    <App port={8000}/>, document.getElementById("root"));
+let store = createStore(appReducers, applyMiddleware(socket));
+store.dispatch({type: SOCKET_OPEN, url: `ws://${document.location.hostname}:${ 8000}`, protocols: []});
 
-registerServiceWorker();
+const app = <Provider store={store}>
+    <App/>
+</Provider>;
+
+ReactDOM.render(app, document.getElementById("root"));
