@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import {CSSTransitionGroup} from 'react-transition-group'
 
 import './LabelList.css';
 
@@ -17,10 +18,15 @@ class LabelList extends React.Component {
                 onNameBlur={this.props.onNameBlur}
                 onNameFocus={this.props.onNameFocus}/>;
         }
-        return <div className="LabelList">{this
+        return <CSSTransitionGroup
+            transitionName="LabelList"
+            transitionEnterTimeout={400}
+            transitionLeaveTimeout={400}>
+            {this
                 .props
                 .items
-                .map(renderItem)}</div>;
+                .map(renderItem)}
+        </CSSTransitionGroup>;
     }
 }
 
