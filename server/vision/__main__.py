@@ -3,10 +3,10 @@
 from base64 import b64encode
 from datetime import datetime
 from json import dumps
-from sys import argv, stdout
+from sys import argv, stderr, stdout
 
 from cv2 import (COLOR_BGR2LAB, IMWRITE_JPEG_OPTIMIZE, IMWRITE_JPEG_QUALITY,
-                 createCLAHE, cvtColor, imencode, split)
+                 createCLAHE, cvtColor, error, imencode, split)
 from picamera import PiCamera, array
 
 RESOLUTION = (480, 368)
@@ -43,13 +43,18 @@ def main(name):
     try:
         for frame in CAMERA.capture_continuous(CAPTURE, format="bgr", use_video_port=True):
             date = datetime.utcnow()
-            gray = equalize_gray(frame.array)
-            result = {
-                "date": int((date - EPOCH).total_seconds() * 1000.0),
-                "detections": subject.detect(gray),
-                "image": b64_jpeg(frame.array)
-            }
-            output = dumps(result)
+            try:
+                gray = equalize_gray(frame.array)
+                result = {
+                    "date": int((date - EPOCH).total_seconds() * 1000.0),
+                    "detections": subject.detect(gray),
+                    "image": b64_jpeg(frame.array)
+                }
+                output = dumps(result)
+            except error as cv_error:
+                message = str(cv_error)
+                stderr.write(message)
+                stderr.flush()
 
             stdout.write(output)
             stdout.flush()

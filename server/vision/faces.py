@@ -15,7 +15,7 @@ THRESHOLD_TRAIN = 0.8
 THUMBNAIL_SIZE = (64, 64)
 EYES_OFFSET = (0.25, 0.25)
 ANGLE_MAX = 30
-SCALE_MIN = 64 / 368
+SCALE_MIN = 64.0 / 368.0
 
 CURRENT_PATH = path.dirname(__file__)
 DATA_PATH = path.realpath("%s/../../data" % (CURRENT_PATH))
