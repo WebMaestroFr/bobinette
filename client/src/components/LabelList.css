@@ -1,31 +1,27 @@
-.LabelList-enter {
+.LabelList-item-enter.LabelList-item-enter-active,
+.LabelList-item-exit {
+    max-height: 79px;
+    opacity: 1;
+}
+
+.LabelList-item-enter.LabelList-item-enter-active {
+    transition-delay: 0, 0, 200ms;
+}
+
+.LabelList-item-enter,
+.LabelList-item-exit.LabelList-item-exit-active {
     max-height: 0;
     margin-top: 0;
     overflow: hidden;
     opacity: 0.01;
 }
 
-.LabelList-enter.LabelList-enter-active {
-    max-height: 80px;
-    margin-top: 15px;
-    opacity: 1;
-    transition-property: max-height, margin-top, opacity;
-    transition-duration: 400ms, 400ms, 600ms;
-    transition-delay: 0, 0, 0;
-}
-
-.LabelList-leave {
-    max-height: 80px;
-    margin-top: 15px;
-    opacity: 1;
-}
-
-.LabelList-leave.LabelList-leave-active {
-    max-height: 0;
-    margin-top: 0;
-    overflow: hidden;
-    opacity: 0.01;
-    transition-property: max-height, margin-top, opacity;
-    transition-duration: 400ms, 400ms, 600ms;
+.LabelList-item-exit.LabelList-item-exit-active {
     transition-delay: 200ms, 200ms, 0;
+}
+
+.LabelList-item-enter.LabelList-item-enter-active,
+.LabelList-item-exit.LabelList-item-exit-active {
+    transition-property: max-height, margin-top, opacity;
+    transition-duration: 400ms, 400ms, 400ms;
 }
