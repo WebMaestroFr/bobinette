@@ -20,8 +20,8 @@ class LabelList extends React.Component {
         }
         return <CSSTransitionGroup
             transitionName="LabelList"
-            transitionEnterTimeout={400}
-            transitionLeaveTimeout={400}>
+            transitionEnterTimeout={600}
+            transitionLeaveTimeout={600}>
             {this
                 .props
                 .items
