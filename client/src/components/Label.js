@@ -28,7 +28,7 @@ class Label extends React.Component {
                     ref="image"
                     className="Label-image"
                     base64={this.props.image}
-                    type="jpeg"
+                    type="png"
                     width={64}
                     height={64}/>
             </Media.Left>

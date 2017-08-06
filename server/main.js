@@ -51,9 +51,8 @@ Database
                     return database[method](table, data).catch(debug.error);
                 });
             });
-
         const vision = Vision.detect(`faces`, ({date, detections, image}) => {
-            debug.success(`Snapshot ${date} (\x1b[1m${detections.length}\x1b[0m faces)`);
+            debug.success(`Snapshot ${date} (\x1b[1m${detections.length}\x1b[0m faces)`, detections.length);
 
             api
                 .broadcastAction(`SET_SNAPSHOT`, {date, detections, image})

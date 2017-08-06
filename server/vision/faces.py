@@ -3,19 +3,35 @@
 from base64 import b64encode
 from math import atan2, degrees, sqrt
 from os import path
+from sys import stderr
 
-from cv2 import (BORDER_CONSTANT, CASCADE_SCALE_IMAGE, IMWRITE_JPEG_OPTIMIZE,
-                 IMWRITE_JPEG_QUALITY, CascadeClassifier, face,
-                 getRotationMatrix2D, imencode, resize, warpAffine)
+from cv2 import (BORDER_CONSTANT, CASCADE_SCALE_IMAGE, IMWRITE_PNG_COMPRESSION,
+                 CascadeClassifier, face, getRotationMatrix2D, imencode,
+                 warpAffine)
+# IMWRITE_JPEG_OPTIMIZE, IMWRITE_JPEG_QUALITY
 from numpy import array
 
 THRESHOLD_CREATE = 0.65
 THRESHOLD_PASS = 0.7
 THRESHOLD_TRAIN = 0.8
-THUMBNAIL_SIZE = (64, 64)
-EYES_OFFSET = (0.25, 0.25)
-ANGLE_MAX = 30
-SCALE_MIN = 64.0 / 368.0
+SUBJECT_SIZE = (64, 64)
+SUBJECT_OFFSET = (0.25, 0.25)
+# THUMBNAIL_OFFSET = (0.3, 0.4)
+
+PNG_COMPRESSION = 9
+# JPEG_QUALITY = 70
+BACKGROUND_COLOR = (127, 127, 127)
+
+SUBJECT_PADDING = (
+    SUBJECT_OFFSET[0] * SUBJECT_SIZE[0],
+    SUBJECT_OFFSET[1] * SUBJECT_SIZE[1]
+)
+SUBJECT_DISTANCE = SUBJECT_SIZE[0] - 2 * SUBJECT_PADDING[0]
+# THUMBNAIL_PADDING = (
+#     THUMBNAIL_OFFSET[0] * SUBJECT_SIZE[0],
+#     THUMBNAIL_OFFSET[1] * SUBJECT_SIZE[1]
+# )
+# THUMBNAIL_DISTANCE = THUMBNAIL_SIZE[0] - 2 * THUMBNAIL_PADDING[0]
 
 CURRENT_PATH = path.dirname(__file__)
 DATA_PATH = path.realpath("%s/../../data" % (CURRENT_PATH))
@@ -49,78 +65,113 @@ def write_label(thumbnail):
     return index, 1.0
 
 
-def get_eye(eye_gray):
-    """Eye Detection"""
-    eyes = CLASSIFIER_EYE.detectMultiScale(
-        eye_gray,
-        scaleFactor=1.1,
-        minNeighbors=2,
-        flags=CASCADE_SCALE_IMAGE,
-        minSize=(THUMBNAIL_SIZE[0] / 4, THUMBNAIL_SIZE[1] / 4)
-    )
-    if len(eyes) == 1:
-        return (eyes[0][0] + eyes[0][2] / 2, eyes[0][1] + eyes[0][3] / 2)
-    return None
-
-
-def get_eyes(face_gray, width, height):
-    """Eyes Detection"""
-    eye_w = int(3 * width / 5.0)
-    eye_h = int(3 * height / 5.0)
-    left = get_eye(face_gray[0:eye_h, 0:eye_w])
-    right = get_eye(face_gray[0:eye_h, width - eye_w:width])
-    return left, (right[0] + width - eye_w, right[1]) if right else None
-
-
 def get_distance((o_x, o_y), (d_x, d_y)):
     """Distance Between Two Points"""
     return sqrt((d_x - o_x)**2.0 + (d_y - o_y)**2.0)
 
 
-def get_face_rotation(image, (o_x, o_y), (d_x, d_y), reference):
-    """Scale, Rotate and Translate Image"""
-    angle = degrees(atan2(d_y - o_y, d_x - o_x))
-    scale = reference / get_distance((o_x, o_y), (d_x, d_y))
-    matrix = getRotationMatrix2D((o_x, o_y), angle, scale)
-    return warpAffine(image, matrix, image.shape, borderMode=BORDER_CONSTANT, borderValue=(127, 127, 127)), angle, scale
+def crop_image(image, (x, y, width, height)):
+    """Crop Image"""
+    return image[y:y + height, x:x + width]
 
 
-def get_face_transformation(image, (left_x, left_y), right, (offset_x, offset_y), (width, height)):
-    """Scale, Rotate and Translate Image"""
-    padding_x = float(offset_x * width)
-    padding_y = float(offset_y * height)
-    image, angle, scale = get_face_rotation(
-        image, (left_x, left_y), right, width - 2.0 * padding_x)
-    crop_x = int(left_x - padding_x)
-    crop_y = int(left_y - padding_y)
-    return image[crop_y:crop_y + height, crop_x:crop_x + width], angle, scale
+def detect_eye(eye_gray, offset=(0, 0)):
+    """Center Point of Eye Detection"""
+    eyes = CLASSIFIER_EYE.detectMultiScale(
+        eye_gray,
+        scaleFactor=1.1,
+        minNeighbors=3,
+        flags=CASCADE_SCALE_IMAGE,
+        minSize=(
+            int(eye_gray.shape[0] * 0.4),
+            int(eye_gray.shape[1] * 0.4)
+        ),
+        maxSize=(
+            int(eye_gray.shape[0] * 0.8),
+            int(eye_gray.shape[1] * 0.8)
+        )
+    )
+    if len(eyes) == 1:
+        return (
+            eyes[0][0] + eyes[0][2] / 2 + offset[0],
+            eyes[0][1] + eyes[0][3] / 2 + offset[1]
+        )
+    if len(eyes) > 1:
+        stderr.write("Found too many eyes !")
+        stderr.flush()
+    return None
+
+
+def get_eyes(face_gray, offset=(0, 0)):
+    """Eyes Detection"""
+    search_left_x = 0.05 * face_gray.shape[0]
+    search_right_x = 0.45 * face_gray.shape[0]
+    search_y = 0.15 * face_gray.shape[1]
+    search_width = 0.5 * face_gray.shape[0]
+    search_height = 0.5 * face_gray.shape[1]
+    left_gray = crop_image(
+        face_gray, (search_left_x, search_y, search_width, search_height))
+    right_gray = crop_image(
+        face_gray, (search_right_x, search_y, search_width, search_height))
+    left = detect_eye(
+        left_gray, (offset[0] + search_left_x, offset[1] + search_y))
+    right = detect_eye(
+        right_gray, (offset[0] + search_right_x, offset[1] + search_y))
+    return left, right
+
+
+def get_face_transformation(left, right, distance=SUBJECT_DISTANCE):
+    """Scale, Rotate and Translate"""
+    angle = degrees(atan2(right[1] - left[1], right[0] - left[0]))
+    scale = distance / get_distance(left, right)
+    return angle, scale
+
+
+def get_face_thumbnail(gray, left, angle, scale, padding=SUBJECT_PADDING):
+    matrix = getRotationMatrix2D(left, angle, scale)
+    image = warpAffine(gray, matrix, gray.shape,
+                       borderMode=BORDER_CONSTANT,
+                       borderValue=BACKGROUND_COLOR)
+    return crop_image(image, (
+        int(left[0] - padding[0]),
+        int(left[1] - padding[1]),
+        SUBJECT_SIZE[0],
+        SUBJECT_SIZE[1]
+    ))
 
 
 def get_face(gray, (f_x, f_y, width, height)):
     """Face Detection"""
     face_gray = gray[f_y:f_y + height, f_x:f_x + width]
-    left, right = get_eyes(face_gray, width, height)
+    left, right = get_eyes(face_gray, (f_x, f_y))
     label = None
     confidence = 0
     image = None
     angle = 0
     scale = 1.0
     if left and right:
-        thumbnail, angle, scale = get_face_transformation(
-            face_gray, left, right, EYES_OFFSET, THUMBNAIL_SIZE)
-        if left != right and abs(angle) < ANGLE_MAX and scale <= 1 and scale >= SCALE_MIN:
+        angle, scale = get_face_transformation(left, right)
+        subject = get_face_thumbnail(gray, left, angle, scale)
+        if left != right:
             if get_index() == 0:
-                label, confidence = write_label(thumbnail)
+                label, confidence = write_label(subject)
             else:
-                label, distance = RECOGNIZER.predict(thumbnail)
+                label, distance = RECOGNIZER.predict(subject)
                 confidence = round(1.0 - distance / 255.0, 2)
                 if confidence <= THRESHOLD_CREATE:
-                    label, confidence = write_label(thumbnail)
+                    label, confidence = write_label(subject)
                 elif confidence >= THRESHOLD_PASS and confidence <= THRESHOLD_TRAIN:
-                    RECOGNIZER.update([thumbnail], array([label]))
+                    RECOGNIZER.update([subject], array([label]))
                     RECOGNIZER.write(MODEL)
-            _, image = imencode(
-                ".jpg", thumbnail, (IMWRITE_JPEG_OPTIMIZE, True, IMWRITE_JPEG_QUALITY, 70))
+            # t_angle, t_scale = get_face_transformation(left, right, THUMBNAIL_DISTANCE)
+            # thumbnail = get_face_thumbnail(gray, left, t_angle, t_scale, THUMBNAIL_PADDING)
+            # _, image = imencode(".jpg", thumbnail, (
+            #     IMWRITE_JPEG_OPTIMIZE, True,
+            #     IMWRITE_JPEG_QUALITY, JPEG_QUALITY
+            # ))
+            _, image = imencode(".png", subject, (
+                IMWRITE_PNG_COMPRESSION, PNG_COMPRESSION
+            ))
             image = b64encode(image)
     return {
         "x": int(f_x),
@@ -146,6 +197,6 @@ def detect(gray):
         scaleFactor=1.3,
         minNeighbors=5,
         flags=CASCADE_SCALE_IMAGE,
-        minSize=THUMBNAIL_SIZE
+        minSize=SUBJECT_SIZE
     )
     return [get_face(gray, d) for d in detections]
