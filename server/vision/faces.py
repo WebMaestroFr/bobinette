@@ -11,7 +11,7 @@ from cv2 import (BORDER_CONSTANT, CASCADE_SCALE_IMAGE, IMWRITE_PNG_COMPRESSION,
 # IMWRITE_JPEG_OPTIMIZE, IMWRITE_JPEG_QUALITY
 from numpy import array
 
-THRESHOLD_CREATE = 0.65
+THRESHOLD_CREATE = 0.6
 THRESHOLD_PASS = 0.7
 THRESHOLD_TRAIN = 0.8
 SUBJECT_SIZE = (64, 64)
@@ -79,8 +79,8 @@ def detect_eye(eye_gray, offset=(0, 0)):
     """Center Point of Eye Detection"""
     eyes = CLASSIFIER_EYE.detectMultiScale(
         eye_gray,
-        scaleFactor=1.1,
-        minNeighbors=3,
+        scaleFactor=1.2,
+        minNeighbors=2,
         flags=CASCADE_SCALE_IMAGE,
         minSize=(
             int(eye_gray.shape[0] * 0.4),
@@ -159,6 +159,10 @@ def get_face(gray, (f_x, f_y, width, height)):
                 label, distance = RECOGNIZER.predict(subject)
                 confidence = round(1.0 - distance / 255.0, 2)
                 if confidence <= THRESHOLD_CREATE:
+                    stderr.write(
+                        "Prediction confidence below threshold !\n\t%s => %s" % (
+                            label, confidence))
+                    stderr.flush()
                     label, confidence = write_label(subject)
                 elif confidence >= THRESHOLD_PASS and confidence <= THRESHOLD_TRAIN:
                     RECOGNIZER.update([subject], array([label]))
@@ -195,7 +199,7 @@ def detect(gray):
     detections = CLASSIFIER_FACE.detectMultiScale(
         gray,
         scaleFactor=1.3,
-        minNeighbors=5,
+        minNeighbors=4,
         flags=CASCADE_SCALE_IMAGE,
         minSize=SUBJECT_SIZE
     )

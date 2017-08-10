@@ -25,6 +25,7 @@ CLAHE = createCLAHE(clipLimit=6.0, tileGridSize=(12, 12))
 
 def equalize_gray(bgr):
     """Apply Contrast Limited Adaptive Histogram Equalization"""
+    # return cvtColor(bgr, COLOR_BGR2GRAY)
     lab = cvtColor(bgr, COLOR_BGR2LAB)
     lightness, _a, _b = split(lab)
     return CLAHE.apply(lightness)
