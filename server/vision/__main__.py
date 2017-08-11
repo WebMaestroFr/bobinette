@@ -10,7 +10,7 @@ from cv2 import (COLOR_BGR2LAB, IMWRITE_JPEG_OPTIMIZE, IMWRITE_JPEG_QUALITY,
 from picamera import PiCamera, array
 
 RESOLUTION = (480, 368)
-FRAMERATE = 4
+FRAMERATE = 8
 JPEG_QUALITY = 70
 
 CAMERA = PiCamera()
@@ -20,7 +20,7 @@ CAPTURE = array.PiRGBArray(CAMERA, size=RESOLUTION)
 
 EPOCH = datetime.utcfromtimestamp(0)
 
-CLAHE = createCLAHE(clipLimit=6.0, tileGridSize=(12, 12))
+CLAHE = createCLAHE(clipLimit=4.0, tileGridSize=(8, 8))
 
 
 def equalize_gray(bgr):

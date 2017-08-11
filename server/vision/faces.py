@@ -8,14 +8,13 @@ from sys import stderr
 from cv2 import (BORDER_CONSTANT, CASCADE_SCALE_IMAGE, IMWRITE_PNG_COMPRESSION,
                  CascadeClassifier, face, getRotationMatrix2D, imencode,
                  warpAffine)
-# IMWRITE_JPEG_OPTIMIZE, IMWRITE_JPEG_QUALITY
 from numpy import array
 
 THRESHOLD_CREATE = 0.6
-THRESHOLD_PASS = 0.7
-THRESHOLD_TRAIN = 0.8
+THRESHOLD_PASS = 0.6
+THRESHOLD_TRAIN = 0.67
 SUBJECT_SIZE = (64, 64)
-SUBJECT_OFFSET = (0.25, 0.25)
+SUBJECT_OFFSET = (0.3, 0.4)
 # THUMBNAIL_OFFSET = (0.3, 0.4)
 
 PNG_COMPRESSION = 9
@@ -79,8 +78,8 @@ def detect_eye(eye_gray, offset=(0, 0)):
     """Center Point of Eye Detection"""
     eyes = CLASSIFIER_EYE.detectMultiScale(
         eye_gray,
-        scaleFactor=1.2,
-        minNeighbors=2,
+        scaleFactor=1.1,
+        minNeighbors=4,
         flags=CASCADE_SCALE_IMAGE,
         minSize=(
             int(eye_gray.shape[0] * 0.4),
