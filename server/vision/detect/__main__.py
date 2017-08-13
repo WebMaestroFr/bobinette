@@ -38,9 +38,9 @@ def b64_jpeg(bgr):
     return b64encode(jpeg)
 
 
-def main(name):
+def detect(name):
     """Run Process"""
-    subject = __import__(name)
+    subject = __import__("vision.detect.%s" % name)
     try:
         for frame in CAMERA.capture_continuous(CAPTURE, format="bgr", use_video_port=True):
             date = datetime.utcnow()
@@ -65,4 +65,4 @@ def main(name):
         CAMERA.close()
 
 if __name__ == "__main__":
-    main(argv[1])
+    detect(argv[1])

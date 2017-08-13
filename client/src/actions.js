@@ -1,3 +1,11 @@
+import {serverAction} from './socket';
+
+export const DATABASE_OPERATION = 'DATABASE_OPERATION';
+
+export function databaseOperation(method, table, data) {
+    return serverAction({type: DATABASE_OPERATION, method, table, data});
+}
+
 export const SET_DETECTIONS = 'SET_DETECTIONS';
 export const ADD_DETECTIONS = 'ADD_DETECTIONS';
 
@@ -32,4 +40,10 @@ export const SET_ACTIVE_ITEM = 'SET_ACTIVE_ITEM';
 
 export function setActiveItem(value) {
     return {type: SET_ACTIVE_ITEM, value};
+}
+
+export const TRAIN_CLASSIFIER = 'TRAIN_CLASSIFIER';
+
+export function trainClassifier() {
+    return serverAction({type: TRAIN_CLASSIFIER});
 }

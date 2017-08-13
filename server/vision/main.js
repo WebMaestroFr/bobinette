@@ -25,9 +25,9 @@ const processStdout = (data, callback) => {
 };
 
 module.exports = {
-    detect: (subject, callback) => {
+    detect: (subject, handleSnapshot) => {
         const execution = spawn(`python`, [
-            `-u`, `${__dirname}/__main__.py`, subject
+            `-u`, `${__dirname}/detect/__main__.py`, subject
         ], {
             detached: true,
             stdio: [`ignore`, `pipe`, `pipe`]
@@ -36,7 +36,7 @@ module.exports = {
         execution
             .stdout
             .on(`data`, (data) => {
-                stdout = processStdout(stdout + data.toString(), callback);
+                stdout = processStdout(stdout + data.toString(), handleSnapshot);
             });
         execution
             .stderr
@@ -45,5 +45,6 @@ module.exports = {
                 debug.error(response);
             });
         return execution;
-    }
+    },
+    train: (profiles) => {}
 };

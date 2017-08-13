@@ -1,6 +1,5 @@
 import {connect} from 'react-redux';
-import {updateLabelName, setActiveItem} from '../actions';
-import {serverAction} from '../socket';
+import {updateLabelName, setActiveItem, databaseOperation} from '../actions';
 import LabelList from '../components/LabelList';
 
 const byDate = (a, b) => b.date - a.date;
@@ -38,9 +37,9 @@ const mapDispatchToProps = dispatch => {
     return {
         onNameChange: (label) => {
             const action = updateLabelName(label);
-            const serverUpdate = serverAction(`update`, `label`, label);
+            const serverAction = databaseOperation(`update`, `label`, label);
             dispatch(action);
-            dispatch(serverUpdate);
+            dispatch(serverAction);
         },
         onNameFocus: (id) => {
             const action = setActiveItem(id);

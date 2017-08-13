@@ -33,8 +33,8 @@ SUBJECT_DISTANCE = SUBJECT_SIZE[0] - 2 * SUBJECT_PADDING[0]
 # THUMBNAIL_DISTANCE = THUMBNAIL_SIZE[0] - 2 * THUMBNAIL_PADDING[0]
 
 CURRENT_PATH = path.dirname(__file__)
-DATA_PATH = path.realpath("%s/../../data" % (CURRENT_PATH))
-OPENCV_PATH = path.realpath("%s/../../libraries/opencv" % (CURRENT_PATH))
+DATA_PATH = path.realpath("%s/../../../data" % (CURRENT_PATH))
+OPENCV_PATH = path.realpath("%s/../../../libraries/opencv" % (CURRENT_PATH))
 
 CLASSIFIER_FACE = CascadeClassifier(
     "%s/data/haarcascades/haarcascade_%s.xml" % (OPENCV_PATH, "frontalface_default"))

@@ -1,6 +1,6 @@
 export const SOCKET_OPEN = 'SOCKET_OPEN';
 export const SOCKET_CLOSE = 'SOCKET_CLOSE';
-export const SOCKET_SEND = 'SOCKET_SEND';
+export const SERVER_ACTION = 'SERVER_ACTION';
 
 let socket;
 
@@ -22,15 +22,8 @@ const open = ({
     };
 };
 
-export function serverAction(method, table, data) {
-    return {
-        type: SOCKET_SEND,
-        message: {
-            method,
-            table,
-            data
-        }
-    };
+export function serverAction(action) {
+    return {type: SERVER_ACTION, action};
 }
 
 export default store => next => action => {
@@ -43,9 +36,9 @@ export default store => next => action => {
             close();
             next(action);
             break;
-        case SOCKET_SEND:
+        case SERVER_ACTION:
             if (socket) {
-                const data = JSON.stringify(action.message);
+                const data = JSON.stringify(action.action);
                 socket.send(data);
             }
             next(action);

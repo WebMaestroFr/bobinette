@@ -9,11 +9,61 @@ const debug = require(`./debug`);
 const application = path.resolve(__dirname, `../client/build`);
 const api = new API(application);
 
+const SUBJECT = `faces`;
+
 api
     .server
     .listen(8000, () => {
         debug.success(`API Server (port \x1b[1m8000\x1b[0m)`);
     });
+
+let capture;
+const stopCapture = () => {
+    if (capture) {
+        api.broadcastAction(`STOP_CAPTURE`);
+        capture.kill(`SIGTERM`);
+        capture = null;
+    }
+};
+const startCapture = (database) => {
+    stopCapture();
+    api.broadcastAction(`START_CAPTURE`);
+    capture = Vision.detect(SUBJECT, ({date, detections, image}) => {
+        debug.success(`Snapshot ${date} (\x1b[1m${detections.length}\x1b[0m faces)`, detections.length);
+
+        api
+            .broadcastAction(`SET_SNAPSHOT`, {date, detections, image})
+            .catch(debug.error);
+
+        const insertDetection = ({label, confidence, image}) => database
+            .insert(`detection`, {label, confidence, image, date})
+            .then((d) => {
+                api.broadcastAction(`ADD_DETECTIONS`, [d]);
+            })
+            .catch(debug.error);
+
+        for (const detection of detections) {
+            if (detection.confidence === 1.0) {
+                debug.warning(`Label \x1b[1m${detection.label}\x1b[0m => NEW`);
+                database
+                    .insert(`label`, {
+                    id: detection.label,
+                    name: ``
+                })
+                    .then((label) => {
+                        insertDetection(detection);
+                        api
+                            .broadcastAction(`ADD_LABELS`, [label])
+                            .catch(debug.error);
+                    })
+                    .catch(debug.error);
+            } else if (detection.confidence > 0) {
+                debug.warning(`Label \x1b[1m${detection.label}\x1b[0m => ${detection.confidence * 100}%`);
+                insertDetection(detection);
+            }
+        }
+    });
+};
 
 Database
     .open(`faces`)
@@ -46,55 +96,32 @@ Database
                     .catch(debug.error);
 
                 client.on(`message`, (message) => {
-                    const {method, table, data} = JSON.parse(message);
-                    debug.warning(`Client Action => \x1b[1m${method} ${table}\x1b[0m`);
-                    return database[method](table, data).catch(debug.error);
+                    const action = JSON.parse(message);
+                    switch (action.type) {
+                        case `DATABASE_OPERATION`:
+                            debug.warning(`Database Operation => \x1b[1m${action.method} ${action.table}\x1b[0m`);
+                            return database[action.method](action.table, action.data).catch(debug.error);
+                        case `TRAIN_CLASSIFIER`:
+                            stopCapture();
+                            currentProcess = train(database).then((labels, detections) => {
+                                api.broadcastAction(`SET_LABELS`, labels);
+                                api.broadcastAction(`SET_DETECTIONS`, detections);
+                                currentProcess = capture(database);
+                            });
+                            return debug.warning(`Train Classifier => \x1b[1mTO DO\x1b[0m`);
+                    }
                 });
             });
-        const vision = Vision.detect(`faces`, ({date, detections, image}) => {
-            debug.success(`Snapshot ${date} (\x1b[1m${detections.length}\x1b[0m faces)`, detections.length);
 
-            api
-                .broadcastAction(`SET_SNAPSHOT`, {date, detections, image})
-                .catch(debug.error);
-
-            const insertDetection = ({label, confidence, image}) => database
-                .insert(`detection`, {label, confidence, image, date})
-                .then((d) => {
-                    api.broadcastAction(`ADD_DETECTIONS`, [d]);
-                })
-                .catch(debug.error);
-
-            for (const detection of detections) {
-
-                if (detection.confidence === 1.0) {
-                    debug.warning(`Label \x1b[1m${detection.label}\x1b[0m => NEW`);
-                    database
-                        .insert(`label`, {
-                        id: detection.label,
-                        name: ``
-                    })
-                        .then((label) => {
-                            insertDetection(detection);
-                            api
-                                .broadcastAction(`ADD_LABELS`, [label])
-                                .catch(debug.error);
-                        })
-                        .catch(debug.error);
-                } else if (detection.confidence > 0) {
-                    debug.warning(`Label \x1b[1m${detection.label}\x1b[0m => ${detection.confidence * 100}%`);
-                    insertDetection(detection);
-                }
-            }
-        });
-
-        const terminate = () => {
-            api.close();
-            database.close();
-            vision.kill(`SIGTERM`);
-            debug.error(`Exit Process`);
-        };
-        process.on(`SIGTERM`, terminate);
-        process.on(`SIGINT`, terminate);
+        startCapture(database);
     })
     .catch(debug.error);
+
+const terminate = () => {
+    stopCapture()
+    api.close();
+    database.close();
+    debug.error(`Exit Process`);
+};
+process.on(`SIGTERM`, terminate);
+process.on(`SIGINT`, terminate);
