@@ -19,9 +19,6 @@ printf "\n${BLUE}Cleaning Up Packages ...${BLANK}\n"
 sudo apt-get autoremove -y
 sudo apt-get clean -y
 
-printf "\n${BLUE}Installing Camera Library ...${BLANK}\n"
-sudo pip install -r server/vision/requirements.txt
-
 printf "\n${BLUE}Initializing Submodules ...${BLANK}\n"
 git submodule init
 printf "\n${BLUE}Updating Submodules ...${BLANK}\n"
@@ -34,13 +31,14 @@ cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local -DOPENCV_EX
 make -j$(nproc)
 sudo make install
 
+printf "\n${BLUE}Installing Server Requirements ...${BLANK}\n"
+sudo pip install -r requirements.txt
+
 printf "\n${BLUE}Installing Client Application ...${BLANK}\n"
-cd ../../client
+cd ../../application
 npm install
 printf "\n${BLUE}Building Client Application ...${BLANK}\n"
 npm run build
-printf "\n${BLUE}Installing Server Application ...${BLANK}\n"
-cd ../server
-npm install
+cd ..
 
 printf "\n${BLUE}All Done !${BLANK}\n"

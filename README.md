@@ -1,5 +1,7 @@
 # Bobinette
 
+Physiognomist Device and Services
+
 ## Start Development (`bobinette-dev`)
 ```
 cd ~/bobinette
