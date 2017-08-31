@@ -12,10 +12,6 @@ from . import _face as recognition
 from . import CAMERA, CAPTURE, get_gray, socket_action
 from .models import Detection, Face, Label, Snapshot
 
-THRESHOLD_CREATE = 0.6
-THRESHOLD_PASS = 0.6
-THRESHOLD_TRAIN = 0.67
-
 
 @app.route('/')
 def main_controller():
@@ -57,14 +53,14 @@ def handle_snapshot(frame):
             thumbnail = recognition.transform(detection, gray)
             if thumbnail:
                 label_id, confidence = recognition.predict(thumbnail)
-                if confidence <= THRESHOLD_CREATE:
+                if confidence <= recognition.THRESHOLD_CREATE:
                     label = Label()
                     labels.append(label)
                     db.session.add(label)
                     recognition.train(label.id, thumbnail)
                 else:
                     label = Label.query.get(label_id)
-                    if THRESHOLD_PASS >= confidence <= THRESHOLD_TRAIN:
+                    if recognition.THRESHOLD_PASS >= confidence <= recognition.THRESHOLD_TRAIN:
                         recognition.train(label_id, thumbnail)
                 face = Face(thumbnail, label, detection)
                 faces.append(face)
@@ -91,5 +87,5 @@ def capture():
         CAMERA.close()
 
 if __name__ == "__main__":
-    socket.run(app)
+    socket.run(app, port=80)
     capture()
