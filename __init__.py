@@ -11,8 +11,6 @@ from flask_sqlalchemy import SQLAlchemy
 from picamera import array as camera_array
 from picamera import PiCamera
 
-from . import _face
-
 ROOT_PATH = path.dirname(__file__)
 DATA_PATH = path.realpath('%s/data' % (ROOT_PATH))
 OPENCV_PATH = path.realpath('%s/libraries/opencv' % (ROOT_PATH))
@@ -22,6 +20,7 @@ APP = Flask(__name__, static_url_path='', static_folder=APP_PATH)
 APP.config['SECRET_KEY'] = '5kjgn9RVXcoCmD3uwobyxPW9pUj9xi5X'
 APP.config[
     'SQLALCHEMY_DATABASE_URI'] = 'sqlite:///%s/%s.sqlite3' % (DATA_PATH, 'faces')
+APP.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 DB = SQLAlchemy(APP)
 
@@ -36,6 +35,8 @@ CAPTURE = camera_array.PiRGBArray(CAMERA, size=CAMERA.resolution)
 CLAHE = createCLAHE(clipLimit=4.0, tileGridSize=(8, 8))
 
 THUMBNAIL_SIZE = (64, 64)
+PNG_COMPRESSION = 9
+JPEG_QUALITY = 70
 
 
 def socket_action(action_type, data, **kwargs):

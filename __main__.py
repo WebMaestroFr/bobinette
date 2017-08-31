@@ -44,6 +44,7 @@ def handle_snapshot(frame):
         snapshot = Snapshot(frame)
         snapshot.detections = [Detection(*d) for d in recognition.detect(gray)]
 
+        print snapshot
         socket_action('SET_SNAPSHOT', snapshot, broadcast=True)
 
         faces = []
@@ -81,6 +82,7 @@ def capture():
     """Capture Snapshots"""
     try:
         for frame in CAMERA.capture_continuous(CAPTURE, format="bgr", use_video_port=True):
+            print "=> FRAME"
             handle_snapshot(frame.array)
             CAPTURE.truncate(0)
     finally:

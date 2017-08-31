@@ -29,6 +29,7 @@ cd libraries/opencv_build
 cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules ../opencv
 make -j$(nproc)
 sudo make install
+cd ../..
 
 printf "\n${BLUE}Installing Server Requirements ...${BLANK}\n"
 sudo pip install -r requirements.txt
@@ -39,7 +40,7 @@ sudo pip install -r requirements.txt
 # sudo apt-get install -y nodejs
 
 printf "\n${BLUE}Installing Client Application ...${BLANK}\n"
-cd ../../application
+cd application
 npm install
 printf "\n${BLUE}Building Client Application ...${BLANK}\n"
 npm run build

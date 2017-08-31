@@ -1,5 +1,6 @@
 import {connect} from 'react-redux';
-import {updateLabelName, setActiveItem, socketAction} from '../actions';
+import {updateLabelName, setActiveItem} from '../actions';
+import {socketAction} from '../socket';
 import LabelList from '../components/LabelList';
 
 const byDate = (a, b) => b.date - a.date;
@@ -13,10 +14,10 @@ const mapStateToProps = state => {
         const labelFaces = state
             .faces
             .filter(byLabel);
-        if (faces.length === 0) {
+        if (labelFaces.length === 0) {
             return null;
         }
-        const {date, thumbnail} = faces.reduce(toLatest);
+        const {date, thumbnail} = labelFaces.reduce(toLatest);
         return {id, date, name, thumbnail};
     };
     const byName = (element, index, array) => {

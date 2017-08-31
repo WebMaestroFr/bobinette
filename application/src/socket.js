@@ -1,8 +1,8 @@
+import io from 'socket.io-client';
+
 export const SOCKET_OPEN = 'SOCKET_OPEN';
 export const SOCKET_CLOSE = 'SOCKET_CLOSE';
 export const SOCKET_ACTION = 'SOCKET_ACTION';
-
-import io from 'socket.io-client';
 
 let socket = null;
 

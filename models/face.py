@@ -1,12 +1,16 @@
 '''Face Model'''
 
-from cv2 import IMWRITE_PNG_COMPRESSION, PNG_COMPRESSION, imencode
+from cv2 import IMWRITE_PNG_COMPRESSION, imencode
 
 from .. import DB as db
+from .. import PNG_COMPRESSION
 
 
 class Face(db.Model):
     '''Face Model Class'''
+    __tablename__ = 'face'
+    id = db.Column(db.Integer, primary_key=True)
+
     date = db.Column(db.DateTime, db.ForeignKey('detection.snapshot.date'))
     detection = db.relationship('Detection', backref=db.backref(
         'face',

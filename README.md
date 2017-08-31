@@ -91,5 +91,5 @@ sudo nano /etc/rc.local
 ```
 Write commands before `exit 0`, save and exit (`ctrl+X`).
 ```
-python /home/pi/bobinette
+python -m bobinette
 ```

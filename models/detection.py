@@ -4,6 +4,9 @@ from .. import DB as db
 
 class Detection(db.Model):
     """Detection Model Class"""
+    __tablename__ = 'detection'
+    id = db.Column(db.Integer, primary_key=True)
+
     x = db.Column(db.Integer)
     y = db.Column(db.Integer)
     width = db.Column(db.Integer)
