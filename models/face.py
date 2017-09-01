@@ -1,24 +1,23 @@
 '''Face Model'''
 
+from bobinette import PNG_COMPRESSION, SQL
 from cv2 import IMWRITE_PNG_COMPRESSION, imencode
 
-from .. import DB as db
-from .. import PNG_COMPRESSION
 
-
-class Face(db.Model):
+class Face(SQL.Model):
     '''Face Model Class'''
     __tablename__ = 'face'
-    id = db.Column(db.Integer, primary_key=True)
 
-    date = db.Column(db.DateTime, db.ForeignKey('detection.snapshot.date'))
-    detection = db.relationship('Detection', backref=db.backref(
+    id = SQL.Column(SQL.Integer, primary_key=True)
+
+    date = SQL.Column(SQL.DateTime, SQL.ForeignKey('detection.date'))
+    detection = SQL.relationship('Detection', backref=SQL.backref(
         'face',
         uselist=False
     ), uselist=False)
-    thumbnail = db.Column(db.LargeBinary)
-    label_id = db.Column(db.Integer, db.ForeignKey('label.id'))
-    label = db.relationship('Label', backref='faces', uselist=False)
+    thumbnail = SQL.Column(SQL.LargeBinary)
+    label_id = SQL.Column(SQL.Integer, SQL.ForeignKey('label.id'))
+    label = SQL.relationship('Label', backref='faces', uselist=False)
 
     def __init__(self, thumbnail, label=None, detection=None):
         _, self.thumbnail = imencode('.png', thumbnail, (

@@ -1,9 +1,6 @@
 """Models"""
 
-from .. import DB as db
-from .detection import Detection
-from .face import Face
-from .label import Label
-from .snapshot import Snapshot
-
-db.create_all()
+from bobinette.models.detection import Detection
+from bobinette.models.face import Face
+from bobinette.models.label import Label
+from bobinette.models.snapshot import Snapshot

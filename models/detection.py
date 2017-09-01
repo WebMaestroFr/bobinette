@@ -1,16 +1,18 @@
 """Detection Model"""
-from .. import DB as db
+from bobinette import SQL
 
 
-class Detection(db.Model):
+class Detection(SQL.Model):
     """Detection Model Class"""
     __tablename__ = 'detection'
-    id = db.Column(db.Integer, primary_key=True)
 
-    x = db.Column(db.Integer)
-    y = db.Column(db.Integer)
-    width = db.Column(db.Integer)
-    height = db.Column(db.Integer)
+    id = SQL.Column(SQL.Integer, primary_key=True)
+    date = SQL.Column(SQL.DateTime, SQL.ForeignKey('snapshot.date'))
+
+    x = SQL.Column(SQL.Integer)
+    y = SQL.Column(SQL.Integer)
+    width = SQL.Column(SQL.Integer)
+    height = SQL.Column(SQL.Integer)
 
     def __init__(self, x, y, width, height):
         self.x = x
