@@ -1,11 +1,12 @@
 """Label Model"""
-from bobinette import SQL
-from cv2 import imdecode
+print "=> LABEL MODEL"
+
+from bobinette.server import db
 
 
-class Label(SQL.Model):
+class Label(db.Model):
     """Label Model Class"""
     __tablename__ = 'label'
 
-    id = SQL.Column(SQL.Integer, primary_key=True)
-    name = SQL.Column(SQL.String)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)

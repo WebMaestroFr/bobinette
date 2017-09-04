@@ -18,7 +18,7 @@ const open = ({
 }, url) => {
     close();
     socket = io(url);
-    socket.on('action', (action) => {
+    socket.on('message', (action) => {
         dispatch(action);
     });
 };

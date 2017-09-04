@@ -1,7 +1,7 @@
 import {combineReducers} from 'redux';
 import {
-    SET_FACES,
-    ADD_FACES,
+    SET_DETECTIONS,
+    ADD_DETECTIONS,
     SET_LABELS,
     ADD_LABELS,
     UPDATE_LABEL_NAME,
@@ -9,11 +9,11 @@ import {
     SET_ACTIVE_ITEM
 } from './actions';
 
-function faces(state = [], action) {
+function detections(state = [], action) {
     switch (action.type) {
-        case SET_FACES:
+        case SET_DETECTIONS:
             return action.data;
-        case ADD_FACES:
+        case ADD_DETECTIONS:
             return state.concat(action.data);
         default:
             return state;
@@ -40,7 +40,7 @@ function labels(state = [], action) {
 
 function snapshot(state = {
     date: 0,
-    faces: [],
+    detections: [],
     image: null
 }, action) {
     switch (action.type) {
@@ -62,6 +62,6 @@ function activeItem(state = null, action) {
     }
 }
 
-const appReducers = combineReducers({faces, labels, snapshot, activeItem});
+const appReducers = combineReducers({detections, labels, snapshot, activeItem});
 
 export default appReducers;

@@ -1,21 +1,29 @@
-"""Detection Model"""
-from bobinette import SQL
+'''Detection Model'''
+print "=> DETECTION MODEL"
+
+from bobinette.server import db
+from cv2 import IMWRITE_PNG_COMPRESSION, imencode
+
+PNG_COMPRESSION = 9
 
 
-class Detection(SQL.Model):
-    """Detection Model Class"""
+class Detection(db.Model):
+    '''Detection Model Class'''
     __tablename__ = 'detection'
 
-    id = SQL.Column(SQL.Integer, primary_key=True)
-    date = SQL.Column(SQL.DateTime, SQL.ForeignKey('snapshot.date'))
+    id = db.Column(db.Integer, primary_key=True)
 
-    x = SQL.Column(SQL.Integer)
-    y = SQL.Column(SQL.Integer)
-    width = SQL.Column(SQL.Integer)
-    height = SQL.Column(SQL.Integer)
+    date = db.Column(db.DateTime, db.ForeignKey('region.date'))
+    region = db.relationship('Region', backref=db.backref(
+        'detection',
+        uselist=False
+    ), uselist=False)
+    thumbnail = db.Column(db.LargeBinary)
+    label_id = db.Column(db.Integer, db.ForeignKey('label.id'))
+    label = db.relationship('Label', backref='detections', uselist=False)
 
-    def __init__(self, x, y, width, height):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
+    def __init__(self, thumbnail, label=None, region=None):
+        _, self.thumbnail = imencode('.png', thumbnail, (
+            IMWRITE_PNG_COMPRESSION, PNG_COMPRESSION))
+        self.label = label
+        self.region = region

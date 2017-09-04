@@ -25,28 +25,28 @@ class Snapshot extends React.Component {
 
     constructor(props) {
         super(props);
-        this.drawDetections = this
-            .drawDetections
+        this.drawRegions = this
+            .drawRegions
             .bind(this);
     }
 
-    drawDetections(detections) {
-        const canvas = this.refs.detections;
+    drawRegions(regions) {
+        const canvas = this.refs.regions;
         const context = canvas.getContext(`2d`);
         context.strokeStyle = `rgba(255, 255, 255, 0.67)`;
         context.fillStyle = `rgba(255, 255, 255, 0.67)`;
         context.clearRect(0, 0, canvas.width, canvas.height);
-        for (let detection of detections) {
-            context.strokeRoundRect(detection.x, detection.y, detection.width, detection.height);
+        for (let region of regions) {
+            context.strokeRoundRect(region.x, region.y, region.width, region.height);
         }
     }
 
     componentDidMount() {
-        this.drawDetections(this.props.detections);
+        this.drawRegions(this.props.regions);
     }
 
-    componentWillReceiveProps({detections}) {
-        this.drawDetections(detections);
+    componentWillReceiveProps({regions}) {
+        this.drawRegions(regions);
     }
 
     // shouldComponentUpdate({date}) { return date > this.props.date; }
@@ -62,8 +62,8 @@ class Snapshot extends React.Component {
                 width={this.props.width}
                 height={this.props.height}/>
             <canvas
-                ref="detections"
-                className="Snapshot-detections"
+                ref="regions"
+                className="Snapshot-regions"
                 width={this.props.width}
                 height={this.props.height}/>
             <time ref="date" className="Snapshot-date" dateTime={date}>
@@ -73,7 +73,7 @@ class Snapshot extends React.Component {
     }
 }
 
-const detectionPropTypes = {
+const regionPropTypes = {
     x: PropTypes.number.isRequired,
     y: PropTypes.number.isRequired,
     width: PropTypes.number.isRequired,
@@ -82,8 +82,8 @@ const detectionPropTypes = {
 
 Snapshot.propTypes = {
     date: PropTypes.number.isRequired,
-    detections: PropTypes
-        .arrayOf(PropTypes.shape(detectionPropTypes).isRequired)
+    regions: PropTypes
+        .arrayOf(PropTypes.shape(regionPropTypes).isRequired)
         .isRequired,
     image: PropTypes.string,
     width: PropTypes.number,

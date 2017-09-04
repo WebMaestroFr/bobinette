@@ -1,11 +1,11 @@
-export const SET_FACES = 'SET_FACES';
-export const ADD_FACES = 'ADD_FACES';
+export const SET_DETECTIONS = 'SET_DETECTIONS';
+export const ADD_DETECTIONS = 'ADD_DETECTIONS';
 
-export function setFaces(data) {
-    return {type: SET_FACES, data};
+export function setDetections(data) {
+    return {type: SET_DETECTIONS, data};
 }
-export function addFaces(data) {
-    return {type: ADD_FACES, data};
+export function addDetections(data) {
+    return {type: ADD_DETECTIONS, data};
 }
 
 export const SET_LABELS = 'SET_LABELS';

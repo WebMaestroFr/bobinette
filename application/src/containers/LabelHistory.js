@@ -11,13 +11,13 @@ const toLatest = (a, b) => a.date > b.date
 const mapStateToProps = state => {
     const toItem = ({id, name}) => {
         const byLabel = ({label_id}) => label_id === id;
-        const labelFaces = state
-            .faces
+        const labelDetections = state
+            .detections
             .filter(byLabel);
-        if (labelFaces.length === 0) {
+        if (labelDetections.length === 0) {
             return null;
         }
-        const {date, thumbnail} = labelFaces.reduce(toLatest);
+        const {date, thumbnail} = labelDetections.reduce(toLatest);
         return {id, date, name, thumbnail};
     };
     const byName = (element, index, array) => {

@@ -12,13 +12,13 @@ class App extends React.Component {
         return <Grid className="App">
             <Row>
                 <Col md={6} className="App-snapshot-live">
-                    <h1>Detection</h1>
+                    <h1>Live</h1>
                     <SnapshotLive width={480} height={368}/>
                 </Col>
                 <Col md={6} className="App-label-history">
                     <Row>
                         <Col xs={8}>
-                            <h1>Labels</h1>
+                            <h1>History</h1>
                         </Col>
                         <Col xs={4}>
                             <Button block className="App-train">Train</Button>

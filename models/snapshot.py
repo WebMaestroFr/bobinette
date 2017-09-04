@@ -1,18 +1,21 @@
 '''Snapshot Model'''
+print "=> SNAPSHOT MODEL"
 
 from datetime import datetime
 
-from bobinette import JPEG_QUALITY, SQL
+from bobinette.server import db
 from cv2 import IMWRITE_JPEG_OPTIMIZE, IMWRITE_JPEG_QUALITY, imencode
 
+JPEG_QUALITY = 70
 
-class Snapshot(SQL.Model):
+
+class Snapshot(db.Model):
     '''Snapshot Model Class'''
     __tablename__ = 'snapshot'
 
-    date = SQL.Column(SQL.DateTime, primary_key=True)
-    image = SQL.Column(SQL.LargeBinary)
-    detections = SQL.relationship('Detection', backref=SQL.backref(
+    date = db.Column(db.DateTime, primary_key=True)
+    image = db.Column(db.LargeBinary)
+    regions = db.relationship('Region', backref=db.backref(
         'snapshot',
         uselist=False
     ), lazy='joined')

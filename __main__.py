@@ -2,102 +2,95 @@
 
 from threading import Thread
 
-from flask import render_template
-
-from bobinette import _face as recognition
-from bobinette import (SQL, create_app, create_camera, create_clahe, get_gray,
-                       socket_action)
-from bobinette.models import Detection, Face, Label, Snapshot
+from bobinette.models import Detection, Label, Region, Snapshot
+from bobinette.server import app, db, socket, socket_action
+from bobinette.vision import Face as subject
+from bobinette.vision import CAMERA, RGB, get_gray
 from cv2 import error as cv_error
 
-APP, SOCKET = create_app('faces', '5kjgn9RVXcoCmD3uwobyxPW9pUj9xi5X')
-CAMERA, CAPTURE = create_camera((480, 368), 8)
-CLAHE = create_clahe(clipLimit=4.0, tileGridSize=(8, 8))
 
-
-@APP.route('/')
-def main_controller():
-    """Main Controller"""
-    return render_template('application/build/index.html')
-
-
-@SOCKET.on('connect')
+@socket.on('connect')
 def client_connect():
     """New Client Connection"""
     labels = Label.query.all()
     socket_action('SET_LABELS', labels)
-    faces = Face.query.all()
-    socket_action('SET_FACES', faces)
+    detections = Detection.query.all()
+    socket_action('SET_DETECTIONS', detections)
 
 
-@SOCKET.on('UPDATE_LABEL_NAME')
+@socket.on('UPDATE_LABEL_NAME')
 def update_label_name(data):
     """Update Label Name Event"""
     label = Label.query.get(data.id)
     label.name = data.name
-    SQL.session.commit()
+    db.session.commit()
 
 
 def handle_snapshot(frame):
     """Handle Snapshot"""
+    print "=> PROCESS SNAPSHOT"
+    gray = get_gray(frame)
+
+    snapshot = Snapshot(frame)
+    snapshot.regions = [Region(*d) for d in subject.detect(gray)]
+
+    print snapshot
+    socket_action('SET_SNAPSHOT', snapshot, broadcast=True)
+
+    detections = []
+    labels = []
+
+    for region in snapshot.regions:
+        thumbnail = subject.transform(region, gray)
+        if thumbnail:
+            label_id, confidence = subject.predict(thumbnail)
+            if confidence <= subject.THRESHOLD_CREATE:
+                label = Label()
+                labels.append(label)
+                db.session.add(label)
+                subject.train(label.id, thumbnail)
+            else:
+                label = Label.query.get(label_id)
+                if subject.THRESHOLD_PASS >= confidence <= subject.THRESHOLD_TRAIN:
+                    subject.train(label_id, thumbnail)
+            detection = Detection(thumbnail, label, region)
+            detections.append(detection)
+            db.session.add(detection)
+
+    if detections:
+        db.session.commit()
+        socket_action('ADD_DETECTIONS', detections, broadcast=True)
+        if labels:
+            socket_action('ADD_LABELS', labels, broadcast=True)
+
+
+def run_capture():
+    """Run Flask Server"""
     try:
-        gray = get_gray(frame, CLAHE)
-
-        snapshot = Snapshot(frame)
-        snapshot.detections = [Detection(*d)
-                               for d in recognition.detect(gray)]
-
-        print snapshot
-        socket_action('SET_SNAPSHOT', snapshot, broadcast=True)
-
-        faces = []
-        labels = []
-
-        for detection in snapshot.detections:
-            thumbnail = recognition.transform(detection, gray)
-            if thumbnail:
-                label_id, confidence = recognition.predict(thumbnail)
-                if confidence <= recognition.THRESHOLD_CREATE:
-                    label = Label()
-                    labels.append(label)
-                    SQL.session.add(label)
-                    recognition.train(label.id, thumbnail)
-                else:
-                    label = Label.query.get(label_id)
-                    if recognition.THRESHOLD_PASS >= confidence <= recognition.THRESHOLD_TRAIN:
-                        recognition.train(label_id, thumbnail)
-                face = Face(thumbnail, label, detection)
-                faces.append(face)
-                SQL.session.add(face)
-
-        if faces:
-            SQL.session.commit()
-            socket_action('ADD_FACES', faces, broadcast=True)
-            if labels:
-                socket_action('ADD_LABELS', labels, broadcast=True)
-
+        for frame in CAMERA.capture_continuous(RGB, format="bgr", use_video_port=True):
+            print "=> PROCESS FRAME"
+            handle_snapshot(frame.array)
+            RGB.truncate(0)
     except cv_error as error:
         print error
         socket_action('ALERT_ERROR', error, broadcast=True)
+    except Exception as error:
+        print error
+    finally:
+        CAMERA.close()
 
 
-@APP.before_first_request
-def activate_capture():
-    """Activate Capture Snapshots"""
-    print "=> STARTING CAPTURE"
-
-    def run_capture():
-        """Run Capture Snapshots"""
-        try:
-            for frame in CAMERA.capture_continuous(CAPTURE, format="bgr", use_video_port=True):
-                print "=> FRAME"
-                handle_snapshot(frame.array)
-                CAPTURE.truncate(0)
-        finally:
-            CAMERA.close()
-    Thread(target=run_capture).start()
+@app.before_first_request
+def before_first_request():
+    """Before First Request"""
+    print "=> START CAPTURE"
+    capture = Thread(target=run_capture)
+    capture.start()
 
 
 if __name__ == "__main__":
-    SQL.create_all()
-    SOCKET.run(APP, port=80, debug=True)
+    with app.app_context():
+        print "=> ACTIVATE DATABASE"
+        db.create_all()
+    print "=> START SERVER"
+    socket.run(app, port=80, debug=False, log_output=True)
