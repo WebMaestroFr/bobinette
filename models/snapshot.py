@@ -3,13 +3,14 @@ print "=> SNAPSHOT MODEL"
 
 from datetime import datetime
 
+from bobinette.models._base import Model
 from bobinette.server import db
 from cv2 import IMWRITE_JPEG_OPTIMIZE, IMWRITE_JPEG_QUALITY, imencode
 
 JPEG_QUALITY = 70
 
 
-class Snapshot(db.Model):
+class Snapshot(Model, db.Model):
     '''Snapshot Model Class'''
     __tablename__ = 'snapshot'
 

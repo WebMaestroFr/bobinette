@@ -1,10 +1,11 @@
 """Region Model"""
 print "=> REGION MODEL"
 
+from bobinette.models._base import Model
 from bobinette.server import db
 
 
-class Region(db.Model):
+class Region(Model, db.Model):
     """Region Model Class"""
     __tablename__ = 'region'
 

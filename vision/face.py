@@ -55,6 +55,7 @@ THRESHOLD_TRAIN = 0.67
 
 def detect(gray, scale_factor=1.3, min_neighbors=4, min_size=SIZE):
     '''Detect Faces'''
+    print "=> DETECT FACES"
     return CLASSIFIER.detectMultiScale(
         gray,
         scaleFactor=scale_factor,
@@ -64,7 +65,8 @@ def detect(gray, scale_factor=1.3, min_neighbors=4, min_size=SIZE):
 
 
 def detect_eyes(gray, scale_factor=1.1, min_neighbors=4, min_size=SIZE):
-    '''Detect Faces'''
+    '''Detect Eyes'''
+    print "=> DETECT EYES"
     return CLASSIFIER_EYE.detectMultiScale(
         gray,
         scaleFactor=scale_factor,
@@ -90,6 +92,7 @@ def get_eye_center(gray, roi=None, **kwargs):
 
 def transform(region, gray, **kwargs):
     """Transform Face Image"""
+    print "=> TRANSFORM FACE"
     min_size = (EYE_MIN[0] * region.width, EYE_MIN[1] * region.height)
     max_size = (EYE_MAX[0] * region.width, EYE_MAX[1] * region.height)
     left = get_eye_center(gray, (
@@ -124,6 +127,7 @@ def transform(region, gray, **kwargs):
 
 def predict(image):
     '''Image Face Recognition'''
+    print "=> PREDICT FACE"
     try:
         label_id, distance = RECOGNIZER.predict(image)
         confidence = 1.0 - distance / 255.0
@@ -136,5 +140,6 @@ def predict(image):
 
 def train(label_id, *images):
     '''Add Face to Label Collection'''
+    print "=> TRAIN FACE"
     RECOGNIZER.update(images, numpy_array([label_id] * len(images)))
     RECOGNIZER.write(MODEL)

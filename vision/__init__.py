@@ -1,9 +1,9 @@
 '''Vision Package'''
-print "=> INIT VISION"
+print '=> INIT VISION'
 
 from math import sqrt
+from threading import Thread
 
-import bobinette.vision.face as Face
 from cv2 import COLOR_BGR2LAB, createCLAHE, cvtColor, split
 from picamera import array as camera_array
 from picamera import PiCamera
@@ -34,3 +34,14 @@ def get_gray(bgr):
     lab = cvtColor(bgr, COLOR_BGR2LAB)
     lightness, a, b = split(lab)
     return CLAHE.apply(lightness)
+
+
+def run_capture(callback):
+    '''Run Camera Capture'''
+    try:
+        for frame in CAMERA.capture_continuous(RGB, format='bgr', use_video_port=True):
+            print '=> PROCESS FRAME'
+            callback(frame.array)
+            RGB.truncate(0)
+    finally:
+        CAMERA.close()

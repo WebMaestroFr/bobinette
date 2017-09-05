@@ -1,13 +1,14 @@
 '''Detection Model'''
 print "=> DETECTION MODEL"
 
+from bobinette.models._base import Model
 from bobinette.server import db
 from cv2 import IMWRITE_PNG_COMPRESSION, imencode
 
 PNG_COMPRESSION = 9
 
 
-class Detection(db.Model):
+class Detection(Model, db.Model):
     '''Detection Model Class'''
     __tablename__ = 'detection'
 
