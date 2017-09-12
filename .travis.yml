@@ -7,4 +7,4 @@ install:
 before_script:
   - export PYTHONPATH=$PYTHONPATH:/usr/local/lib
 script:
-  - pytest --ignore=libraries/
+  - pytest
