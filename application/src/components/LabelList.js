@@ -10,11 +10,11 @@ import Label from './Label';
 class LabelList extends React.Component {
 
     render() {
-        const renderItem = (item) => {
-            return <CSSTransition key={item.id} timeout={2400} classNames="LabelList-item">
+        const renderLabel = (label) => {
+            return <CSSTransition key={label.id} timeout={2400} classNames="LabelList-label">
                 <Label
-                    className="LabelList-item"
-                    {...item}
+                    className="LabelList-label"
+                    {...label}
                     onNameChange={this.props.onNameChange}
                     onNameBlur={this.props.onNameBlur}
                     onNameFocus={this.props.onNameFocus}/>
@@ -23,23 +23,15 @@ class LabelList extends React.Component {
         return <TransitionGroup className="LabelList">
             {this
                 .props
-                .items
-                .map(renderItem)}
+                .labels
+                .map(renderLabel)}
         </TransitionGroup>;
     }
 }
 
-const itemPropTypes = {
-    id: PropTypes.number.isRequired,
-    date: PropTypes.number.isRequired,
-    name: PropTypes.string.isRequired,
-    thumbnail: PropTypes.string.isRequired
-};
 LabelList.propTypes = {
-    items: PropTypes
-        .arrayOf(PropTypes.shape(itemPropTypes).isRequired)
-        .isRequired,
-    onNameChange: PropTypes.func.isRequired,
+    labels: PropTypes.arrayOf(PropTypes.shape(Label.propTypes)),
+    onNameChange: PropTypes.func,
     onNameBlur: PropTypes.func,
     onNameFocus: PropTypes.func
 };

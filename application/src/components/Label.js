@@ -8,15 +8,15 @@ import './Label.css';
 
 class Label extends React.Component {
 
-    shouldComponentUpdate({name, date}) {
-        return name !== this.props.name || date > this.props.date;
+    shouldComponentUpdate({name, detection}) {
+        return name !== this.props.name || detection.snapshot_date > this.props.detection.snapshot_date;
     }
 
     render() {
-        const date = new Date(this.props.date);
+        const date = new Date(this.props.detection.snapshot_date);
         const onNameChange = ({target}) => this
             .props
-            .onNameChange({id: this.props.id, name: target.value});
+            .onNameChange(this.props.id, target.value);
         const onNameFocus = this.props.onNameFocus
             ? () => this
                 .props
@@ -25,9 +25,9 @@ class Label extends React.Component {
         return <Media className="Label">
             <Media.Left>
                 <Canvas
-                    ref="thumbnail"
-                    className="Label-thumbnail"
-                    base64={this.props.thumbnail}
+                    ref="detection-thumbnail"
+                    className="Label-detection-thumbnail"
+                    base64={this.props.detection.thumbnail}
                     type="png"
                     width={64}
                     height={64}/>
@@ -53,12 +53,17 @@ class Label extends React.Component {
         </Media>;
     }
 }
+
+const detectionPropTypes = {
+    snapshot_date: PropTypes.number,
+    thumbnail: PropTypes.string
+};
+
 Label.propTypes = {
-    id: PropTypes.number.isRequired,
-    date: PropTypes.number.isRequired,
-    name: PropTypes.string.isRequired,
-    thumbnail: PropTypes.string.isRequired,
-    onNameChange: PropTypes.func.isRequired,
+    id: PropTypes.number,
+    detection: PropTypes.shape(detectionPropTypes),
+    name: PropTypes.string,
+    onNameChange: PropTypes.func,
     onNameBlur: PropTypes.func,
     onNameFocus: PropTypes.func
 };

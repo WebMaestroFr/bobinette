@@ -18,13 +18,15 @@ const open = ({
 }, url) => {
     close();
     socket = io(url);
-    socket.on('message', (action) => {
-        dispatch(action);
-    });
+    socket.on('json', action => dispatch(action));
 };
 
 export function socketAction(action) {
     return {type: SOCKET_ACTION, action};
+}
+
+export function socketOpen(url) {
+    return {type: SOCKET_OPEN, url};
 }
 
 export default store => next => action => {

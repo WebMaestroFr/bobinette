@@ -5,6 +5,7 @@ from os import path
 
 from bobinette import PATH_DATA, PATH_OPENCV
 from bobinette.vision import crop_image, get_distance
+from cv2 import error as cv_error
 from cv2 import (CASCADE_SCALE_IMAGE, CascadeClassifier, face,
                  getRotationMatrix2D, warpAffine)
 from numpy import array as numpy_array
@@ -41,12 +42,11 @@ EYE_RIGHT_ORIGIN = (
 EYES_ANGLE = degrees(atan2(
     EYE_RIGHT_CENTER[1] - EYE_LEFT_CENTER[1],
     EYE_RIGHT_CENTER[0] - EYE_LEFT_CENTER[0]))
-EYES_DISTANCE = SIZE[0] * \
-    get_distance(EYE_LEFT_CENTER, EYE_RIGHT_CENTER)
+EYES_DISTANCE = SIZE[0] * get_distance(EYE_LEFT_CENTER, EYE_RIGHT_CENTER)
 
-EYES_ORIGIN_OFFSET = (
-    EYE_LEFT_ORIGIN[0] * SIZE[0],
-    EYE_LEFT_ORIGIN[1] * SIZE[1])
+EYES_OFFSET = (
+    EYE_LEFT_CENTER[0] * SIZE[0],
+    EYE_LEFT_CENTER[1] * SIZE[1])
 
 THRESHOLD_CREATE = 0.6
 THRESHOLD_PASS = 0.6
@@ -55,7 +55,6 @@ THRESHOLD_TRAIN = 0.67
 
 def detect(gray, scale_factor=1.3, min_neighbors=4, min_size=SIZE):
     '''Detect Faces'''
-    print "=> DETECT FACES"
     return CLASSIFIER.detectMultiScale(
         gray,
         scaleFactor=scale_factor,
@@ -66,7 +65,6 @@ def detect(gray, scale_factor=1.3, min_neighbors=4, min_size=SIZE):
 
 def detect_eyes(gray, scale_factor=1.1, min_neighbors=4, min_size=SIZE):
     '''Detect Eyes'''
-    print "=> DETECT EYES"
     return CLASSIFIER_EYE.detectMultiScale(
         gray,
         scaleFactor=scale_factor,
@@ -92,19 +90,20 @@ def get_eye_center(gray, roi=None, **kwargs):
 
 def transform(region, gray, **kwargs):
     """Transform Face Image"""
-    print "=> TRANSFORM FACE"
-    min_size = (EYE_MIN[0] * region.width, EYE_MIN[1] * region.height)
-    max_size = (EYE_MAX[0] * region.width, EYE_MAX[1] * region.height)
+    min_size = (int(round(EYE_MIN[0] * region['width'])),
+                int(round(EYE_MIN[1] * region['height'])))
+    max_size = (int(round(EYE_MAX[0] * region['width'])),
+                int(round(EYE_MAX[1] * region['height'])))
     left = get_eye_center(gray, (
-        region.x + EYE_LEFT_ORIGIN[0] * region.width,
-        region.y + EYE_LEFT_ORIGIN[1] * region.height,
+        int(round(region['x'] + EYE_LEFT_ORIGIN[0] * region['width'])),
+        int(round(region['y'] + EYE_LEFT_ORIGIN[1] * region['height'])),
         max_size[0],
         max_size[1]
     ), min_size=min_size, **kwargs)
     if left:
         right = get_eye_center(gray, (
-            region.x + EYE_RIGHT_ORIGIN[0] * region.width,
-            region.y + EYE_RIGHT_ORIGIN[1] * region.height,
+            int(round(region['x'] + EYE_RIGHT_ORIGIN[0] * region['width'])),
+            int(round(region['y'] + EYE_RIGHT_ORIGIN[1] * region['height'])),
             max_size[0],
             max_size[1]
         ), min_size=min_size, **kwargs)
@@ -118,8 +117,8 @@ def transform(region, gray, **kwargs):
             image = warpAffine(gray, matrix, gray.shape)
             return crop_image(
                 image,
-                int(left[0] - EYES_ORIGIN_OFFSET[0]),
-                int(left[1] - EYES_ORIGIN_OFFSET[1]),
+                int(round(left[0] - EYES_OFFSET[0])),
+                int(round(left[1] - EYES_OFFSET[1])),
                 SIZE[0],
                 SIZE[1])
     return None
@@ -127,12 +126,10 @@ def transform(region, gray, **kwargs):
 
 def predict(image):
     '''Image Face Recognition'''
-    print "=> PREDICT FACE"
     try:
         label_id, distance = RECOGNIZER.predict(image)
         confidence = 1.0 - distance / 255.0
-    except Exception as error:
-        print error
+    except cv_error:
         label_id = None
         confidence = 0.0
     return label_id, confidence
@@ -140,6 +137,5 @@ def predict(image):
 
 def train(label_id, *images):
     '''Add Face to Label Collection'''
-    print "=> TRAIN FACE"
     RECOGNIZER.update(images, numpy_array([label_id] * len(images)))
     RECOGNIZER.write(MODEL)

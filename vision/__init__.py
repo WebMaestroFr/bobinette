@@ -9,7 +9,7 @@ from picamera import array as camera_array
 from picamera import PiCamera
 
 RESOLUTION = (480, 368)
-FRAMERATE = 8
+FRAMERATE = 4
 
 CAMERA = PiCamera()
 CAMERA.resolution = RESOLUTION
@@ -40,7 +40,6 @@ def run_capture(callback):
     '''Run Camera Capture'''
     try:
         for frame in CAMERA.capture_continuous(RGB, format='bgr', use_video_port=True):
-            print '=> PROCESS FRAME'
             callback(frame.array)
             RGB.truncate(0)
     finally:

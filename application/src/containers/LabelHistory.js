@@ -1,53 +1,38 @@
 import {connect} from 'react-redux';
-import {updateLabelName, setActiveItem} from '../actions';
+import {updateLabelName, setActiveLabel} from '../actions';
 import {socketAction} from '../socket';
 import LabelList from '../components/LabelList';
 
-const byDate = (a, b) => b.date - a.date;
-const toLatest = (a, b) => a.date > b.date
-    ? a
-    : b;
+const byDate = (a, b) => b.detection.snapshot_date - a.detection.snapshot_date;
 
-const mapStateToProps = state => {
-    const toItem = ({id, name}) => {
-        const byLabel = ({label_id}) => label_id === id;
-        const labelDetections = state
-            .detections
-            .filter(byLabel);
-        if (labelDetections.length === 0) {
-            return null;
-        }
-        const {date, thumbnail} = labelDetections.reduce(toLatest);
-        return {id, date, name, thumbnail};
-    };
+const mapStateToProps = (state) => {
     const byName = (element, index, array) => {
-        return element && (!element.name || state.activeItem === element.id || array.every((e, i, a) => {
-            return !e || index === i || element.name !== e.name || element.date > e.date;
-        }));
+        // Filter items : not null with a unique (most recent) or empty name,
+        const isDifferentNameOrOlder = (e, i, a) => !e || index === i || element.name !== e.name || element.detection.snapshot_date > e.detection.snapshot_date;
+        return element && (!element.name || state.activeLabel === element.id || array.every(isDifferentNameOrOlder));
     };
     return {
-        items: state
+        labels: state
             .labels
-            .map(toItem)
             .filter(byName)
             .sort(byDate)
     };
 };
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return {
-        onNameChange: (label) => {
-            const action = updateLabelName(label);
-            dispatch(action);
+        onNameChange: (id, name) => {
+            const action = updateLabelName(id, name);
             const serverAction = socketAction(action);
+            dispatch(action);
             dispatch(serverAction);
         },
         onNameFocus: (id) => {
-            const action = setActiveItem(id);
+            const action = setActiveLabel(id);
             dispatch(action);
         },
         onNameBlur: () => {
-            const action = setActiveItem(null);
+            const action = setActiveLabel(null);
             dispatch(action);
         }
     };

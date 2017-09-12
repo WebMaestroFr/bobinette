@@ -1,35 +1,25 @@
-export const SET_DETECTIONS = 'SET_DETECTIONS';
-export const ADD_DETECTIONS = 'ADD_DETECTIONS';
-
-export function setDetections(data) {
-    return {type: SET_DETECTIONS, data};
-}
-export function addDetections(data) {
-    return {type: ADD_DETECTIONS, data};
-}
-
 export const SET_LABELS = 'SET_LABELS';
 export const ADD_LABELS = 'ADD_LABELS';
 export const UPDATE_LABEL_NAME = 'UPDATE_LABEL_NAME';
 
-export function setLabels(data) {
-    return {type: SET_LABELS, data};
+export function setLabels(labels) {
+    return {type: SET_LABELS, labels};
 }
-export function addLabels(data) {
-    return {type: ADD_LABELS, data};
+export function addLabels(labels) {
+    return {type: ADD_LABELS, labels};
 }
-export function updateLabelName(label) {
-    return {type: UPDATE_LABEL_NAME, label};
+export function updateLabelName(id, name) {
+    return {type: UPDATE_LABEL_NAME, id, name};
+}
+
+export const SET_ACTIVE_LABEL = 'SET_ACTIVE_LABEL';
+
+export function setActiveLabel(key) {
+    return {type: SET_ACTIVE_LABEL, key};
 }
 
 export const SET_SNAPSHOT = 'SET_SNAPSHOT';
 
-export function setSnapshot(data) {
-    return {type: SET_SNAPSHOT, data};
-}
-
-export const SET_ACTIVE_ITEM = 'SET_ACTIVE_ITEM';
-
-export function setActiveItem(key) {
-    return {type: SET_ACTIVE_ITEM, key};
+export function setSnapshot(snapshot) {
+    return {type: SET_SNAPSHOT, snapshot};
 }
