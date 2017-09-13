@@ -24,15 +24,15 @@ git submodule init
 printf "\n${BLUE}Updating Submodules ...${BLANK}\n"
 git submodule update
 
+printf "\n${BLUE}Installing Server Requirements ...${BLANK}\n"
+sudo pip install -r requirements.txt
+
 printf "\n${BLUE}Building OpenCV ...${BLANK}\n"
 cd libraries/opencv_build
 cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules ../opencv
 make -j$(nproc)
 sudo make install
 cd ../..
-
-printf "\n${BLUE}Installing Server Requirements ...${BLANK}\n"
-sudo pip install -r requirements.txt
 
 # printf "\n${BLUE}Installing Node ...${BLANK}\n"
 # wget -O - https://raw.githubusercontent.com/sdesalas/node-pi-zero/master/install-node-v6.9.1.sh | bash
