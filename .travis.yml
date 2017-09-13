@@ -9,7 +9,7 @@ before_install:
     - sudo apt-get --purge autoremove postgresql-9.5 postgresql-contrib-9.5
 install:
     - bash install.sh
-before_script:
-    - export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.7/site-packages
+    - sudo sh -c 'echo "/usr/local/lib" > /etc/ld.so.conf.d/opencv.conf'
+    - sudo ldconfig
 script:
     - pytest
