@@ -9,7 +9,15 @@ before_install:
     - sudo apt-get --purge autoremove postgresql-9.5 postgresql-contrib-9.5
 install:
     - bash install.sh
-    - sudo sh -c 'echo "/usr/local/lib" > /etc/ld.so.conf.d/opencv.conf'
-    - sudo ldconfig
+before_script:
+    - export PYTHONPATH=$PYTHONPATH:/usr/local/lib
+    - export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.7/site-packages
+    - export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.7/dist-packages
+    - export PYTHONPATH=$PYTHONPATH:/usr/lib
+    - export PYTHONPATH=$PYTHONPATH:/usr/lib/python2.7/site-packages
+    - export PYTHONPATH=$PYTHONPATH:/usr/lib/python2.7/dist-packages
+    - export PYTHONPATH=$PYTHONPATH:/home/travis/virtualenv/python2.7.13/lib
+    - export PYTHONPATH=$PYTHONPATH:/home/travis/virtualenv/python2.7.13/lib/python2.7/site-packages
+    - export PYTHONPATH=$PYTHONPATH:/home/travis/virtualenv/python2.7.13/lib/python2.7/dist-packages
 script:
     - pytest
