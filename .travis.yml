@@ -15,6 +15,7 @@ before_install:
     - sudo apt-get --purge autoremove postgresql-9.4 postgresql-contrib-9.4
     - sudo apt-get --purge autoremove postgresql-9.5 postgresql-contrib-9.5
 install:
+    - sudo -H pip install pytest
     - bash install.sh
 script:
     - pytest
