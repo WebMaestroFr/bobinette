@@ -2,15 +2,19 @@ language: python
 sudo: required
 python:
     - 2.7
+cache:
+    pip: true
+    apt: true
+    directories:
+        - node_modules
+virtualenv:
+    system_site_packages: true
 before_install:
     - sudo apt-get --purge autoremove postgresql-9.2 postgresql-contrib-9.2
     - sudo apt-get --purge autoremove postgresql-9.3 postgresql-contrib-9.3
     - sudo apt-get --purge autoremove postgresql-9.4 postgresql-contrib-9.4
     - sudo apt-get --purge autoremove postgresql-9.5 postgresql-contrib-9.5
 install:
-    - sudo -H pip install virtualenv virtualenvwrapper pytest
     - bash install.sh
-virtualenv:
-    system_site_packages: true
 script:
     - pytest

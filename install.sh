@@ -30,7 +30,16 @@ sudo -H pip install -r requirements.txt
 
 printf "\n${BLUE}Building OpenCV ...${BLANK}\n"
 cd libraries/opencv_build
-cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules ../opencv
+cmake \
+-D BUILD_PYTHON_SUPPORT=ON \
+-D CMAKE_BUILD_TYPE=RELEASE \
+-D CMAKE_INSTALL_PREFIX=/usr/local \
+-D INSTALL_PYTHON_EXAMPLES=ON \
+-D OPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules \
+-D WITH_OPENGL=ON \
+-D WITH_TBB=ON \
+-D WITH_V4L=ON \
+../opencv
 make -j$(nproc)
 sudo make install
 cd ../..
