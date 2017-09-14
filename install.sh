@@ -8,6 +8,7 @@ BLANK="\033[0m"
 printf "\n${BLUE}Updating Package Manager ...${BLANK}\n"
 sudo apt-get update -y
 printf "\n${BLUE}Upgrading Distribution ...${BLANK}\n"
+# sudo apt-get upgrade -y -q
 sudo apt-get dist-upgrade -y -q
 
 printf "\n${BLUE}Installing Dependencies ...${BLANK}\n"

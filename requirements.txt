@@ -1,8 +1,5 @@
 Flask
 Flask-SQLAlchemy
 flask-socketio
-gevent
-gevent-websocket
 numpy
 picamera[array]
-pytest
