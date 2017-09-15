@@ -2,3 +2,5 @@ Flask
 Flask-SQLAlchemy
 flask-socketio
 numpy
+picamera[array]
+pytest

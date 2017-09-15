@@ -15,4 +15,4 @@ before_install:
 install:
     - bash install.sh
 script:
-    - pytest --ignore=libraries/
+    - pytest

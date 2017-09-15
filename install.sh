@@ -26,8 +26,7 @@ printf "\n${BLUE}Updating Submodules ...${BLANK}\n"
 git submodule update
 
 printf "\n${BLUE}Installing Server Requirements ...${BLANK}\n"
-sudo pip install -r requirements.txt
-sudo pip install 'picamera[array]'
+sudo -H pip install -r requirements.txt
 
 printf "\n${BLUE}Building OpenCV ...${BLANK}\n"
 cd libraries/opencv_build
