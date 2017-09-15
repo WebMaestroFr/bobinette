@@ -18,7 +18,7 @@ install:
     - make -j4
     - sudo make install
     - sudo sh -c 'echo "/usr/local/lib" > /etc/ld.so.conf.d/opencv.conf'
-    - ldconfig
+    - sudo ldconfig
     - cd ../../application
     - npm install
     - npm run build
