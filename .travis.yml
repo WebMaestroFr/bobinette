@@ -7,18 +7,18 @@ cache:
     directories:
         - node_modules
 install:
-    - sudo apt-get install -y build-essential
-    - sudo apt-get install -y cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
-    - sudo apt-get install -y python-dev python-numpy python-pip
+    - sudo -H apt-get install -y build-essential
+    - sudo -H apt-get install -y cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
+    - sudo -H apt-get install -y python-dev python-numpy python-pip
     - git submodule init
     - git submodule update
-    - sudo pip install -r requirements.txt
+    - sudo -H pip install -r requirements.txt
     - cd libraries/opencv_build
     - cmake -D BUILD_PYTHON_SUPPORT=ON -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D INSTALL_PYTHON_EXAMPLES=ON -D OPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules -D WITH_OPENGL=ON -D WITH_TBB=ON -D WITH_V4L=ON ../opencv
     - make -j4
-    - sudo make install
-    - sudo sh -c 'echo "/usr/local/lib" > /etc/ld.so.conf.d/opencv.conf'
-    - sudo ldconfig
+    - sudo -H make install
+    - sudo -H sh -c 'echo "/usr/local/lib" > /etc/ld.so.conf.d/opencv.conf'
+    - sudo -H ldconfig
     - cd ../../application
     - npm install
     - npm run build
