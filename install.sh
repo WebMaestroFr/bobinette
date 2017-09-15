@@ -27,6 +27,7 @@ git submodule update
 
 printf "\n${BLUE}Installing Server Requirements ...${BLANK}\n"
 sudo pip install -r requirements.txt
+sudo pip install 'picamera[array]'
 
 printf "\n${BLUE}Building OpenCV ...${BLANK}\n"
 cd libraries/opencv_build
