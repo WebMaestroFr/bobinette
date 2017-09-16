@@ -1,6 +1,9 @@
 '''Capture and Face Recognition'''
 print "=> START BOBINETTE"
 
+from itertools import groupby
+from operator import itemgetter
+
 from bobinette.models import Detection, Label, Snapshot
 from bobinette.server import action, app, db, socket
 from bobinette.vision import face as subject
@@ -13,7 +16,8 @@ PORT = 80
 @socket.on('connect')
 def client_connect():
     '''New Client Connection'''
-    action('SET_LABELS', {'labels': Label.query.all()})
+    labels = Label.query.all()
+    action('SET_LABELS', {'labels': labels})
 
 
 @socket.on('UPDATE_LABEL_NAME')
@@ -23,6 +27,17 @@ def update_label_name(data):
     label = Label.query.get(data['id'])
     label.name = data['name']
     db.session.commit()
+
+
+@socket.on('TRAIN_LABELS')
+def train_labels():
+    '''Train Labels Event'''
+    print "=> TRAIN_LABELS"
+    labels = Label.query.all()
+    get_item = itemgetter('name')
+    new_list = [list(g) for k, g in groupby(
+        sorted(labels, key=get_item), get_item)]
+    print new_list
 
 
 def handle_snapshot(frame):
@@ -77,11 +92,6 @@ def before_first_request():
     '''Before First Request'''
     print '=> START CAPTURE'
     socket.start_background_task(target=run_capture, callback=handle_snapshot)
-
-
-def test_pytest():
-    '''Pytest'''
-    assert True
 
 
 if __name__ == '__main__':
