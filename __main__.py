@@ -79,6 +79,11 @@ def before_first_request():
     socket.start_background_task(target=run_capture, callback=handle_snapshot)
 
 
+def test_pytest():
+    '''Pytest'''
+    assert True
+
+
 if __name__ == '__main__':
     with app.app_context():
         print '=> CREATE DATABASE'
