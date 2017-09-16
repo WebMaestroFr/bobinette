@@ -1,5 +1,7 @@
 # Bobinette
 
+Physiognomist Device and Services
+
 ## Start Development (`bobinette-dev`)
 ```
 cd ~/bobinette
@@ -89,6 +91,5 @@ sudo nano /etc/rc.local
 ```
 Write commands before `exit 0`, save and exit (`ctrl+X`).
 ```
-iptables -t nat -I PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8000
-npm start --prefix /home/pi/bobinette/server
+python -m bobinette
 ```

@@ -5,5 +5,10 @@
     "username": "pi",
     "password": "raspberry",
     "target": "/home/pi/bobinette",
-    "uploadOnSave": true
+    "uploadOnSave": true,
+    "ignore": [
+        ".remote-sync.json",
+        ".cache/**",
+        ".git/**"
+    ]
 }
