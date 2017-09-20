@@ -4,3 +4,4 @@ flask-socketio
 numpy
 picamera[array]
 pytest
+RPi.GPIO

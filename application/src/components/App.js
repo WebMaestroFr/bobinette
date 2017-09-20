@@ -1,8 +1,9 @@
 import React from 'react';
-import {Grid, Row, Col, Button} from 'react-bootstrap';
+import {Grid, Row, Col} from 'react-bootstrap';
 
 import LabelHistory from '../containers/LabelHistory';
 import SnapshotLive from '../containers/SnapshotLive';
+import ServerAction from '../containers/ServerAction';
 
 import './App.css';
 
@@ -21,7 +22,7 @@ class App extends React.Component {
                             <h1>History</h1>
                         </Col>
                         <Col xs={4}>
-                            <Button block className="App-train">Train</Button>
+                            <ServerAction className="App-open" action="OPEN_LOCK">Open</ServerAction>
                         </Col>
                     </Row>
                     <LabelHistory/>

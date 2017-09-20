@@ -1,16 +1,25 @@
 '''Capture and Face Recognition'''
-print "=> START BOBINETTE"
+print '=> START BOBINETTE'
 
 from itertools import groupby
 from operator import itemgetter
+from time import sleep
 
 from bobinette.models import Detection, Label, Snapshot
 from bobinette.server import action, app, db, socket
 from bobinette.vision import face as subject
 from bobinette.vision import get_gray, run_capture
+from RPi import GPIO
 
 DOMAIN = 'bobinette-dev.local'
 PORT = 80
+
+LOCK_IS_OPEN = False
+LOCK_CHANNEL = 7
+LOCK_TIMEOUT = 4
+
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(LOCK_CHANNEL, GPIO.OUT, initial=LOCK_IS_OPEN)
 
 
 @socket.on('connect')
@@ -23,7 +32,7 @@ def client_connect():
 @socket.on('UPDATE_LABEL_NAME')
 def update_label_name(data):
     '''Update Label Name Event'''
-    print "=> UPDATE_LABEL_NAME", data
+    print '=> UPDATE_LABEL_NAME', data
     label = Label.query.get(data['id'])
     label.name = data['name']
     db.session.commit()
@@ -32,11 +41,26 @@ def update_label_name(data):
 @socket.on('TRAIN_LABELS')
 def train_labels():
     '''Train Labels Event'''
-    print "=> TRAIN_LABELS"
+    print '=> TRAIN_LABELS'
     labels = Label.query.all()
     get_item = itemgetter('name')
     groups = groupby(sorted(labels, key=get_item), get_item)
     print [list(group) for __k, group in groups]
+
+
+@socket.on('OPEN_LOCK')
+def open_lock(_):
+    '''Open Lock Event'''
+    print '=> OPEN_LOCK'
+    global LOCK_IS_OPEN
+    if not LOCK_IS_OPEN:
+        LOCK_IS_OPEN = True
+        GPIO.output(LOCK_CHANNEL, 1)
+        print 'Lock is open !'
+        sleep(LOCK_TIMEOUT)
+        GPIO.output(LOCK_CHANNEL, 0)
+        print 'Lock is closed !'
+        LOCK_IS_OPEN = False
 
 
 def handle_snapshot(frame):
