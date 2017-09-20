@@ -35,17 +35,15 @@ def train_labels():
     print "=> TRAIN_LABELS"
     labels = Label.query.all()
     get_item = itemgetter('name')
-    new_list = [list(g) for k, g in groupby(
-        sorted(labels, key=get_item), get_item)]
-    print new_list
+    groups = groupby(sorted(labels, key=get_item), get_item)
+    print [list(group) for __k, group in groups]
 
 
 def handle_snapshot(frame):
     '''Handle Snapshot'''
     gray = get_gray(frame)
 
-    regions = [{'x': d[0], 'y': d[1], 'width': d[2], 'height': d[3]}
-               for d in subject.detect(gray)]
+    regions = subject.detect(gray)
 
     labels = []
 
@@ -62,7 +60,7 @@ def handle_snapshot(frame):
                 if confidence <= subject.THRESHOLD_CREATE:
                     label = Label()
                     db.session.add(label)
-                    labels.append(label)
+                    labels.append((label, thumbnail))
                 else:
                     label = Label.query.get(label_id)
                     if subject.THRESHOLD_PASS >= confidence <= subject.THRESHOLD_TRAIN:
@@ -76,8 +74,9 @@ def handle_snapshot(frame):
         db.session.commit()
 
         if labels:
-            action('ADD_LABELS', {'labels': labels}, broadcast=True)
-            for label in labels:
+            data = {'labels': [l for (l, _) in labels]}
+            action('ADD_LABELS', data, broadcast=True)
+            for (label, thumbnail) in labels:
                 subject.train(label.id, thumbnail)
 
         action('SET_SNAPSHOT', {'snapshot': snapshot}, broadcast=True)

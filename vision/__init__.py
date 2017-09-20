@@ -32,7 +32,7 @@ def get_distance((o_x, o_y), (d_x, d_y)):
 def get_gray(bgr):
     '''Apply Contrast Limited Adaptive Histogram Equalization'''
     lab = cvtColor(bgr, COLOR_BGR2LAB)
-    lightness, a, b = split(lab)
+    lightness, __a, __b = split(lab)
     return CLAHE.apply(lightness)
 
 
@@ -43,4 +43,5 @@ def run_capture(callback):
             callback(frame.array)
             RGB.truncate(0)
     finally:
-        CAMERA.close()
+        if CAMERA:
+            CAMERA.close()
