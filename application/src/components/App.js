@@ -21,8 +21,8 @@ class App extends React.Component {
                         <Col xs={8}>
                             <h1>History</h1>
                         </Col>
-                        <Col xs={4}>
-                            <ServerAction className="App-open" action="OPEN_LOCK">Open</ServerAction>
+                        <Col className="App-open" xs={4}>
+                            <ServerAction action="OPEN_LOCK">Open</ServerAction>
                         </Col>
                     </Row>
                     <LabelHistory/>
