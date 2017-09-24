@@ -6,7 +6,8 @@ cache:
     pip: true
     apt: true
     directories:
-        - node_modules
+        - $HOME/application/node_modules
+        - $HOME/libraries/opencv_build
 before_install:
     - sudo apt-get --purge autoremove postgresql-9.2 postgresql-contrib-9.2
     - sudo apt-get --purge autoremove postgresql-9.3 postgresql-contrib-9.3

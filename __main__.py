@@ -1,16 +1,26 @@
 '''Capture and Face Recognition'''
-print "=> START BOBINETTE"
+print '=> START BOBINETTE'
 
 from itertools import groupby
 from operator import itemgetter
+from threading import Timer
 
 from bobinette.models import Detection, Label, Snapshot
 from bobinette.server import action, app, db, socket
 from bobinette.vision import face as subject
 from bobinette.vision import get_gray, run_capture
+from RPi import GPIO
 
 DOMAIN = 'bobinette-dev.local'
 PORT = 80
+
+LOCK_IS_OPEN = False
+LOCK_CHANNEL = 7
+LOCK_TIMEOUT = 4.0
+
+GPIO.setmode(GPIO.BOARD)
+GPIO.setwarnings(False)
+GPIO.setup(LOCK_CHANNEL, GPIO.OUT, initial=LOCK_IS_OPEN)
 
 
 @socket.on('connect')
@@ -23,7 +33,7 @@ def client_connect():
 @socket.on('UPDATE_LABEL_NAME')
 def update_label_name(data):
     '''Update Label Name Event'''
-    print "=> UPDATE_LABEL_NAME", data
+    print '=> \033[93mUPDATE_LABEL_NAME\033[0m', data
     label = Label.query.get(data['id'])
     label.name = data['name']
     db.session.commit()
@@ -32,20 +42,40 @@ def update_label_name(data):
 @socket.on('TRAIN_LABELS')
 def train_labels():
     '''Train Labels Event'''
-    print "=> TRAIN_LABELS"
+    print '=> \033[93mTRAIN_LABELS\033[0m'
     labels = Label.query.all()
     get_item = itemgetter('name')
-    new_list = [list(g) for k, g in groupby(
-        sorted(labels, key=get_item), get_item)]
-    print new_list
+    groups = groupby(sorted(labels, key=get_item), get_item)
+    print [list(group) for __k, group in groups]
+
+
+@socket.on('CLOSE_LOCK')
+def close_lock(_=None):
+    '''Close Lock Event'''
+    global LOCK_IS_OPEN
+    if LOCK_IS_OPEN:
+        print '=> \033[91mCLOSE_LOCK\033[0m'
+        LOCK_IS_OPEN = False
+        GPIO.output(LOCK_CHANNEL, 0)
+
+
+@socket.on('OPEN_LOCK')
+def open_lock(_=None):
+    '''Open Lock Event'''
+    global LOCK_IS_OPEN
+    if not LOCK_IS_OPEN:
+        print '=> \033[92mOPEN_LOCK\033[0m'
+        LOCK_IS_OPEN = True
+        GPIO.output(LOCK_CHANNEL, 1)
+        close = Timer(LOCK_TIMEOUT, close_lock)
+        close.start()
 
 
 def handle_snapshot(frame):
     '''Handle Snapshot'''
     gray = get_gray(frame)
 
-    regions = [{'x': d[0], 'y': d[1], 'width': d[2], 'height': d[3]}
-               for d in subject.detect(gray)]
+    regions = subject.detect(gray)
 
     labels = []
 
@@ -60,11 +90,16 @@ def handle_snapshot(frame):
 
                 label_id, confidence = subject.predict(thumbnail)
                 if confidence <= subject.THRESHOLD_CREATE:
-                    label = Label()
-                    db.session.add(label)
-                    labels.append(label)
+                    if subject.detect(thumbnail, min_neighbors=1):
+                        label = Label()
+                        db.session.add(label)
+                        labels.append((label, thumbnail))
+                    else:
+                        continue
                 else:
                     label = Label.query.get(label_id)
+                    if label.name == 'Etienne':
+                        open_lock()
                     if subject.THRESHOLD_PASS >= confidence <= subject.THRESHOLD_TRAIN:
                         subject.train(label_id, thumbnail)
 
@@ -76,8 +111,9 @@ def handle_snapshot(frame):
         db.session.commit()
 
         if labels:
-            action('ADD_LABELS', {'labels': labels}, broadcast=True)
-            for label in labels:
+            data = {'labels': [l for (l, _) in labels]}
+            action('ADD_LABELS', data, broadcast=True)
+            for (label, thumbnail) in labels:
                 subject.train(label.id, thumbnail)
 
         action('SET_SNAPSHOT', {'snapshot': snapshot}, broadcast=True)

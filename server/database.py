@@ -24,7 +24,7 @@ class BaseModel(Model):
                 for key in inspect(self.__class__).primary_key}
 
     def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, self.__keys__)
+        return '\033[1m{}\033[0m({})'.format(self.__class__.__name__, self.__keys__)
 
 
 app.config[

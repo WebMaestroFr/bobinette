@@ -55,12 +55,18 @@ THRESHOLD_TRAIN = 0.67
 
 def detect(gray, scale_factor=1.3, min_neighbors=4, min_size=SIZE):
     '''Detect Faces'''
-    return CLASSIFIER.detectMultiScale(
+    regions = CLASSIFIER.detectMultiScale(
         gray,
         scaleFactor=scale_factor,
         minNeighbors=min_neighbors,
         flags=CASCADE_SCALE_IMAGE,
         minSize=min_size)
+    return [{
+        'x': x,
+        'y': y,
+        'width': width,
+        'height': height
+    } for (x, y, width, height) in regions]
 
 
 def detect_eyes(gray, scale_factor=1.1, min_neighbors=4, min_size=SIZE):
