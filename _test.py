@@ -26,5 +26,7 @@ def test_socket_server():
     from bobinette.__main__ import app, socket
     client = socket.test_client(app)
     received = client.get_received()
-    print(received)
+    assert len(received) == 1
+    assert 'type' in received[0]['args']
+    assert received[0]['args']['type'] == 'SET_LABELS'
     client.disconnect()
