@@ -21,6 +21,7 @@ sudo apt-get clean -y
 
 printf "\n${BLUE}Installing Server Requirements ...${BLANK}\n"
 sudo -H pip install -U -r requirements.txt
+sudo -H pip install -U -r requirements-pi.txt
 
 printf "\n${BLUE}Updating Node Package Manager ...${BLANK}\n"
 npm update -g
