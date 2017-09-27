@@ -2,6 +2,7 @@ Flask
 Flask-SQLAlchemy
 flask-socketio
 numpy
+opencv-contrib-python
 picamera[array]
 pytest
 RPi.GPIO
