@@ -6,8 +6,12 @@ cache:
     pip: true
     apt: true
     directories:
-        - $HOME/application/node_modules
+        - application/node_modules
+before_install:
+    - sudo apt-get -qq update
+    - sudo apt-get install -y python-dev python-pip
 install:
-    - bash install.sh
+    - pip install -r requirements.txt
+    - cd application && npm install && npm run build
 script:
     - pytest
