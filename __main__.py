@@ -1,5 +1,5 @@
 '''Capture and Face Recognition'''
-print '=> START BOBINETTE'
+print('=> START BOBINETTE')
 
 from itertools import groupby
 from operator import itemgetter
@@ -33,7 +33,7 @@ def client_connect():
 @socket.on('UPDATE_LABEL_NAME')
 def update_label_name(data):
     '''Update Label Name Event'''
-    print '=> \033[93mUPDATE_LABEL_NAME\033[0m', data
+    print('=> \033[93mUPDATE_LABEL_NAME\033[0m', data)
     label = Label.query.get(data['id'])
     label.name = data['name']
     db.session.commit()
@@ -42,11 +42,11 @@ def update_label_name(data):
 @socket.on('TRAIN_LABELS')
 def train_labels():
     '''Train Labels Event'''
-    print '=> \033[93mTRAIN_LABELS\033[0m'
+    print('=> \033[93mTRAIN_LABELS\033[0m')
     labels = Label.query.all()
     get_item = itemgetter('name')
     groups = groupby(sorted(labels, key=get_item), get_item)
-    print [list(group) for __k, group in groups]
+    print([list(group) for __k, group in groups])
 
 
 @socket.on('CLOSE_LOCK')
@@ -54,7 +54,7 @@ def close_lock(_=None):
     '''Close Lock Event'''
     global LOCK_IS_OPEN
     if LOCK_IS_OPEN:
-        print '=> \033[91mCLOSE_LOCK\033[0m'
+        print('=> \033[91mCLOSE_LOCK\033[0m')
         LOCK_IS_OPEN = False
         GPIO.output(LOCK_CHANNEL, 0)
 
@@ -64,7 +64,7 @@ def open_lock(_=None):
     '''Open Lock Event'''
     global LOCK_IS_OPEN
     if not LOCK_IS_OPEN:
-        print '=> \033[92mOPEN_LOCK\033[0m'
+        print('=> \033[92mOPEN_LOCK\033[0m')
         LOCK_IS_OPEN = True
         GPIO.output(LOCK_CHANNEL, 1)
         close = Timer(LOCK_TIMEOUT, close_lock)
@@ -126,13 +126,13 @@ def handle_snapshot(frame):
 @app.before_first_request
 def before_first_request():
     '''Before First Request'''
-    print '=> START CAPTURE'
+    print('=> START CAPTURE')
     socket.start_background_task(target=run_capture, callback=handle_snapshot)
 
 
 if __name__ == '__main__':
     with app.app_context():
-        print '=> CREATE DATABASE'
+        print('=> CREATE DATABASE')
         db.create_all()
-    print '=> RUN SERVER'
+    print('=> RUN SERVER')
     socket.run(app, host=DOMAIN, port=PORT, debug=False, log_output=True)

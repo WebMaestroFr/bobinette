@@ -18,3 +18,13 @@ def test_db_create_all():
     from bobinette.__main__ import app, db
     with app.app_context():
         db.create_all()
+        assert True
+
+
+def test_socket_server():
+    '''SocketIO Server'''
+    from bobinette.__main__ import app, socket
+    client = socket.test_client(app)
+    received = client.get_received()
+    print(received)
+    client.disconnect()

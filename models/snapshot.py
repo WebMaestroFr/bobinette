@@ -1,5 +1,5 @@
 '''Snapshot Model'''
-print "=> SNAPSHOT MODEL"
+print("=> SNAPSHOT MODEL")
 
 from base64 import b64encode
 from datetime import datetime

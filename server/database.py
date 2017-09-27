@@ -1,5 +1,5 @@
 '''Server Database'''
-print '=> SERVER DATABASE'
+print('=> SERVER DATABASE')
 
 from bobinette import NAME, PATH_DATA
 from bobinette.server import app

@@ -1,5 +1,5 @@
 '''Vision Package'''
-print '=> INIT VISION'
+print('=> INIT VISION')
 
 from math import sqrt
 from threading import Thread
@@ -24,8 +24,10 @@ def crop_image(image, x, y, width, height):
     return image[y:y + height, x:x + width]
 
 
-def get_distance((o_x, o_y), (d_x, d_y)):
+def get_distance(origin, destination):
     '''Distance Between Two Points'''
+    (o_x, o_y) = origin
+    (d_x, d_y) = destination
     return sqrt((d_x - o_x)**2.0 + (d_y - o_y)**2.0)
 
 

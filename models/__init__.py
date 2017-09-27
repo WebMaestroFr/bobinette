@@ -1,5 +1,5 @@
 """Models Package"""
-print "=> INIT MODELS"
+print("=> INIT MODELS")
 
 from bobinette.models.detection import Detection
 from bobinette.models.label import Label

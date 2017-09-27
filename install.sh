@@ -13,15 +13,15 @@ printf "\n${BLUE}Upgrading Packages ...${BLANK}\n"
 sudo apt-get upgrade -y -q
 
 printf "\n${BLUE}Installing Dependencies ...${BLANK}\n"
-sudo apt-get install -y python-dev python-pip
+sudo apt-get install -y python3-dev python3-pip
 
 printf "\n${BLUE}Cleaning Up Packages ...${BLANK}\n"
 sudo apt-get autoremove -y
 sudo apt-get clean -y
 
 printf "\n${BLUE}Installing Server Requirements ...${BLANK}\n"
-sudo -H pip install -U -r requirements.txt
-sudo -H pip install -U -r requirements-pi.txt
+sudo -H pip3 install -U -r requirements.txt
+sudo -H pip3 install -U -r requirements-pi.txt
 
 printf "\n${BLUE}Updating Node Package Manager ...${BLANK}\n"
 npm update -g

@@ -1,5 +1,5 @@
 """Label Model"""
-print "=> LABEL MODEL"
+print("=> LABEL MODEL")
 
 from bobinette.models.detection import Detection
 from bobinette.server import db

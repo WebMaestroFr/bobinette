@@ -1,5 +1,5 @@
 '''Detection Model'''
-print "=> DETECTION MODEL"
+print("=> DETECTION MODEL")
 
 from base64 import b64encode
 

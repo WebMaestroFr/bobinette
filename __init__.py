@@ -1,5 +1,5 @@
 '''Constants and Singletons'''
-print "=> INIT BOBINETTE"
+print("=> INIT BOBINETTE")
 
 from os import path
 
