@@ -50,8 +50,6 @@ class Snapshot extends React.Component {
         this.drawDetections(detections);
     }
 
-    // shouldComponentUpdate({date}) { return date > this.props.date; }
-
     render() {
         const date = new Date(this.props.date);
         return <div ref="container" className="Snapshot">

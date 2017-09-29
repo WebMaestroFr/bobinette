@@ -22,7 +22,9 @@ class Label(db.Model):
     @property
     def detection(self):
         """Last Detection"""
-        return db.session.query(Detection).filter(self.id == Detection.label_id).order_by(DETECTION_DATE_DESC).first()
+        return db.session.query(Detection).filter(
+            self.id == Detection.label_id
+        ).order_by(DETECTION_DATE_DESC).first()
 
     def __init__(self, name=''):
         self.name = name

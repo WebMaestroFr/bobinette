@@ -2,7 +2,6 @@
 print('=> START BOBINETTE')
 
 from itertools import groupby
-from operator import itemgetter
 from threading import Timer
 
 from bobinette.models import Detection, Label, Snapshot
@@ -22,6 +21,8 @@ GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
 GPIO.setup(LOCK_CHANNEL, GPIO.OUT, initial=LOCK_IS_OPEN)
 
+LABEL_NAME_DESC = db.desc(Label.name)
+
 
 @socket.on('connect')
 def client_connect():
@@ -33,20 +34,46 @@ def client_connect():
 @socket.on('UPDATE_LABEL_NAME')
 def update_label_name(data):
     '''Update Label Name Event'''
-    print('=> \033[93mUPDATE_LABEL_NAME\033[0m', data)
+    print('=> \033[93mUPDATE_LABEL_NAME\033[0m')
+    print(data)
     label = Label.query.get(data['id'])
     label.name = data['name']
     db.session.commit()
 
 
+def merge_labels(name, group):
+    '''Merge Labels'''
+    destination = Label(name=name)
+    for label in group:
+        destination._detections.extend(label._detections)
+        db.session.delete(label)
+    db.session.add(destination)
+    return destination
+
+
+def compute_labels():
+    '''Group Labels Thumbnails'''
+    sources = Label.query.order_by(LABEL_NAME_DESC).all()
+    labels = []
+    for (name, group) in groupby(sources, lambda l: l.name):
+        group = list(group)
+        if name == '':
+            labels.extend(group)
+        else:
+            print((name, [l.id for l in group]))
+            label = merge_labels(name, group)
+            labels.append(label)
+    db.session.commit()
+    return [(l.id, [d._image for d in l._detections]) for l in labels]
+
+
 @socket.on('TRAIN_LABELS')
-def train_labels():
+def train_labels(_=None):
     '''Train Labels Event'''
     print('=> \033[93mTRAIN_LABELS\033[0m')
-    labels = Label.query.all()
-    get_item = itemgetter('name')
-    groups = groupby(sorted(labels, key=get_item), get_item)
-    print([list(group) for __k, group in groups])
+    training_sets = compute_labels()
+    subject.regenerate_recognizer(training_sets)
+    return client_connect()
 
 
 @socket.on('CLOSE_LOCK')

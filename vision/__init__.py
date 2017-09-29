@@ -2,7 +2,6 @@
 print('=> INIT VISION')
 
 from math import sqrt
-from threading import Thread
 
 from cv2 import COLOR_BGR2LAB, createCLAHE, cvtColor, split
 from picamera import array as camera_array

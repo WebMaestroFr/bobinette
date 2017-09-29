@@ -11,7 +11,8 @@ SOCKET = SocketIO(app, async_mode='threading', json=json)
 
 def action(action_type, data, **kwargs):
     '''Send a Redux Action to be processed by Client'''
-    print("=> \033[94m%s\033[0m" % action_type, data)
+    print("=> \033[94m%s\033[0m" % action_type)
+    print(data)
     data['type'] = action_type
     SOCKET.send(data, json=True, **kwargs)
 

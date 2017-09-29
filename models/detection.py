@@ -1,10 +1,12 @@
 '''Detection Model'''
 print("=> DETECTION MODEL")
 
-from base64 import b64encode
+from base64 import b64decode, b64encode
 
 from bobinette.server import db
-from cv2 import IMWRITE_PNG_COMPRESSION, imencode
+from cv2 import IMWRITE_PNG_COMPRESSION, imdecode, imencode
+from numpy import fromstring as numpy_fromstring
+from numpy import uint8
 
 PNG_COMPRESSION = 9
 
@@ -25,3 +27,10 @@ class Detection(db.Model):
         _, image = imencode('.png', thumbnail, (
             IMWRITE_PNG_COMPRESSION, PNG_COMPRESSION))
         self.thumbnail = b64encode(image)
+
+    @property
+    def _image(self):
+        """Decoded Thumbnail"""
+        source = b64decode(self.thumbnail)
+        image = numpy_fromstring(source, dtype=uint8)
+        return imdecode(image, 0)
