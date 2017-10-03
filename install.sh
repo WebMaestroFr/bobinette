@@ -33,4 +33,7 @@ printf "\n${BLUE}Building Client Application ...${BLANK}\n"
 npm run build
 cd ..
 
+printf "\n${BLUE}Running Unit Tests ...${BLANK}\n"
+pytest
+
 printf "\n${BLUE}All Done !${BLANK}\n"

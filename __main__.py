@@ -1,10 +1,9 @@
 '''Capture and Face Recognition'''
 print('=> START BOBINETTE')
 
-from itertools import groupby
 from threading import Timer
 
-from bobinette.models import Detection, Label, Snapshot
+from bobinette.models import Detection, Label, Snapshot, compute_labels
 from bobinette.server import action, app, db, socket
 from bobinette.vision import face as subject
 from bobinette.vision import get_gray, run_capture
@@ -20,8 +19,6 @@ LOCK_TIMEOUT = 4.0
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
 GPIO.setup(LOCK_CHANNEL, GPIO.OUT, initial=LOCK_IS_OPEN)
-
-LABEL_NAME_DESC = db.desc(Label.name)
 
 
 @socket.on('connect')
@@ -39,32 +36,6 @@ def update_label_name(data):
     label = Label.query.get(data['id'])
     label.name = data['name']
     db.session.commit()
-
-
-def merge_labels(name, group):
-    '''Merge Labels'''
-    destination = Label(name=name)
-    for label in group:
-        destination._detections.extend(label._detections)
-        db.session.delete(label)
-    db.session.add(destination)
-    return destination
-
-
-def compute_labels():
-    '''Group Labels Thumbnails'''
-    sources = Label.query.order_by(LABEL_NAME_DESC).all()
-    labels = []
-    for (name, group) in groupby(sources, lambda l: l.name):
-        group = list(group)
-        if name == '':
-            labels.extend(group)
-        else:
-            print((name, [l.id for l in group]))
-            label = merge_labels(name, group)
-            labels.append(label)
-    db.session.commit()
-    return [(l.id, [d._image for d in l._detections]) for l in labels]
 
 
 @socket.on('TRAIN_LABELS')

@@ -20,4 +20,5 @@ def action(action_type, data, **kwargs):
 @SOCKET.on_error_default
 def default_error_handler(*args):
     '''Default Error Handler'''
-    print("=> \033[91mSOCKET ERROR\033[0m", list(args))
+    print("=> \033[91mSOCKET ERROR\033[0m")
+    print(list(args))
