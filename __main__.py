@@ -25,7 +25,9 @@ GPIO.setup(LOCK_CHANNEL, GPIO.OUT, initial=LOCK_IS_OPEN)
 def client_connect():
     '''New Client Connection'''
     labels = Label.query.all()
-    action('SET_LABELS', {'labels': labels})
+    action('SET_LABELS', {
+        'labels': labels
+    })
 
 
 @socket.on('UPDATE_LABEL_NAME')
@@ -109,12 +111,16 @@ def handle_snapshot(frame):
         db.session.commit()
 
         if labels:
-            data = {'labels': [l for (l, _) in labels]}
+            data = {
+                'labels': [l for (l, _) in labels]
+            }
             action('ADD_LABELS', data, broadcast=True)
             for (label, thumbnail) in labels:
                 subject.train(label.id, thumbnail)
 
-        action('SET_SNAPSHOT', {'snapshot': snapshot}, broadcast=True)
+        action('SET_SNAPSHOT', {
+            'snapshot': snapshot
+        }, broadcast=True)
 
         if not snapshot.detections:
             db.session.delete(snapshot)
