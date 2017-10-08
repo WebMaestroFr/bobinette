@@ -7,7 +7,6 @@ from bobinette.models.detection import Detection
 from bobinette.server import db
 
 DETECTION_DATE_DESC = db.desc(Detection.snapshot_date)
-LABEL_NAME_DESC = db.desc(Label.name)
 
 
 class Label(db.Model):
@@ -41,6 +40,9 @@ def merge_labels(name, group):
         db.session.delete(label)
     db.session.add(destination)
     return destination
+
+
+LABEL_NAME_DESC = db.desc(Label.name)
 
 
 def compute_labels():
