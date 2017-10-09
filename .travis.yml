@@ -15,4 +15,4 @@ install:
     - pip3 install fake_rpi opencv-contrib-python
     - cd application && npm install && npm run build && cd ..
 script:
-    - pytest
+    - pytest --ignore=libraries/
