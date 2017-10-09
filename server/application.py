@@ -1,5 +1,5 @@
 '''Server Application'''
-print "=> SERVER APPLICATION"
+print("=> SERVER APPLICATION")
 
 from flask import Flask, render_template
 

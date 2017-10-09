@@ -1,11 +1,9 @@
 '''Capture and Face Recognition'''
-print '=> START BOBINETTE'
+print('=> START BOBINETTE')
 
-from itertools import groupby
-from operator import itemgetter
 from threading import Timer
 
-from bobinette.models import Detection, Label, Snapshot
+from bobinette.models import Detection, Label, Snapshot, compute_labels
 from bobinette.server import action, app, db, socket
 from bobinette.vision import face as subject
 from bobinette.vision import get_gray, run_capture
@@ -27,26 +25,28 @@ GPIO.setup(LOCK_CHANNEL, GPIO.OUT, initial=LOCK_IS_OPEN)
 def client_connect():
     '''New Client Connection'''
     labels = Label.query.all()
-    action('SET_LABELS', {'labels': labels})
+    action('SET_LABELS', {
+        'labels': labels
+    })
 
 
 @socket.on('UPDATE_LABEL_NAME')
 def update_label_name(data):
     '''Update Label Name Event'''
-    print '=> \033[93mUPDATE_LABEL_NAME\033[0m', data
+    print('=> \033[93mUPDATE_LABEL_NAME\033[0m')
+    print(data)
     label = Label.query.get(data['id'])
     label.name = data['name']
     db.session.commit()
 
 
 @socket.on('TRAIN_LABELS')
-def train_labels():
+def train_labels(_=None):
     '''Train Labels Event'''
-    print '=> \033[93mTRAIN_LABELS\033[0m'
-    labels = Label.query.all()
-    get_item = itemgetter('name')
-    groups = groupby(sorted(labels, key=get_item), get_item)
-    print [list(group) for __k, group in groups]
+    print('=> \033[93mTRAIN_LABELS\033[0m')
+    training_sets = compute_labels()
+    subject.regenerate_recognizer(training_sets)
+    return client_connect()
 
 
 @socket.on('CLOSE_LOCK')
@@ -54,7 +54,7 @@ def close_lock(_=None):
     '''Close Lock Event'''
     global LOCK_IS_OPEN
     if LOCK_IS_OPEN:
-        print '=> \033[91mCLOSE_LOCK\033[0m'
+        print('=> \033[91mCLOSE_LOCK\033[0m')
         LOCK_IS_OPEN = False
         GPIO.output(LOCK_CHANNEL, 0)
 
@@ -64,7 +64,7 @@ def open_lock(_=None):
     '''Open Lock Event'''
     global LOCK_IS_OPEN
     if not LOCK_IS_OPEN:
-        print '=> \033[92mOPEN_LOCK\033[0m'
+        print('=> \033[92mOPEN_LOCK\033[0m')
         LOCK_IS_OPEN = True
         GPIO.output(LOCK_CHANNEL, 1)
         close = Timer(LOCK_TIMEOUT, close_lock)
@@ -111,12 +111,16 @@ def handle_snapshot(frame):
         db.session.commit()
 
         if labels:
-            data = {'labels': [l for (l, _) in labels]}
+            data = {
+                'labels': [l for (l, _) in labels]
+            }
             action('ADD_LABELS', data, broadcast=True)
             for (label, thumbnail) in labels:
                 subject.train(label.id, thumbnail)
 
-        action('SET_SNAPSHOT', {'snapshot': snapshot}, broadcast=True)
+        action('SET_SNAPSHOT', {
+            'snapshot': snapshot
+        }, broadcast=True)
 
         if not snapshot.detections:
             db.session.delete(snapshot)
@@ -126,13 +130,13 @@ def handle_snapshot(frame):
 @app.before_first_request
 def before_first_request():
     '''Before First Request'''
-    print '=> START CAPTURE'
+    print('=> START CAPTURE')
     socket.start_background_task(target=run_capture, callback=handle_snapshot)
 
 
 if __name__ == '__main__':
     with app.app_context():
-        print '=> CREATE DATABASE'
+        print('=> CREATE DATABASE')
         db.create_all()
-    print '=> RUN SERVER'
+    print('=> RUN SERVER')
     socket.run(app, host=DOMAIN, port=PORT, debug=False, log_output=True)

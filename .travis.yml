@@ -1,19 +1,18 @@
 language: python
 sudo: required
 python:
-    - 2.7
+    - 3.6
 cache:
     pip: true
     apt: true
     directories:
-        - $HOME/application/node_modules
-        - $HOME/libraries/opencv_build
+        - application/node_modules
 before_install:
-    - sudo apt-get --purge autoremove postgresql-9.2 postgresql-contrib-9.2
-    - sudo apt-get --purge autoremove postgresql-9.3 postgresql-contrib-9.3
-    - sudo apt-get --purge autoremove postgresql-9.4 postgresql-contrib-9.4
-    - sudo apt-get --purge autoremove postgresql-9.5 postgresql-contrib-9.5
+    - sudo apt-get -qq update
+    - sudo apt-get install -y python3-dev python3-pip
 install:
-    - bash install.sh
+    - pip3 install -r requirements.txt
+    - pip3 install fake_rpi opencv-contrib-python
+    - cd application && npm install && npm run build && cd ..
 script:
     - pytest --ignore=libraries/

@@ -1,5 +1,5 @@
 '''Server Package'''
-print "=> INIT SERVER"
+print("=> INIT SERVER")
 
 from datetime import datetime
 

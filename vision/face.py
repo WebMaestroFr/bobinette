@@ -48,8 +48,8 @@ EYES_OFFSET = (
     EYE_LEFT_CENTER[0] * SIZE[0],
     EYE_LEFT_CENTER[1] * SIZE[1])
 
-THRESHOLD_CREATE = 0.6
-THRESHOLD_PASS = 0.6
+THRESHOLD_CREATE = 0.61
+THRESHOLD_PASS = 0.63
 THRESHOLD_TRAIN = 0.67
 
 
@@ -144,4 +144,14 @@ def predict(image):
 def train(label_id, *images):
     '''Add Face to Label Collection'''
     RECOGNIZER.update(images, numpy_array([label_id] * len(images)))
+    RECOGNIZER.write(MODEL)
+
+
+def regenerate_recognizer(training_sets):
+    '''Regenerate Face Recognizer'''
+    global RECOGNIZER
+    recognizer = face.LBPHFaceRecognizer_create()
+    for (label_id, images) in training_sets:
+        recognizer.update(images, numpy_array([label_id] * len(images)))
+    RECOGNIZER = recognizer
     RECOGNIZER.write(MODEL)
