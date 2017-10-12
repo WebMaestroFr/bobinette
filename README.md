@@ -55,7 +55,7 @@ sudo raspi-config
 ### Update Package Manager and Install Git
 ```
 sudo apt-get update -y
-sudo apt-get install -y git'
+sudo apt-get install -y git
 ```
 
 ### Install Repository
@@ -77,7 +77,7 @@ bash ./install.sh
 ```
 sudo nano /etc/rc.local
 ```
-Write commands before `exit 0`, save and exit (`ctrl+X`).
+Write command before `exit 0`, save and exit (`ctrl+X`).
 ```
 python3 -m bobinette
 ```
