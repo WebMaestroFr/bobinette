@@ -1,18 +1,18 @@
 # Bobinette
-
 Physiognomist Device and Services
 
-## Start Development (`bobinette-dev`)
+## Run Application
+
+#### Start Server
 ```
-cd ~/bobinette
+python3 -m bobinette
 ```
-##### Server
+Application is served at [bobinette.local](http://bobinette.local) (Pi Zero) or [bobinette-dev.local](http://bobinette-dev.local) (Pi 3).
+Capture starts before first request.
+
+#### Clear Data
 ```
-npm run server
-```
-##### Client
-```
-npm run client
+sudo rm bobinette/data/faces.xml && sudo rm bobinette/data/face-v1.sqlite3
 ```
 
 ## Build
@@ -79,5 +79,5 @@ sudo nano /etc/rc.local
 ```
 Write commands before `exit 0`, save and exit (`ctrl+X`).
 ```
-python -m bobinette
+python3 -m bobinette
 ```

@@ -8,7 +8,7 @@ from picamera import array as camera_array
 from picamera import PiCamera
 
 RESOLUTION = (480, 368)
-FRAMERATE = 4
+FRAMERATE = 8
 
 CAMERA = PiCamera()
 CAMERA.resolution = RESOLUTION
