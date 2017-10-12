@@ -55,7 +55,7 @@ sudo raspi-config
 ### Update Package Manager and Install Git
 ```
 sudo apt-get update -y
-sudo apt-get install -y git'
+sudo apt-get install -y git
 ```
 
 ### Install Repository
