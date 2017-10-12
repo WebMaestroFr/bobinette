@@ -20,7 +20,7 @@ MODEL = '%s/%s.xml' % (PATH_DATA, 'faces')
 if path.isfile(MODEL):
     RECOGNIZER.read(MODEL)
 
-SIZE = (64, 64)
+SIZE = (96, 96)
 
 EYE_SIZE = (0.3, 0.3)
 EYE_LEFT_CENTER = (0.3, 0.4)

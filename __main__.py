@@ -1,5 +1,5 @@
 '''Capture and Face Recognition'''
-print('=> START BOBINETTE')
+print('\033[93mBobinette v0.1 - https://github.com/WebMaestroFr/bobinette\033[0m')
 
 from threading import Timer
 
@@ -15,6 +15,10 @@ PORT = 80
 LOCK_IS_OPEN = False
 LOCK_CHANNEL = 7
 LOCK_TIMEOUT = 4.0
+
+APP_STATUS_CAPTURE = 'CAPTURE'
+APP_STATUS_TRAIN = 'TRAIN'
+APP_STATUS = APP_STATUS_CAPTURE
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
@@ -43,9 +47,12 @@ def update_label_name(data):
 @socket.on('TRAIN_LABELS')
 def train_labels(_=None):
     '''Train Labels Event'''
+    global APP_STATUS
+    APP_STATUS = APP_STATUS_TRAIN
     print('=> \033[93mTRAIN_LABELS\033[0m')
     training_sets = compute_labels()
     subject.regenerate_recognizer(training_sets)
+    APP_STATUS = APP_STATUS_CAPTURE
     return client_connect()
 
 
@@ -71,25 +78,24 @@ def open_lock(_=None):
         close.start()
 
 
-def handle_snapshot(frame):
+def handle_snapshot(frame, snapshot):
     '''Handle Snapshot'''
-    gray = get_gray(frame)
-
-    regions = subject.detect(gray)
-
     labels = []
-
-    with app.app_context():
-
-        snapshot = Snapshot(frame)
+    gray = get_gray(frame)
+    # Detect Faces
+    regions = subject.detect(gray)
+    if regions:
+        # Save Snapshot if Faces detected
         db.session.add(snapshot)
-
         for region in regions:
             thumbnail = subject.transform(region, gray)
+            # Attempt thumbnail transformation to confirm Face
             if thumbnail is not None:
-
                 label_id, confidence = subject.predict(thumbnail)
+                # Analyse prediction confidence
                 if confidence <= subject.THRESHOLD_CREATE:
+                    # If no match over "create" threshold and
+                    # detectable thumbnail : create Label
                     if subject.detect(thumbnail, min_neighbors=1):
                         label = Label()
                         db.session.add(label)
@@ -98,40 +104,46 @@ def handle_snapshot(frame):
                         continue
                 else:
                     label = Label.query.get(label_id)
+                    # Handle predicted Label
                     if label.name == 'Etienne':
                         open_lock()
                     if subject.THRESHOLD_PASS >= confidence <= subject.THRESHOLD_TRAIN:
+                        # Train if confidence within range
                         subject.train(label_id, thumbnail)
-
+                # Create Detection
                 detection = Detection(region, thumbnail)
                 db.session.add(detection)
+                # Set Detection relationships
                 snapshot.detections.append(detection)
                 label._detections.append(detection)
 
-        db.session.commit()
-
-        if labels:
-            data = {
-                'labels': [l for (l, _) in labels]
-            }
-            action('ADD_LABELS', data, broadcast=True)
-            for (label, thumbnail) in labels:
-                subject.train(label.id, thumbnail)
-
-        action('SET_SNAPSHOT', {
-            'snapshot': snapshot
-        }, broadcast=True)
-
         if not snapshot.detections:
-            db.session.delete(snapshot)
+            db.session.expunge(snapshot)
+        else:
             db.session.commit()
+            if labels:
+                # Broadcast and train new Labels
+                action('ADD_LABELS', {
+                    'labels': [l for (l, _) in labels]
+                }, broadcast=True)
+                for (label, thumbnail) in labels:
+                    subject.train(label.id, thumbnail)
+
+
+def handle_frame(frame):
+    '''Handle Frame'''
+    with app.app_context():
+        snapshot = Snapshot(frame)
+        if APP_STATUS == APP_STATUS_CAPTURE:
+            handle_snapshot(frame, snapshot)
+        action('SET_SNAPSHOT', {'snapshot': snapshot}, broadcast=True)
 
 
 @app.before_first_request
 def before_first_request():
     '''Before First Request'''
     print('=> START CAPTURE')
-    socket.start_background_task(target=run_capture, callback=handle_snapshot)
+    socket.start_background_task(target=run_capture, callback=handle_frame)
 
 
 if __name__ == '__main__':
