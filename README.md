@@ -77,7 +77,7 @@ bash ./install.sh
 ```
 sudo nano /etc/rc.local
 ```
-Write commands before `exit 0`, save and exit (`ctrl+X`).
+Write command before `exit 0`, save and exit (`ctrl+X`).
 ```
 python3 -m bobinette
 ```
