@@ -12,7 +12,7 @@ class Trigger extends React.Component {
         const onClick = () => this
             .props
             .onClick({type: this.props.action});
-        return <Button block className="Trigger" onClick={onClick}>
+        return <Button className="Trigger" onClick={onClick}>
             {this.props.children}
         </Button>;
     }

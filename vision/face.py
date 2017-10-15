@@ -20,7 +20,7 @@ MODEL = '%s/%s.xml' % (PATH_DATA, 'faces')
 if path.isfile(MODEL):
     RECOGNIZER.read(MODEL)
 
-SIZE = (96, 96)
+SIZE = (120, 120)
 
 EYE_SIZE = (0.3, 0.3)
 EYE_LEFT_CENTER = (0.3, 0.4)
@@ -48,9 +48,9 @@ EYES_OFFSET = (
     EYE_LEFT_CENTER[0] * SIZE[0],
     EYE_LEFT_CENTER[1] * SIZE[1])
 
-THRESHOLD_CREATE = 0.61
-THRESHOLD_PASS = 0.63
-THRESHOLD_TRAIN = 0.67
+THRESHOLD_CREATE = 0.67
+THRESHOLD_PASS = 0.70
+THRESHOLD_TRAIN = 0.75
 
 
 def detect(gray, scale_factor=1.3, min_neighbors=4, min_size=SIZE):
