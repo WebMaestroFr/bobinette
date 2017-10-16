@@ -5,7 +5,7 @@ import {Button} from 'react-bootstrap';
 class Trigger extends React.Component {
 
     shouldComponentUpdate({text, action}) {
-        return text !== this.props.text;
+        return text !== this.props.text || action !== this.props.action;
     }
 
     render() {

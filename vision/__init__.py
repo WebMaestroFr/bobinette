@@ -7,7 +7,7 @@ from cv2 import COLOR_BGR2LAB, createCLAHE, cvtColor, split
 from picamera import array as camera_array
 from picamera import PiCamera
 
-RESOLUTION = (480, 368)
+RESOLUTION = (640, 480)
 FRAMERATE = 8
 
 CAMERA = PiCamera()

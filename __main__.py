@@ -92,6 +92,8 @@ def handle_snapshot(frame, snapshot):
             # Attempt thumbnail transformation to confirm Face
             if thumbnail is not None:
                 label_id, confidence = subject.predict(thumbnail)
+                print('=> \033[93mDETECTION : %s\033[0m %s' %
+                      (label_id, confidence))
                 # Analyse prediction confidence
                 if confidence <= subject.THRESHOLD_CREATE:
                     # If no match over "create" threshold and

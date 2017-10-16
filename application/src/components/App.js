@@ -14,7 +14,7 @@ class App extends React.Component {
             <Row>
                 <Col md={6} className="App-snapshot-live">
                     <h1>Bobinette</h1>
-                    <SnapshotLive width={480} height={368}/>
+                    <SnapshotLive width={640} height={480}/>
                 </Col>
                 <Col md={6} className="App-label-history">
                     <ButtonGroup className="App-actions">
