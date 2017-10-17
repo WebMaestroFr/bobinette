@@ -1,16 +1,19 @@
-"""Label Model"""
-print("=> LABEL MODEL")
+'''Label Model'''
+# pylint: disable=E1101,R0903
 
 from itertools import groupby
 
 from bobinette.models.detection import Detection
 from bobinette.server import db
 
+print('=> LABEL MODEL')
+
 DETECTION_DATE_DESC = db.desc(Detection.snapshot_date)
 
 
 class Label(db.Model):
-    """Label Model Class"""
+    '''Label Model Class'''
+    # pylint: disable=C0103
     __tablename__ = 'label'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -23,7 +26,7 @@ class Label(db.Model):
 
     @property
     def detection(self):
-        """Last Detection"""
+        '''Last Detection'''
         return db.session.query(Detection).filter(
             self.id == Detection.label_id
         ).order_by(DETECTION_DATE_DESC).first()
@@ -34,6 +37,7 @@ class Label(db.Model):
 
 def merge_labels(name, group):
     '''Merge Labels'''
+    # pylint: disable=W0212
     destination = Label(name=name)
     for label in group:
         destination._detections.extend(label._detections)
@@ -47,6 +51,7 @@ LABEL_NAME_DESC = db.desc(Label.name)
 
 def compute_labels():
     '''Group Labels Thumbnails'''
+    # pylint: disable=W0212
     sources = Label.query.order_by(LABEL_NAME_DESC).all()
     labels = []
     for (name, group) in groupby(sources, lambda l: l.name):

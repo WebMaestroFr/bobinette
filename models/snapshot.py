@@ -1,17 +1,21 @@
 '''Snapshot Model'''
-print("=> SNAPSHOT MODEL")
+# pylint: disable=E0611,R0903
 
 from base64 import b64encode
 from datetime import datetime
 
-from bobinette.server import db
 from cv2 import IMWRITE_JPEG_OPTIMIZE, IMWRITE_JPEG_QUALITY, imencode
+
+from bobinette.server import db
+
+print('=> SNAPSHOT MODEL')
 
 JPEG_QUALITY = 70
 
 
 class Snapshot(db.Model):
     '''Snapshot Model Class'''
+    # pylint: disable=E1101
     __tablename__ = 'snapshot'
 
     date = db.Column(db.DateTime, primary_key=True)

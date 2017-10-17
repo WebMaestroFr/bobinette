@@ -1,10 +1,13 @@
 '''Server Database'''
-print('=> SERVER DATABASE')
+# pylint: disable=R0903
+
+from flask_sqlalchemy import Model, SQLAlchemy
+from sqlalchemy.inspection import inspect
 
 from bobinette import NAME, PATH_DATA
 from bobinette.server import app
-from flask_sqlalchemy import Model, SQLAlchemy
-from sqlalchemy.inspection import inspect
+
+print('=> SERVER DATABASE')
 
 EXCLUDE = ['metadata', 'query', 'query_class']
 

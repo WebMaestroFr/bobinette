@@ -1,9 +1,10 @@
 '''Server Application'''
-print("=> SERVER APPLICATION")
 
 from flask import Flask, render_template
 
 from bobinette import NAME, PATH_APP, PATH_STATIC, SECRET
+
+print('=> SERVER APPLICATION')
 
 APP = Flask(
     NAME,
@@ -14,5 +15,5 @@ APP.config['SECRET_KEY'] = SECRET
 
 @APP.route('/')
 def main_controller():
-    """Main Controller"""
+    '''Main Controller'''
     return render_template('index.html')

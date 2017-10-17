@@ -1,14 +1,18 @@
 '''Face Recognition Constants and Functions'''
+# pylint: disable=E0611
 
 from math import atan2, degrees
 from os import path
 
-from bobinette import PATH_DATA, PATH_OPENCV
-from bobinette.vision import crop_image, get_distance
 from cv2 import error as cv_error
 from cv2 import (CASCADE_SCALE_IMAGE, CascadeClassifier, face,
                  getRotationMatrix2D, warpAffine)
 from numpy import array as numpy_array
+
+from bobinette import PATH_DATA, PATH_OPENCV
+from bobinette.vision import crop_image, get_distance
+
+print('=> VISION FACE')
 
 CLASSIFIER = CascadeClassifier(
     '%s/data/haarcascades/haarcascade_%s.xml' % (PATH_OPENCV, 'frontalface_default'))
@@ -80,7 +84,7 @@ def detect_eyes(gray, scale_factor=1.1, min_neighbors=4, min_size=SIZE):
 
 
 def get_eye_center(gray, roi=None, **kwargs):
-    """Center Point of Single Eye Region"""
+    '''Center Point of Single Eye Region'''
     if roi:
         eye_gray = crop_image(gray, *roi)
     else:
@@ -95,7 +99,7 @@ def get_eye_center(gray, roi=None, **kwargs):
 
 
 def transform(region, gray, **kwargs):
-    """Transform Face Image"""
+    '''Transform Face Image'''
     min_size = (int(round(EYE_MIN[0] * region['width'])),
                 int(round(EYE_MIN[1] * region['height'])))
     max_size = (int(round(EYE_MAX[0] * region['width'])),
@@ -149,6 +153,7 @@ def train(label_id, *images):
 
 def regenerate_recognizer(training_sets):
     '''Regenerate Face Recognizer'''
+    # pylint: disable=W0603
     global RECOGNIZER
     recognizer = face.LBPHFaceRecognizer_create()
     for (label_id, images) in training_sets:

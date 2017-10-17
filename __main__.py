@@ -1,5 +1,5 @@
 '''Capture and Face Recognition'''
-print('\033[93mBobinette v0.1 - https://github.com/WebMaestroFr/bobinette\033[0m')
+# pylint: disable=R0912
 
 from threading import Timer
 
@@ -7,7 +7,14 @@ from bobinette.models import Detection, Label, Snapshot, compute_labels
 from bobinette.server import action, app, db, socket
 from bobinette.vision import face as subject
 from bobinette.vision import get_gray, run_capture
-from RPi import GPIO
+
+try:
+    from RPi import GPIO
+except ImportError:
+    # Development and Continuous Integration
+    from fake_rpi.RPi import GPIO
+
+print('\033[93mBobinette v0.1 - https://github.com/WebMaestroFr/bobinette\033[0m')
 
 DOMAIN = 'bobinette-dev.local'
 PORT = 80
@@ -36,6 +43,7 @@ def client_connect():
 
 @socket.on('UPDATE_LABEL_NAME')
 def update_label_name(data):
+    # pylint: disable=E1101
     '''Update Label Name Event'''
     print('=> \033[93mUPDATE_LABEL_NAME\033[0m')
     print(data)
@@ -47,6 +55,7 @@ def update_label_name(data):
 @socket.on('TRAIN_LABELS')
 def train_labels(_=None):
     '''Train Labels Event'''
+    # pylint: disable=W0603
     global APP_STATUS
     APP_STATUS = APP_STATUS_TRAIN
     print('=> \033[93mTRAIN_LABELS\033[0m')
@@ -59,6 +68,7 @@ def train_labels(_=None):
 @socket.on('CLOSE_LOCK')
 def close_lock(_=None):
     '''Close Lock Event'''
+    # pylint: disable=W0603
     global LOCK_IS_OPEN
     if LOCK_IS_OPEN:
         print('=> \033[91mCLOSE_LOCK\033[0m')
@@ -69,6 +79,7 @@ def close_lock(_=None):
 @socket.on('OPEN_LOCK')
 def open_lock(_=None):
     '''Open Lock Event'''
+    # pylint: disable=W0603
     global LOCK_IS_OPEN
     if not LOCK_IS_OPEN:
         print('=> \033[92mOPEN_LOCK\033[0m')
@@ -80,6 +91,7 @@ def open_lock(_=None):
 
 def handle_snapshot(frame, snapshot):
     '''Handle Snapshot'''
+    # pylint: disable=E1101,W0212
     labels = []
     gray = get_gray(frame)
     # Detect Faces

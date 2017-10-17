@@ -1,11 +1,20 @@
 '''Vision Package'''
-print('=> INIT VISION')
+# pylint: disable=E0611,C0103
 
 from math import sqrt
 
 from cv2 import COLOR_BGR2LAB, createCLAHE, cvtColor, split
-from picamera import array as camera_array
-from picamera import PiCamera
+
+try:
+    from picamera import array as camera_array
+    from picamera import PiCamera
+except ImportError:
+    # Development and Continuous Integration
+    from fake_rpi.picamera import array as camera_array
+    from fake_rpi.picamera import PiCamera
+
+
+print('=> INIT VISION')
 
 RESOLUTION = (640, 480)
 FRAMERATE = 8
