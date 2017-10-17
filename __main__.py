@@ -1,35 +1,19 @@
 '''Capture and Face Recognition'''
 # pylint: disable=R0912
 
-from threading import Timer
-
 from bobinette.models import Detection, Label, Snapshot, compute_labels
-from bobinette.server import action, app, db, socket
+from bobinette.server import Lock, Wifi, action, app, db, socket
 from bobinette.vision import face as subject
 from bobinette.vision import get_gray, run_capture
-
-try:
-    from RPi import GPIO
-except ImportError:
-    # Development and Continuous Integration
-    from fake_rpi.RPi import GPIO
 
 print('\033[93mBobinette v0.1 - https://github.com/WebMaestroFr/bobinette\033[0m')
 
 DOMAIN = 'bobinette-dev.local'
 PORT = 80
 
-LOCK_IS_OPEN = False
-LOCK_CHANNEL = 7
-LOCK_TIMEOUT = 4.0
-
 APP_STATUS_CAPTURE = 'CAPTURE'
 APP_STATUS_TRAIN = 'TRAIN'
 APP_STATUS = APP_STATUS_CAPTURE
-
-GPIO.setmode(GPIO.BOARD)
-GPIO.setwarnings(False)
-GPIO.setup(LOCK_CHANNEL, GPIO.OUT, initial=LOCK_IS_OPEN)
 
 
 @socket.on('connect')
@@ -68,25 +52,32 @@ def train_labels(_=None):
 @socket.on('CLOSE_LOCK')
 def close_lock(_=None):
     '''Close Lock Event'''
-    # pylint: disable=W0603
-    global LOCK_IS_OPEN
-    if LOCK_IS_OPEN:
-        print('=> \033[91mCLOSE_LOCK\033[0m')
-        LOCK_IS_OPEN = False
-        GPIO.output(LOCK_CHANNEL, 0)
+    Lock.close()
 
 
 @socket.on('OPEN_LOCK')
 def open_lock(_=None):
     '''Open Lock Event'''
-    # pylint: disable=W0603
-    global LOCK_IS_OPEN
-    if not LOCK_IS_OPEN:
-        print('=> \033[92mOPEN_LOCK\033[0m')
-        LOCK_IS_OPEN = True
-        GPIO.output(LOCK_CHANNEL, 1)
-        close = Timer(LOCK_TIMEOUT, close_lock)
-        close.start()
+    Lock.open()
+
+
+@socket.on('NETWORK_SCAN')
+def network_scan(_=None):
+    '''Network Scan'''
+    print('=> \033[93mNETWORK_SCAN\033[0m')
+    action('SET_NETWORKS', {
+        'networks': Wifi.scan()
+    })
+
+
+@socket.on('NETWORK_CONNECT')
+def network_connect(credentials):
+    '''Network Connect'''
+    print('=> \033[93mNETWORK_CONNECT\033[0m')
+    print(credentials)
+    action('SET_NETWORK', {
+        'network': Wifi.connect(**credentials)
+    })
 
 
 def handle_snapshot(frame, snapshot):
@@ -165,4 +156,5 @@ if __name__ == '__main__':
         print('=> CREATE DATABASE')
         db.create_all()
     print('=> RUN SERVER')
-    socket.run(app, host=DOMAIN, port=PORT, debug=False, log_output=True)
+    socket.run(app, host=DOMAIN, port=PORT,
+               debug=False, log_output=True)

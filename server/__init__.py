@@ -8,6 +8,8 @@ from flask.json import JSONEncoder
 from bobinette.server.application import APP as app
 from bobinette.server.database import DB as db
 from bobinette.server.database import BaseModel as Model
+from bobinette.server.device import Lock
+from bobinette.server.network import Wifi
 from bobinette.server.socket import SOCKET as socket
 from bobinette.server.socket import action
 
@@ -18,7 +20,7 @@ EPOCH = datetime.utcfromtimestamp(0)
 
 class ModelEncoder(JSONEncoder):
     '''JSON Encoder'''
-    # pylint: disable=E0202,W0221
+    # pylint: disable=E0202,R0911,W0221
 
     def default(self, obj):
         '''Encode SQLAlchemy Model and Columns'''
@@ -33,7 +35,8 @@ class ModelEncoder(JSONEncoder):
             return numpy.asscalar(obj)
         if isinstance(obj, numpy.ndarray):
             return obj.tolist()
-        # print(type(obj))
+        if isinstance(obj, object):
+            return obj.__dict__
         return JSONEncoder.default(self, obj)
 
 app.json_encoder = ModelEncoder
