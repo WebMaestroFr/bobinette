@@ -1,4 +1,15 @@
 .App-actions {
-    margin-bottom: 22px;
+    margin-bottom: 24px;
     margin-top: 32px;
+}
+
+.App-actions.btn-toolbar .btn,
+.App-actions.btn-toolbar .btn-group,
+.App-actions.btn-toolbar .input-group {
+    float: right;
+}
+
+.App-configuration .tab-content {
+    margin-bottom: 32px;
+    margin-top: 24px;
 }

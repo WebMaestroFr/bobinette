@@ -7,7 +7,8 @@ body {
     padding: 0;
 }
 
-h1 {
+h1,
+h2 {
     font-family: 'Clicker Script', cursive;
-    line-height: 1.618;
+    line-height: 60px;
 }

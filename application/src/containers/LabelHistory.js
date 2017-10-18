@@ -9,7 +9,7 @@ const mapStateToProps = (state) => {
     const byName = (element, index, array) => {
         // Filter items : not null with a unique (most recent) or empty name,
         const isDifferentNameOrOlder = (e, i, a) => !e || index === i || element.name !== e.name || element.detection.snapshot_date > e.detection.snapshot_date;
-        return element && (!element.name || state.activeLabel === element.id || array.every(isDifferentNameOrOlder));
+        return element && (!element.name || state.focusedLabel === element.id || array.every(isDifferentNameOrOlder));
     };
     return {
         labels: state

@@ -75,7 +75,7 @@ def network_connect(credentials):
     '''Network Connect'''
     print('=> \033[93mNETWORK_CONNECT\033[0m')
     print(credentials)
-    action('SET_NETWORK', {
+    action('SET_ACTIVE_NETWORK', {
         'network': Wifi.connect(**credentials)
     })
 

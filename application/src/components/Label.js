@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Form, FormGroup, FormControl, Media} from 'react-bootstrap';
+import {Form, FormGroup, FormControl, InputGroup, Media} from 'react-bootstrap';
 
 import Canvas from './Canvas'
 
@@ -38,15 +38,19 @@ class Label extends React.Component {
                         <time ref="date" className="Label-date" dateTime={date}>
                             {date.toLocaleString()}
                         </time>
-                        <FormControl
-                            ref="name"
-                            className="Label-name"
-                            type="text"
-                            value={this.props.name}
-                            placeholder={`Label #${this.props.id}`}
-                            onChange={onNameChange}
-                            onFocus={onNameFocus}
-                            onBlur={this.props.onNameBlur}/>
+                        <InputGroup>
+                            <InputGroup.Addon>
+                                <input type="checkbox" aria-label="Access"/>
+                            </InputGroup.Addon><FormControl
+                                ref="name"
+                                className="Label-name"
+                                type="text"
+                                value={this.props.name}
+                                placeholder={`Label #${this.props.id}`}
+                                onChange={onNameChange}
+                                onFocus={onNameFocus}
+                                onBlur={this.props.onNameBlur}/>
+                        </InputGroup>
                     </FormGroup>
                 </Form>
             </Media.Body>
