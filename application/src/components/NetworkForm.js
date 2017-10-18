@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
+    Button,
     Col,
     ControlLabel,
     Form,
@@ -44,51 +45,54 @@ class NetworkForm extends React.Component {
         const handleSubmit = () => this
             .props
             .onSubmit(this.state.cell.ssid, this.state.psk);
-        return <Form onSubmit={handleSubmit}>
-            <Row>
-                <Col sm={6}>
-                    <FormGroup controlId="NetworkForm-ssid">
-                        <ControlLabel>
-                            <abbr title="Service Set Identifier">SSID</abbr>
-                        </ControlLabel>
-                        <InputGroup>
-                            <FormControl
-                                componentClass="select"
-                                onChange={handleCellChange}
-                                placeholder="Service Set Identifier"
-                                value={this.state.cell
-                                ? this.state.cell.address
-                                : undefined}>
-                                {this
-                                    .props
-                                    .networks
-                                    .sort((a, b) => b.signal - a.signal)
-                                    .map((cell) => <option value={cell.address} key={cell.address}>
-                                        {cell.ssid}
-                                    </option>)}
-                            </FormControl>
-                            <InputGroup.Button>
-                                <ServerAction action="NETWORK_SCAN">
-                                    <Glyphicon glyph="refresh"/>&nbsp;Scan
-                                </ServerAction>
-                            </InputGroup.Button>
-                        </InputGroup>
-                    </FormGroup>
+        return <Form onSubmit={handleSubmit} horizontal>
+            <FormGroup controlId="NetworkForm-cell-address">
+                <Col componentClass={ControlLabel} sm={2}>
+                    <abbr title="Service Set Identifier">SSID</abbr>
                 </Col>
-                <Col sm={6}>
-                    <FormGroup controlId="NetworkForm-psk">
-                        <ControlLabel>
-                            <abbr title="Pre-Shared Key">PSK</abbr>
-                        </ControlLabel>
+                <Col sm={10}>
+                    <InputGroup>
                         <FormControl
-                            disabled={!this.state.cell || this.state.cell.active || !this.state.cell.encrypted}
-                            onChange={handlePskChange}
-                            placeholder="Pre-Shared Key"
-                            type="password"
-                            value={this.state.psk}/>
-                    </FormGroup>
+                            componentClass="select"
+                            onChange={handleCellChange}
+                            placeholder="Service Set Identifier"
+                            value={this.state.cell
+                            ? this.state.cell.address
+                            : undefined}>
+                            {this
+                                .props
+                                .networks
+                                .sort((a, b) => b.signal - a.signal)
+                                .map((cell) => <option value={cell.address} key={cell.address}>
+                                    {cell.ssid}
+                                </option>)}
+                        </FormControl>
+                        <InputGroup.Button>
+                            <ServerAction action="NETWORK_SCAN">
+                                <Glyphicon glyph="refresh"/>&nbsp;Scan
+                            </ServerAction>
+                        </InputGroup.Button>
+                    </InputGroup>
                 </Col>
-            </Row>
+            </FormGroup>
+            <FormGroup controlId="NetworkForm-psk">
+                <Col componentClass={ControlLabel} sm={2}>
+                    <abbr title="Pre-Shared Key">PSK</abbr>
+                </Col>
+                <Col sm={10}>
+                    <FormControl
+                        disabled={!this.state.cell || this.state.cell.active || !this.state.cell.encrypted}
+                        onChange={handlePskChange}
+                        placeholder="Pre-Shared Key"
+                        type="password"
+                        value={this.state.psk}/>
+                </Col>
+            </FormGroup>
+            <FormGroup>
+                <Col smOffset={2} sm={10}>
+                    <Button type="submit">Connect</Button>
+                </Col>
+            </FormGroup>
         </Form>;
     }
 }

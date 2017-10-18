@@ -1,22 +1,5 @@
 import {combineReducers} from 'redux';
-import {
-    SET_LABELS,
-    ADD_LABELS,
-    UPDATE_LABEL_NAME,
-    SET_SNAPSHOT,
-    SET_FOCUSED_LABEL,
-    SET_NETWORKS,
-    SET_ACTIVE_NETWORK
-} from './actions';
-
-function focusedLabel(state = null, action) {
-    switch (action.type) {
-        case SET_FOCUSED_LABEL:
-            return action.key;
-        default:
-            return state;
-    }
-}
+import {ADD_LABELS, SET_LABELS, SET_NETWORKS, SET_SNAPSHOT, UPDATE_LABEL_NAME} from './actions';
 
 function labels(state = [], action) {
     switch (action.type) {
@@ -71,6 +54,6 @@ function snapshot(state = {
     }
 }
 
-const appReducers = combineReducers({focusedLabel, labels, networks, snapshot});
+const appReducers = combineReducers({labels, networks, snapshot});
 
 export default appReducers;

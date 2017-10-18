@@ -9,7 +9,10 @@
     float: right;
 }
 
-.App-configuration .tab-content {
+.App-configuration {
     margin-bottom: 32px;
+}
+
+.App-configuration .tab-content {
     margin-top: 24px;
 }
