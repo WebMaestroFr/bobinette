@@ -8,7 +8,6 @@ import {
     FormGroup,
     FormControl,
     Glyphicon,
-    InputGroup,
     Row
 } from 'react-bootstrap';
 import ServerAction from '../containers/ServerAction';
@@ -42,16 +41,25 @@ class NetworkForm extends React.Component {
             psk: ''
         });
         const handlePskChange = ({target}) => this.setState({psk: target.value});
-        const handleSubmit = () => this
+        const handleSubmit = (event) => {
+            event.preventDefault();
+            this
+                .props
+                .onSubmit(this.state.cell.ssid, this.state.psk);
+        };
+        const renderCell = (cell) => <option value={cell.address} key={cell.address}>
+            {cell.ssid}
+        </option>;
+        const cells = this
             .props
-            .onSubmit(this.state.cell.ssid, this.state.psk);
-        return <Form onSubmit={handleSubmit} horizontal>
-            <FormGroup controlId="NetworkForm-cell-address">
-                <Col componentClass={ControlLabel} sm={2}>
-                    <abbr title="Service Set Identifier">SSID</abbr>
-                </Col>
-                <Col sm={10}>
-                    <InputGroup>
+            .networks
+            .sort((a, b) => b.signal - a.signal)
+            .map(renderCell);
+        return <Form onSubmit={handleSubmit}>
+            <FormGroup controlId="NetworkForm-cell">
+                <ControlLabel>Wifi</ControlLabel>
+                <Row>
+                    <Col xs={8} sm={10} md={9}>
                         <FormControl
                             componentClass="select"
                             onChange={handleCellChange}
@@ -59,27 +67,19 @@ class NetworkForm extends React.Component {
                             value={this.state.cell
                             ? this.state.cell.address
                             : undefined}>
-                            {this
-                                .props
-                                .networks
-                                .sort((a, b) => b.signal - a.signal)
-                                .map((cell) => <option value={cell.address} key={cell.address}>
-                                    {cell.ssid}
-                                </option>)}
+                            {cells}
                         </FormControl>
-                        <InputGroup.Button>
-                            <ServerAction action="NETWORK_SCAN">
-                                <Glyphicon glyph="refresh"/>&nbsp;Scan
-                            </ServerAction>
-                        </InputGroup.Button>
-                    </InputGroup>
-                </Col>
+                    </Col>
+                    <Col xs={4} sm={2} md={3}>
+                        <ServerAction action="NETWORK_SCAN" block>
+                            <Glyphicon glyph="refresh"/>
+                        </ServerAction>
+                    </Col>
+                </Row>
             </FormGroup>
-            <FormGroup controlId="NetworkForm-psk">
-                <Col componentClass={ControlLabel} sm={2}>
-                    <abbr title="Pre-Shared Key">PSK</abbr>
-                </Col>
-                <Col sm={10}>
+            <Row>
+                <Col componentClass={FormGroup} xs={8} sm={10} md={9} controlId="NetworkForm-psk">
+                    <ControlLabel>Password</ControlLabel>
                     <FormControl
                         disabled={!this.state.cell || this.state.cell.active || !this.state.cell.encrypted}
                         onChange={handlePskChange}
@@ -87,12 +87,11 @@ class NetworkForm extends React.Component {
                         type="password"
                         value={this.state.psk}/>
                 </Col>
-            </FormGroup>
-            <FormGroup>
-                <Col smOffset={2} sm={10}>
-                    <Button type="submit">Connect</Button>
+                <Col componentClass={FormGroup} xs={4} sm={2} md={3}>
+                    <ControlLabel className="invisible">Submit</ControlLabel>
+                    <Button type="submit" bsStyle="primary" block>Connect</Button>
                 </Col>
-            </FormGroup>
+            </Row>
         </Form>;
     }
 }

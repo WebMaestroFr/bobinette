@@ -4,16 +4,20 @@ import {Button} from 'react-bootstrap';
 
 class Trigger extends React.Component {
 
-    shouldComponentUpdate({text, action}) {
-        return text !== this.props.text || action !== this.props.action;
+    shouldComponentUpdate({children, action}) {
+        return children !== this.props.children || action !== this.props.action;
     }
 
     render() {
-        const onClick = () => this
-            .props
-            .onClick({type: this.props.action});
-        return <Button className="Trigger" onClick={onClick}>
-            {this.props.children}
+        const {
+            children,
+            action,
+            onClick,
+            ...attrs
+        } = this.props;
+        const handleClick = () => onClick({type: action});
+        return <Button className="Trigger" onClick={handleClick} {...attrs}>
+            {children}
         </Button>;
     }
 }
