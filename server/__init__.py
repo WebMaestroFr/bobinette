@@ -9,7 +9,7 @@ from bobinette.server.application import APP as app
 from bobinette.server.database import DB as db
 from bobinette.server.database import BaseModel as Model
 from bobinette.server.device import Lock
-from bobinette.server.network import Wifi
+from bobinette.server.network import Network
 from bobinette.server.socket import SOCKET as socket
 from bobinette.server.socket import action
 

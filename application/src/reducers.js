@@ -1,5 +1,5 @@
 import {combineReducers} from 'redux';
-import {ADD_LABELS, SET_LABELS, SET_NETWORKS, SET_SNAPSHOT, UPDATE_LABEL_NAME} from './actions';
+import {ADD_LABELS, SET_LABELS, SET_NETWORKS, SET_SNAPSHOT, UPDATE_LABEL} from './actions';
 
 function labels(state = [], action) {
     switch (action.type) {
@@ -7,10 +7,10 @@ function labels(state = [], action) {
             return action.labels;
         case ADD_LABELS:
             return state.concat(action.labels);
-        case UPDATE_LABEL_NAME:
+        case UPDATE_LABEL:
             return state.map((label) => {
                 if (label.id === action.id) {
-                    label.name = action.name;
+                    Object.assign(label, action.label);
                 }
                 return label;
             });

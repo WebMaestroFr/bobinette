@@ -15,9 +15,8 @@ class LabelList extends React.Component {
                 <Label
                     className="LabelList-label"
                     {...label}
-                    onNameChange={this.props.onNameChange}
-                    onNameBlur={this.props.onNameBlur}
-                    onNameFocus={this.props.onNameFocus}/>
+                    onChange={this.props.onChange}
+                    onSubmit={this.props.onSubmit}/>
             </CSSTransition>;
         }
         return <TransitionGroup className="LabelList">
@@ -31,9 +30,8 @@ class LabelList extends React.Component {
 
 LabelList.propTypes = {
     labels: PropTypes.arrayOf(PropTypes.shape(Label.propTypes)),
-    onNameChange: PropTypes.func,
-    onNameBlur: PropTypes.func,
-    onNameFocus: PropTypes.func
+    onChange: PropTypes.func,
+    onSubmit: PropTypes.func
 };
 
 export default LabelList;

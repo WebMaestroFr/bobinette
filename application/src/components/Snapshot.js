@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import Canvas from './Canvas';
+import LocaleString from './LocaleString';
 
 import './Snapshot.css';
 
@@ -51,7 +52,6 @@ class Snapshot extends React.Component {
     }
 
     render() {
-        const date = new Date(this.props.date);
         return <div ref="container" className="Snapshot">
             <Canvas
                 ref="image"
@@ -65,9 +65,7 @@ class Snapshot extends React.Component {
                 className="Snapshot-detections"
                 width={this.props.width}
                 height={this.props.height}/>
-            <time ref="date" className="Snapshot-date" dateTime={date}>
-                {date.toLocaleString()}
-            </time>
+            <LocaleString className="Snapshot-date" ref="date" timestamp={this.props.date}/>
         </div>;
     }
 }

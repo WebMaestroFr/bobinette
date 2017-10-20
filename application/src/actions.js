@@ -1,6 +1,6 @@
 export const SET_LABELS = 'SET_LABELS';
 export const ADD_LABELS = 'ADD_LABELS';
-export const UPDATE_LABEL_NAME = 'UPDATE_LABEL_NAME';
+export const UPDATE_LABEL = 'UPDATE_LABEL';
 
 export function setLabels(labels) {
     return {type: SET_LABELS, labels};
@@ -8,8 +8,8 @@ export function setLabels(labels) {
 export function addLabels(labels) {
     return {type: ADD_LABELS, labels};
 }
-export function updateLabelName(id, name) {
-    return {type: UPDATE_LABEL_NAME, id, name};
+export function updateLabel(id, label) {
+    return {type: UPDATE_LABEL, id, label};
 }
 
 export const SET_SNAPSHOT = 'SET_SNAPSHOT';

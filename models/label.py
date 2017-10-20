@@ -17,6 +17,7 @@ class Label(db.Model):
     __tablename__ = 'label'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    access = db.Column(db.Boolean, default=False)
     name = db.Column(db.String)
 
     _detections = db.relationship('Detection', backref=db.backref(

@@ -6,7 +6,7 @@ from wifi.exceptions import ConnectionError as WifiConnectionError
 print('=> SERVER NETWORK')
 
 
-class Wifi(object):
+class Network(object):
     '''Safe Lock Controller'''
     interface = 'wlan0'
 

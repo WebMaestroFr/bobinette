@@ -2,7 +2,7 @@
 # pylint: disable=R0912
 
 from bobinette.models import Detection, Label, Snapshot, compute_labels
-from bobinette.server import Lock, Wifi, action, app, db, socket
+from bobinette.server import Lock, Network, action, app, db, socket
 from bobinette.vision import face as subject
 from bobinette.vision import get_gray, run_capture
 
@@ -25,14 +25,13 @@ def client_connect():
     })
 
 
-@socket.on('UPDATE_LABEL_NAME')
-def update_label_name(data):
+@socket.on('UPDATE_LABEL')
+def update_label(data):
     # pylint: disable=E1101
-    '''Update Label Name Event'''
-    print('=> \033[93mUPDATE_LABEL_NAME\033[0m')
+    '''Update Label Event'''
+    print('=> \033[93mUPDATE_LABEL\033[0m')
     print(data)
-    label = Label.query.get(data['id'])
-    label.name = data['name']
+    Label.query.filter_by(id=data['id']).update(data['label'])
     db.session.commit()
 
 
@@ -66,7 +65,7 @@ def network_scan(_=None):
     '''Network Scan'''
     print('=> \033[93mNETWORK_SCAN\033[0m')
     action('SET_NETWORKS', {
-        'networks': Wifi.scan()
+        'networks': Network.scan()
     })
 
 
@@ -76,7 +75,7 @@ def network_connect(credentials):
     print('=> \033[93mNETWORK_CONNECT\033[0m')
     print(credentials)
     action('SET_ACTIVE_NETWORK', {
-        'network': Wifi.connect(**credentials)
+        'network': Network.connect(**credentials)
     })
 
 
