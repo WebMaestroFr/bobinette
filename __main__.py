@@ -109,7 +109,7 @@ def handle_snapshot(frame, snapshot):
                 else:
                     label = Label.query.get(label_id)
                     # Handle predicted Label
-                    if label.name == 'Etienne':
+                    if label.access is True:
                         open_lock()
                     if subject.THRESHOLD_PASS >= confidence <= subject.THRESHOLD_TRAIN:
                         # Train if confidence within range

@@ -43,6 +43,8 @@ def merge_labels(name, group):
     for label in group:
         destination._detections.extend(label._detections)
         db.session.delete(label)
+        if destination.access is True:
+            destination.access = True
     db.session.add(destination)
     return destination
 
