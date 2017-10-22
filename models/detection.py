@@ -38,3 +38,7 @@ class Detection(db.Model):
         source = b64decode(self.thumbnail)
         image = numpy_fromstring(source, dtype=uint8)
         return imdecode(image, 0)
+
+    def get_image(self):
+        '''Get Image'''
+        return self._image

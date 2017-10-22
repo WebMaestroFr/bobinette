@@ -21,30 +21,25 @@ class App extends React.Component {
     render() {
         return <Grid className="App">
             <Row>
-                <Col md={6} className="App-snapshot-live">
-                    <Row>
-                        <Col xs={6}>
-                            <h1>Bobinette</h1>
-                        </Col>
-                        <Col xs={6}>
-                            <ButtonToolbar className="App-actions">
-                                <ServerAction action="OPEN_LOCK">
-                                    <Glyphicon glyph="lock"/>&nbsp;Open
-                                </ServerAction>
-                            </ButtonToolbar>
+                <Col md={6}>
+                    <Row className="App-header" componentClass="header">
+                        <Col xs={6} className="App-title" componentClass="h1">Bobinette</Col>
+                        <Col xs={6} className="App-actions" componentClass={ButtonToolbar}>
+                            <ServerAction action="OPEN_LOCK" bsSize="large">
+                                <Glyphicon glyph="lock"/>&nbsp;Open
+                            </ServerAction>
                         </Col>
                     </Row>
-                    <SnapshotLive width={640} height={480}/>
-                    <Tabs defaultActiveKey={1} className="App-configuration" id="configuration">
-                        <Tab eventKey={1} title="Network"><NetworkConfig/></Tab>
+                    <Tabs defaultActiveKey={1} id="App-main" className="App-main">
+                        <Tab eventKey={1} title="Camera">
+                            <SnapshotLive width={640} height={480}/>
+                        </Tab>
+                        <Tab eventKey={2} title="Network">
+                            <NetworkConfig/>
+                        </Tab>
                     </Tabs>
                 </Col>
                 <Col md={6} className="App-label-history">
-                    <ButtonToolbar className="App-actions">
-                        <ServerAction action="TRAIN_LABELS">
-                            <Glyphicon glyph="refresh"/>&nbsp;Train
-                        </ServerAction>
-                    </ButtonToolbar>
                     <LabelHistory/>
                 </Col>
             </Row>

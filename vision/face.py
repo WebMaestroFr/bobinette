@@ -125,12 +125,14 @@ def transform(region, gray, **kwargs):
             scale = EYES_DISTANCE / get_distance(left, right)
             matrix = getRotationMatrix2D(left, angle, scale)
             image = warpAffine(gray, matrix, gray.shape)
-            return crop_image(
+            thumbnail = crop_image(
                 image,
                 int(round(left[0] - EYES_OFFSET[0])),
                 int(round(left[1] - EYES_OFFSET[1])),
                 SIZE[0],
                 SIZE[1])
+            if detect(thumbnail, min_neighbors=2):
+                return thumbnail
     return None
 
 

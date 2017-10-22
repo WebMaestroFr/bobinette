@@ -1,13 +1,22 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Form, FormGroup, FormControl, InputGroup, Media} from 'react-bootstrap';
+import {
+    Alert,
+    Button,
+    Form,
+    FormGroup,
+    FormControl,
+    Glyphicon,
+    InputGroup,
+    Media
+} from 'react-bootstrap';
 
 import Canvas from './Canvas'
 import LocaleString from './LocaleString';
 
 import './Label.css';
 
-class Label extends React.Component {
+export class Label extends React.Component {
 
     constructor(props) {
         super(props);
@@ -24,6 +33,9 @@ class Label extends React.Component {
             .bind(this);
         this.onSubmit = this
             .onSubmit
+            .bind(this);
+        this.onTrain = this
+            .onTrain
             .bind(this);
     }
 
@@ -60,31 +72,74 @@ class Label extends React.Component {
             : null;
     }
 
+    onTrain(event) {
+        event.preventDefault();
+        return this.props.onTrain
+            ? this
+                .props
+                .onTrain(this.props.id)
+            : null;
+    }
+
     componentWillReceiveProps({access, name}) {
         this.setState({access, name});
     }
 
     shouldComponentUpdate({
-        id,
-        detection
+        detection,
+        homonyms,
+        id
     }, {access, name}) {
-        return access !== this.state.access || id !== this.props.id || detection.snapshot_date !== this.props.detection.snapshot_date || name !== this.state.name;
+        return access !== this.state.access || name !== this.state.name || detection.snapshot_date !== this.props.detection.snapshot_date || homonyms.length !== this.props.homonyms.length || id !== this.props.id;
     }
 
     render() {
+        const renderHomonym = (label) => <Canvas
+            base64={label.detection.thumbnail}
+            height={48}
+            ref="detection-thumbnail"
+            type="png"
+            width={48}/>;
+        const homonyms = this.props.homonyms.length
+            ? <Alert bsStyle="warning" className="Label-homonyms">
+                    {this
+                        .props
+                        .homonyms
+                        .map(renderHomonym)}
+                </Alert>
+            : null;
+        const trainButton = this.props.homonyms.length
+            ? <InputGroup.Button>
+                    <Button bsSize="large" bsStyle="warning" onClick={this.onTrain}>
+                        <Glyphicon glyph="refresh"/>&nbsp;Train
+                    </Button>
+                </InputGroup.Button>
+            : null;
+        const thumbnailClasses = {
+            "Label-detection-thumbnail": true,
+            "Label-train-active": this.props.homonyms.length
+        };
         return <Media className="Label">
-            <Media.Left>
+            <Media.Left className={thumbnailClasses}>
                 <Canvas
                     base64={this.props.detection.thumbnail}
-                    className="Label-detection-thumbnail"
-                    height={64}
+                    height={128}
                     ref="detection-thumbnail"
                     type="png"
-                    width={64}/>
+                    width={128}/>
             </Media.Left>
             <Media.Body>
                 <Form onSubmit={this.onSubmit}>
-                    <FormGroup bsSize="large" controlId="labelName">
+                    <FormGroup
+                        bsSize="large"
+                        controlId="labelName"
+                        validationState={this.props.homonyms.length
+                        ? "warning"
+                        : this.state.name
+                            ? this.state.access
+                                ? "success"
+                                : null
+                            : "error"}>
                         <LocaleString
                             className="Label-detection-date"
                             ref="detection-date"
@@ -104,10 +159,11 @@ class Label extends React.Component {
                                 placeholder={`Label #${this.props.id}`}
                                 ref="name"
                                 type="text"
-                                value={this.state.name}/>
+                                value={this.state.name}/> {trainButton}
                         </InputGroup>
                     </FormGroup>
                 </Form>
+                {homonyms}
             </Media.Body>
         </Media>;
     }
@@ -118,13 +174,19 @@ const detectionPropTypes = {
     thumbnail: PropTypes.string
 };
 
-Label.propTypes = {
+export const labelPropTypes = {
     access: PropTypes.bool,
-    id: PropTypes.number,
     detection: PropTypes.shape(detectionPropTypes),
-    name: PropTypes.string,
+    id: PropTypes.number,
+    name: PropTypes.string
+};
+
+Label.propTypes = {
+    ...labelPropTypes,
+    homonyms: PropTypes.arrayOf(PropTypes.shape(labelPropTypes)),
     onChange: PropTypes.func,
-    onSubmit: PropTypes.func
+    onSubmit: PropTypes.func,
+    onTrain: PropTypes.func
 };
 
 export default Label;

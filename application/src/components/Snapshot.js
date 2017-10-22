@@ -55,7 +55,6 @@ class Snapshot extends React.Component {
         return <div ref="container" className="Snapshot">
             <Canvas
                 ref="image"
-                className="Snapshot-image"
                 base64={this.props.image}
                 type="jpeg"
                 width={this.props.width}

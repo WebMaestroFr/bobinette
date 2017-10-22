@@ -1,5 +1,6 @@
 export const SET_LABELS = 'SET_LABELS';
 export const ADD_LABELS = 'ADD_LABELS';
+export const TRAIN_LABEL = 'TRAIN_LABEL';
 export const UPDATE_LABEL = 'UPDATE_LABEL';
 
 export function setLabels(labels) {
@@ -10,6 +11,9 @@ export function addLabels(labels) {
 }
 export function updateLabel(id, label) {
     return {type: UPDATE_LABEL, id, label};
+}
+export function trainLabel(id) {
+    return {type: TRAIN_LABEL, id};
 }
 
 export const SET_SNAPSHOT = 'SET_SNAPSHOT';

@@ -1,5 +1,5 @@
 import {connect} from 'react-redux';
-import {updateLabel} from '../actions';
+import {updateLabel, trainLabel} from '../actions';
 import {socketAction} from '../socket';
 import LabelList from '../components/LabelList';
 
@@ -19,6 +19,11 @@ const mapDispatchToProps = (dispatch) => {
             const action = updateLabel(id, label);
             const serverAction = socketAction(action);
             dispatch(action);
+            dispatch(serverAction);
+        },
+        onTrain: (id) => {
+            const action = trainLabel(id);
+            const serverAction = socketAction(action);
             dispatch(serverAction);
         }
     };

@@ -1,7 +1,7 @@
 '''Capture and Face Recognition'''
 # pylint: disable=R0912
 
-from bobinette.models import Detection, Label, Snapshot, compute_labels
+from bobinette.models import Detection, Label, Snapshot
 from bobinette.server import Lock, Network, action, app, db, socket
 from bobinette.vision import face as subject
 from bobinette.vision import get_gray, run_capture
@@ -35,14 +35,16 @@ def update_label(data):
     db.session.commit()
 
 
-@socket.on('TRAIN_LABELS')
-def train_labels(_=None):
+@socket.on('TRAIN_LABEL')
+def train_label(data):
     '''Train Labels Event'''
     # pylint: disable=W0603
     global APP_STATUS
     APP_STATUS = APP_STATUS_TRAIN
-    print('=> \033[93mTRAIN_LABELS\033[0m')
-    training_sets = compute_labels()
+    print('=> \033[93mTRAIN_LABEL\033[0m')
+    print(data)
+    Label.query.get(data['id']).merge()
+    training_sets = Label.get_training_sets()
     subject.regenerate_recognizer(training_sets)
     APP_STATUS = APP_STATUS_CAPTURE
     return client_connect()
@@ -81,7 +83,7 @@ def network_connect(credentials):
 
 def handle_snapshot(frame, snapshot):
     '''Handle Snapshot'''
-    # pylint: disable=E1101,W0212
+    # pylint: disable=E1101
     labels = []
     gray = get_gray(frame)
     # Detect Faces
@@ -98,14 +100,10 @@ def handle_snapshot(frame, snapshot):
                       (label_id, confidence))
                 # Analyse prediction confidence
                 if confidence <= subject.THRESHOLD_CREATE:
-                    # If no match over "create" threshold and
-                    # detectable thumbnail : create Label
-                    if subject.detect(thumbnail, min_neighbors=1):
-                        label = Label()
-                        db.session.add(label)
-                        labels.append((label, thumbnail))
-                    else:
-                        continue
+                    # Create Label if no match over "create" threshold
+                    label = Label()
+                    db.session.add(label)
+                    labels.append((label, thumbnail))
                 else:
                     label = Label.query.get(label_id)
                     # Handle predicted Label
@@ -119,7 +117,7 @@ def handle_snapshot(frame, snapshot):
                 db.session.add(detection)
                 # Set Detection relationships
                 snapshot.detections.append(detection)
-                label._detections.append(detection)
+                label.add_detections([detection])
 
         if not snapshot.detections:
             db.session.expunge(snapshot)
