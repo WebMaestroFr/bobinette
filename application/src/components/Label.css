@@ -1,24 +1,15 @@
-.Label-detection-date {
+.LabelDetection .LocaleString {
     color: lightslategray;
     display: block;
     line-height: 1;
     margin-bottom: 8px;
 }
 
-.Label-homonyms.alert {
+.LabelDetection .LabelHomonymList {
     line-height: 0;
-    padding: 3px;
+    padding: 4px;
 }
 
-.Label-homonyms .Canvas {
+.LabelDetection .LabelHomonymList .Canvas {
     margin: 4px;
-    width: 64px;
-}
-
-.Label-detection-thumbnail .Canvas {
-    width: 96px;
-}
-
-.Label-train-active .Canvas {
-    width: 128px;
 }

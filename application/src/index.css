@@ -1,14 +1,17 @@
 body {
     color: slategray;
     font-family: 'Roboto', sans-serif;
+    font-size: 16px;
     -webkit-font-smoothing: antialiased;
+    line-height: 1.618;
     margin: 0;
     -moz-osx-font-smoothing: grayscale;
     padding: 0;
 }
 
-h1,
-h2 {
+h1 {
     font-family: 'Clicker Script', cursive;
-    line-height: 60px;
+    font-size: 48px;
+    margin-top: 32px;
+    margin-bottom: 16px;
 }

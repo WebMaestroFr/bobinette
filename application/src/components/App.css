@@ -1,18 +1,41 @@
 .App {
-    margin-bottom: 30px;
+    margin-bottom: 32px;
 }
 
-.App-actions,
-.App-label-history {
-    margin-top: 30px;
+.App .App-actions,
+.App .App-label-history {
+    margin-top: 32px;
 }
 
-.App-actions.btn-toolbar .btn,
-.App-actions.btn-toolbar .btn-group,
-.App-actions.btn-toolbar .input-group {
+.App .App-actions .btn,
+.App .App-actions .btn-group,
+.App .App-actions .input-group {
     float: right;
 }
 
-.App-main .tab-content {
-    margin-top: 20px;
+.App .App-main .tab-content {
+    margin-top: 16px;
+}
+
+.App .App-main .tab-content form {
+    padding-bottom: 16px;
+    padding-top: 16px;
+}
+
+.fade-enter {
+    opacity: 0.01;
+}
+
+.fade-enter.fade-enter-active {
+    opacity: 1;
+    transition: opacity 400ms ease-in;
+}
+
+.fade-exit {
+    opacity: 1;
+}
+
+.fade-exit.fade-exit-active {
+    opacity: 0.01;
+    transition: opacity 400ms ease-in;
 }

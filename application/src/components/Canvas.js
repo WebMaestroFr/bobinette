@@ -5,65 +5,90 @@ import './Canvas.css';
 
 class Canvas extends React.Component {
 
-    handleImageLoad() {
-        if (this.refs.canvas) {
-            this
-                .refs
-                .canvas
-                .getContext(`2d`)
-                .drawImage(this.image, 0, 0, this.props.width, this.props.height);
-        }
+    constructor(props) {
+        super(props);
+        this.clearImage = this
+            .clearImage
+            .bind(this);
+        this.drawImage = this
+            .drawImage
+            .bind(this);
+        this.loadImage = this
+            .loadImage
+            .bind(this);
+        this.image = new Image();
+        this.image.onload = this
+            .drawImage
+            .bind(this);
     }
 
-    drawImage(base64, type) {
-        if (base64) {
-            this.image.src = `data:image/${type};base64,${base64}`;
-        } else {
-            const canvas = this.refs.canvas;
+    clearImage() {
+        const canvas = this.refs.canvas;
+        if (canvas) {
             canvas
                 .getContext(`2d`)
                 .clearRect(0, 0, canvas.width, canvas.height);
         }
     }
 
-    componentDidMount() {
-        this.image = new Image();
-        this.image.onload = this
-            .handleImageLoad
-            .bind(this);
-        this.drawImage = this
-            .drawImage
-            .bind(this);
-        this.drawImage(this.props.base64, this.props.type);
-    }
-
-    componentWillReceiveProps({base64, type}) {
-        if (this.props.base64 !== base64) {
-            this.drawImage(base64, type);
+    drawImage() {
+        const canvas = this.refs.canvas;
+        if (canvas) {
+            if (this.image.src) {
+                canvas
+                    .getContext(`2d`)
+                    .drawImage(this.image, 0, 0, canvas.width, canvas.height);
+            } else {
+                this.clearImage();
+            }
         }
     }
 
-    shouldComponentUpdate({width, height}) {
-        return width !== this.props.width || height !== this.props.height;
+    loadImage(base64, type) {
+        if (base64) {
+            this.image.src = `data:image/${type};base64,${base64}`;
+        } else {
+            this.image.src = null;
+            this.clearImage();
+        }
+    }
+
+    componentDidMount() {
+        this.loadImage(this.props.base64, this.props.type);
+    }
+
+    componentWillReceiveProps({base64, type}) {
+        if (base64 !== this.props.base64 || type !== this.props.type) {
+            this.loadImage(base64, type);
+        }
+    }
+
+    shouldComponentUpdate({height, width}) {
+        return height !== this.props.height || width !== this.props.width;
+    }
+
+    componentDidUpdate() {
+        this.drawImage();
     }
 
     render() {
-        return <canvas ref="canvas" className="Canvas" width={this.props.width} height={this.props.height}/>;
+        const {height, width} = this.props;
+        return <canvas className="Canvas" height={height} ref="canvas" width={width}/>;
     }
 }
 
 Canvas.propTypes = {
     base64: PropTypes.string,
+    height: PropTypes.number,
     type: PropTypes.string,
-    width: PropTypes.number,
-    height: PropTypes.number
+    width: PropTypes.number
 };
 
 Canvas.defaultProps = {
     base64: null,
+    height: 480,
     type: `jpeg`,
-    width: 640,
-    height: 480
+    width: 640
 };
 
 export default Canvas;

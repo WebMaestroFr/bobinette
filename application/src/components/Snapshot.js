@@ -53,18 +53,15 @@ class Snapshot extends React.Component {
 
     render() {
         return <div ref="container" className="Snapshot">
-            <Canvas
-                ref="image"
-                base64={this.props.image}
-                type="jpeg"
-                width={this.props.width}
-                height={this.props.height}/>
+            <Canvas height={this.props.height} type="jpeg" width={this.props.width}>
+                {this.props.image}
+            </Canvas>
             <canvas
-                ref="detections"
                 className="Snapshot-detections"
-                width={this.props.width}
-                height={this.props.height}/>
-            <LocaleString className="Snapshot-date" ref="date" timestamp={this.props.date}/>
+                height={this.props.height}
+                ref="detections"
+                width={this.props.width}/>
+            <LocaleString timestamp={this.props.date}/>
         </div>;
     }
 }

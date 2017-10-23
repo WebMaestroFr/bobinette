@@ -4,6 +4,10 @@
     position: relative;
 }
 
+.Snapshot .Canvas {
+    width: 100%;
+}
+
 .Snapshot-detections {
     height: auto;
     left: 0;
@@ -12,7 +16,7 @@
     width: 100%;
 }
 
-.Snapshot-date {
+.Snapshot .LocaleString {
     bottom: 16px;
     color: white;
     left: 16px;

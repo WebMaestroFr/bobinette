@@ -8,13 +8,10 @@ class LocaleString extends React.Component {
     }
 
     render() {
-        const {
-            timestamp,
-            ...attrs
-        } = this.props;
+        const {timestamp} = this.props;
         const date = new Date(timestamp);
         const localeString = date.toLocaleString();
-        return <time dateTime={date} {...attrs}>
+        return <time className="LocaleString" dateTime={date}>
             {localeString}
         </time>;
     }

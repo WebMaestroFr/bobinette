@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+
 import {
     Button,
     Col,
@@ -10,15 +11,27 @@ import {
     Glyphicon,
     InputGroup
 } from 'react-bootstrap';
+
 import ServerAction from '../containers/ServerAction';
 
 class NetworkForm extends React.Component {
+
     constructor(props) {
         super(props);
         this.state = {
             cell: null,
             psk: ''
         };
+        this.onSubmit = this
+            .onSubmit
+            .bind(this);
+    }
+
+    onSubmit(event) {
+        event.preventDefault();
+        return this
+            .props
+            .onSubmit(this.state.cell.ssid, this.state.psk);
     }
 
     componentWillReceiveProps({networks}) {
@@ -41,12 +54,6 @@ class NetworkForm extends React.Component {
             psk: ''
         });
         const handlePskChange = ({target}) => this.setState({psk: target.value});
-        const handleSubmit = (event) => {
-            event.preventDefault();
-            this
-                .props
-                .onSubmit(this.state.cell.ssid, this.state.psk);
-        };
         const renderCell = (cell) => <option value={cell.address} key={cell.address}>
             {cell.ssid}
         </option>;
@@ -55,10 +62,10 @@ class NetworkForm extends React.Component {
             .networks
             .sort((a, b) => b.signal - a.signal)
             .map(renderCell);
-        return <Form onSubmit={handleSubmit} horizontal>
+        return <Form onSubmit={this.onSubmit} horizontal>
             <FormGroup controlId="NetworkForm-cell">
-                <Col xs={12} sm={3} componentClass={ControlLabel}>Wifi</Col>
-                <Col xs={9} sm={6}>
+                <Col sm={3} componentClass={ControlLabel}>Wifi</Col>
+                <Col sm={6}>
                     <InputGroup>
                         <FormControl
                             componentClass="select"
@@ -78,8 +85,8 @@ class NetworkForm extends React.Component {
                 </Col>
             </FormGroup>
             <FormGroup controlId="NetworkForm-psk">
-                <Col xs={12} sm={3} componentClass={ControlLabel}>Password</Col>
-                <Col xs={12} sm={6}>
+                <Col sm={3} componentClass={ControlLabel}>Password</Col>
+                <Col sm={6}>
                     <FormControl
                         disabled={!this.state.cell || this.state.cell.active || !this.state.cell.encrypted}
                         onChange={handlePskChange}
@@ -89,7 +96,7 @@ class NetworkForm extends React.Component {
                 </Col>
             </FormGroup>
             <FormGroup>
-                <Col xs={12} sm={9} smOffset={3}>
+                <Col sm={9} smOffset={3}>
                     <Button type="submit" bsStyle="primary">Connect</Button>
                 </Col>
             </FormGroup>
@@ -104,7 +111,7 @@ const cellPropTypes = {
 }
 NetworkForm.propTypes = {
     networks: PropTypes.arrayOf(PropTypes.shape(cellPropTypes)),
-    onPskChange: PropTypes.func
+    onSubmit: PropTypes.func
 };
 
 export default NetworkForm;

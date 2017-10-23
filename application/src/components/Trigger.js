@@ -4,9 +4,9 @@ import {Button} from 'react-bootstrap';
 
 class Trigger extends React.Component {
 
-    shouldComponentUpdate({children, action}) {
+    /* shouldComponentUpdate({children, action}) {
         return children !== this.props.children || action !== this.props.action;
-    }
+    } */
 
     render() {
         const {

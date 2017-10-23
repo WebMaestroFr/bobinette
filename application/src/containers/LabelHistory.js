@@ -6,11 +6,22 @@ import LabelList from '../components/LabelList';
 const byDate = (a, b) => b.detection.snapshot_date - a.detection.snapshot_date;
 
 const mapStateToProps = (state) => {
-    return {
-        labels: state
-            .labels
-            .sort(byDate)
-    };
+    const labels = state
+        .labels
+        .sort(byDate);
+    labels.map((label) => {
+        const byName = (l) => l.name && l.name === label.name && l.id !== label.id;
+        label.homonyms = labels.filter(byName);
+        label.validationState = !label.name
+            ? "error"
+            : label.homonyms.length
+                ? "warning"
+                : label.access
+                    ? "success"
+                    : null;
+        return label;
+    });
+    return {labels};
 };
 
 const mapDispatchToProps = (dispatch) => {
