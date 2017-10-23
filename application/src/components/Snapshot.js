@@ -53,9 +53,7 @@ class Snapshot extends React.Component {
 
     render() {
         return <div ref="container" className="Snapshot">
-            <Canvas height={this.props.height} type="jpeg" width={this.props.width}>
-                {this.props.image}
-            </Canvas>
+            <Canvas base64={this.props.image} height={this.props.height} type="jpeg" width={this.props.width}/>
             <canvas
                 className="Snapshot-detections"
                 height={this.props.height}

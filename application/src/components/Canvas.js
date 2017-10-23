@@ -34,13 +34,9 @@ class Canvas extends React.Component {
     drawImage() {
         const canvas = this.refs.canvas;
         if (canvas) {
-            if (this.image.src) {
-                canvas
-                    .getContext(`2d`)
-                    .drawImage(this.image, 0, 0, canvas.width, canvas.height);
-            } else {
-                this.clearImage();
-            }
+            canvas
+                .getContext(`2d`)
+                .drawImage(this.image, 0, 0, canvas.width, canvas.height);
         }
     }
 
@@ -48,7 +44,6 @@ class Canvas extends React.Component {
         if (base64) {
             this.image.src = `data:image/${type};base64,${base64}`;
         } else {
-            this.image.src = null;
             this.clearImage();
         }
     }
