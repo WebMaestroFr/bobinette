@@ -7,63 +7,60 @@ class Canvas extends React.Component {
 
     constructor(props) {
         super(props);
-        this.clearImage = this
-            .clearImage
+        this.loadBase64 = this
+            .loadBase64
             .bind(this);
-        this.drawImage = this
-            .drawImage
-            .bind(this);
-        this.loadImage = this
-            .loadImage
-            .bind(this);
+        this.animationFrame = null;
         this.image = new Image();
         this.image.onload = this
-            .drawImage
+            .onImageLoad
             .bind(this);
     }
 
-    clearImage() {
-        const canvas = this.refs.canvas;
-        if (canvas) {
-            canvas
-                .getContext(`2d`)
-                .clearRect(0, 0, canvas.width, canvas.height);
-        }
-    }
-
-    drawImage() {
-        const canvas = this.refs.canvas;
-        if (canvas) {
-            canvas
-                .getContext(`2d`)
-                .drawImage(this.image, 0, 0, canvas.width, canvas.height);
-        }
-    }
-
-    loadImage(base64, type) {
-        if (base64) {
-            this.image.src = `data:image/${type};base64,${base64}`;
+    loadBase64() {
+        const {base64, type} = this.props;
+        if (type && base64) {
+            const src = `data:image/${type};base64,${base64}`;
+            if (src !== this.image.src) {
+                return this.image.src = src;
+            }
         } else {
-            this.clearImage();
+            this
+                .refs
+                .canvas
+                .getContext(`2d`)
+                .clearRect(0, 0, this.refs.canvas.width, this.refs.canvas.height);
+        }
+        this.animationFrame = window.requestAnimationFrame(this.loadBase64);
+    }
+
+    onImageLoad() {
+        if (this.refs.canvas) {
+            this
+                .refs
+                .canvas
+                .getContext(`2d`)
+                .drawImage(this.image, 0, 0, this.refs.canvas.width, this.refs.canvas.height);
+            this.animationFrame = window.requestAnimationFrame(this.loadBase64);
         }
     }
 
     componentDidMount() {
-        this.loadImage(this.props.base64, this.props.type);
-    }
-
-    componentWillReceiveProps({base64, type}) {
-        if (base64 !== this.props.base64 || type !== this.props.type) {
-            this.loadImage(base64, type);
-        }
+        this.animationFrame = window.requestAnimationFrame(this.loadBase64);
     }
 
     shouldComponentUpdate({height, width}) {
         return height !== this.props.height || width !== this.props.width;
     }
 
+    componentWillUpdate() {
+        if (this.animationFrame) {
+            window.cancelAnimationFrame(this.animationFrame);
+        }
+    }
+
     componentDidUpdate() {
-        this.drawImage();
+        this.animationFrame = window.requestAnimationFrame(this.loadBase64);
     }
 
     render() {

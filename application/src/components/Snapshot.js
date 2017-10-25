@@ -56,9 +56,9 @@ class Snapshot extends React.Component {
             <Canvas base64={this.props.image} height={this.props.height} type="jpeg" width={this.props.width}/>
             <canvas
                 className="Snapshot-detections"
-                height={this.props.height}
+                height={this.props.height * 2}
                 ref="detections"
-                width={this.props.width}/>
+                width={this.props.width * 2}/>
             <LocaleString timestamp={this.props.date}/>
         </div>;
     }
@@ -84,8 +84,8 @@ Snapshot.propTypes = {
 };
 
 Snapshot.defaultProps = {
-    width: 640,
-    height: 480
+    width: 320,
+    height: 240
 };
 
 export default Snapshot;

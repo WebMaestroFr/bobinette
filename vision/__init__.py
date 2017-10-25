@@ -17,7 +17,7 @@ except ImportError:
 print('=> INIT VISION')
 
 RESOLUTION = (640, 480)
-FRAMERATE = 8
+FRAMERATE = 4
 
 CAMERA = PiCamera()
 CAMERA.resolution = RESOLUTION

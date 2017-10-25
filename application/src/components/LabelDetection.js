@@ -16,7 +16,7 @@ class LabelDetection extends React.Component {
         const {children, snapshot_date, thumbnail} = this.props;
         return <Media className="LabelDetection">
             <Media.Left className="LabelDetection-thumbnail">
-                <Canvas base64={thumbnail} height={128} type="png" width={128}/>
+                <Canvas base64={thumbnail} height={96} type="png" width={96}/>
             </Media.Left>
             <Media.Body>
                 <LocaleString timestamp={snapshot_date}/> {children}

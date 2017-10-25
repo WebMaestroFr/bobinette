@@ -1,14 +1,15 @@
 '''Capture and Face Recognition'''
 # pylint: disable=R0912
 
+from bobinette import IP_ADDRESS
 from bobinette.models import Detection, Label, Snapshot
 from bobinette.server import Lock, Network, action, app, db, socket
 from bobinette.vision import face as subject
 from bobinette.vision import get_gray, run_capture
 
 print('\033[93mBobinette v0.1 - https://github.com/WebMaestroFr/bobinette\033[0m')
+print(IP_ADDRESS)
 
-DOMAIN = 'bobinette-dev.local'
 PORT = 80
 
 APP_STATUS_CAPTURE = 'CAPTURE'
@@ -153,5 +154,4 @@ if __name__ == '__main__':
         print('=> CREATE DATABASE')
         db.create_all()
     print('=> RUN SERVER')
-    socket.run(app, host=DOMAIN, port=PORT,
-               debug=False, log_output=True)
+    socket.run(app, host=IP_ADDRESS, port=PORT, debug=False, log_output=True)

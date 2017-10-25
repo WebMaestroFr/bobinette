@@ -11,6 +11,7 @@ from bobinette.server import db
 print('=> SNAPSHOT MODEL')
 
 JPEG_QUALITY = 70
+SCALE = 1 / 2
 
 
 class Snapshot(db.Model):
@@ -29,7 +30,7 @@ class Snapshot(db.Model):
 
     def __init__(self, bgr):
         self.date = datetime.utcnow()
-        size = (int(bgr.shape[0] / 2), int(bgr.shape[1] / 2))
+        size = (int(bgr.shape[0] * SCALE), int(bgr.shape[1] * SCALE))
         source = resize(bgr, size)
         _, image = imencode('.jpg', source, (
             IMWRITE_JPEG_OPTIMIZE, True,

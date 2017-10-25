@@ -32,7 +32,7 @@ class App extends React.Component {
                     </Row>
                     <Tabs defaultActiveKey={1} id="App-main" className="App-main">
                         <Tab eventKey={1} title="Camera">
-                            <SnapshotLive width={640} height={480}/>
+                            <SnapshotLive width={320} height={240}/>
                         </Tab>
                         <Tab eventKey={2} title="Network">
                             <NetworkConfig/>
