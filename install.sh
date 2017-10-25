@@ -77,4 +77,8 @@ printf "\n${BLUE}Building Client Application ...${BLANK}\n"
 npm run build
 cd ..
 
+printf "\n${BLUE}Setting Up Access Point ...${BLANK}\n"
+sudo bash ./access-point.sh
+
 printf "\n${BLUE}All Done !${BLANK}\n"
+sudo reboot
