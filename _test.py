@@ -1,14 +1,9 @@
 '''Pytest'''
-import sys
-
-import fake_rpi
-
-sys.modules['RPi'] = fake_rpi.RPi
-sys.modules['picamera'] = fake_rpi.picamera
 
 
 def test_opencv_3():
     '''OpenCV Version 3'''
+    # pylint: disable=E1101
     import cv2
     assert cv2.__version__.startswith('3.')
 

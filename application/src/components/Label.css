@@ -1,7 +1,15 @@
-.Label-date {
+.LabelDetection .LocaleString {
+    color: lightslategray;
     display: block;
-    font-size: 12px;
     line-height: 1;
-    margin-bottom: 6px;
-    opacity: 0.67;
+    margin-bottom: 8px;
+}
+
+.LabelDetection .LabelHomonymList {
+    line-height: 0;
+    padding: 4px;
+}
+
+.LabelDetection .LabelHomonymList .Canvas {
+    margin: 4px;
 }

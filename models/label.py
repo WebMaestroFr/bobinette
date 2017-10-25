@@ -1,19 +1,21 @@
-"""Label Model"""
-print("=> LABEL MODEL")
-
-from itertools import groupby
+'''Label Model'''
+# pylint: disable=E1101,R0903
 
 from bobinette.models.detection import Detection
 from bobinette.server import db
+
+print('=> LABEL MODEL')
 
 DETECTION_DATE_DESC = db.desc(Detection.snapshot_date)
 
 
 class Label(db.Model):
-    """Label Model Class"""
+    '''Label Model Class'''
+    # pylint: disable=C0103
     __tablename__ = 'label'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    access = db.Column(db.Boolean, default=False)
     name = db.Column(db.String)
 
     _detections = db.relationship('Detection', backref=db.backref(
@@ -21,40 +23,36 @@ class Label(db.Model):
         uselist=False
     ))
 
+    def add_detections(self, detections):
+        '''Add Detections'''
+        self._detections.extend(detections)
+
+    def get_detections(self):
+        '''Add Detections'''
+        return self._detections
+
     @property
     def detection(self):
-        """Last Detection"""
+        '''Last Detection'''
         return db.session.query(Detection).filter(
             self.id == Detection.label_id
         ).order_by(DETECTION_DATE_DESC).first()
 
+    def merge(self):
+        '''Merge Homonyms'''
+        for homonym in self.__class__.query.filter(
+                self.__class__.id != self.id,
+                self.__class__.name == self.name).all():
+            detections = homonym.get_detections()
+            self._detections.extend(detections)
+            db.session.delete(homonym)
+        db.session.commit()
+
+    @classmethod
+    def get_training_sets(cls):
+        '''Get Training Sets'''
+        labels = cls.query.all()
+        return [(l.id, [d.get_image() for d in l.get_detections()]) for l in labels]
+
     def __init__(self, name=''):
         self.name = name
-
-
-def merge_labels(name, group):
-    '''Merge Labels'''
-    destination = Label(name=name)
-    for label in group:
-        destination._detections.extend(label._detections)
-        db.session.delete(label)
-    db.session.add(destination)
-    return destination
-
-
-LABEL_NAME_DESC = db.desc(Label.name)
-
-
-def compute_labels():
-    '''Group Labels Thumbnails'''
-    sources = Label.query.order_by(LABEL_NAME_DESC).all()
-    labels = []
-    for (name, group) in groupby(sources, lambda l: l.name):
-        group = list(group)
-        if name == '':
-            labels.extend(group)
-        else:
-            label = merge_labels(name, group)
-            labels.append(label)
-    db.session.commit()
-    return [(l.id, [d._image for d in l._detections]) for l in labels]

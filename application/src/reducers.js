@@ -1,5 +1,5 @@
 import {combineReducers} from 'redux';
-import {SET_LABELS, ADD_LABELS, UPDATE_LABEL_NAME, SET_SNAPSHOT, SET_ACTIVE_LABEL} from './actions';
+import {ADD_LABELS, SET_LABELS, SET_NETWORKS, SET_SNAPSHOT, UPDATE_LABEL} from './actions';
 
 function labels(state = [], action) {
     switch (action.type) {
@@ -7,10 +7,10 @@ function labels(state = [], action) {
             return action.labels;
         case ADD_LABELS:
             return state.concat(action.labels);
-        case UPDATE_LABEL_NAME:
+        case UPDATE_LABEL:
             return state.map((label) => {
                 if (label.id === action.id) {
-                    label.name = action.name;
+                    Object.assign(label, action.label);
                 }
                 return label;
             });
@@ -25,6 +25,15 @@ function labels(state = [], action) {
                 }
                 return label;
             });
+        default:
+            return state;
+    }
+}
+
+function networks(state = [], action) {
+    switch (action.type) {
+        case SET_NETWORKS:
+            return action.networks;
         default:
             return state;
     }
@@ -45,15 +54,6 @@ function snapshot(state = {
     }
 }
 
-function activeLabel(state = null, action) {
-    switch (action.type) {
-        case SET_ACTIVE_LABEL:
-            return action.key;
-        default:
-            return state;
-    }
-}
-
-const appReducers = combineReducers({labels, snapshot, activeLabel});
+const appReducers = combineReducers({labels, networks, snapshot});
 
 export default appReducers;

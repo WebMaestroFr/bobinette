@@ -1,10 +1,17 @@
 body {
+    color: slategray;
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.618;
     margin: 0;
+    -moz-osx-font-smoothing: grayscale;
     padding: 0;
-    font-family: sans-serif;
-    color: #444;
 }
 
 h1 {
-    line-height: 1.618;
+    font-family: 'Clicker Script', cursive;
+    font-size: 48px;
+    margin-bottom: 16px;
+    margin-top: 32px;
 }

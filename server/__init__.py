@@ -1,25 +1,29 @@
 '''Server Package'''
-print("=> INIT SERVER")
 
 from datetime import datetime
 
+import numpy
 from flask.json import JSONEncoder
 
-import numpy
 from bobinette.server.application import APP as app
 from bobinette.server.database import DB as db
 from bobinette.server.database import BaseModel as Model
+from bobinette.server.device import Lock
+from bobinette.server.network import Network
 from bobinette.server.socket import SOCKET as socket
 from bobinette.server.socket import action
+
+print('=> INIT SERVER')
 
 EPOCH = datetime.utcfromtimestamp(0)
 
 
 class ModelEncoder(JSONEncoder):
-    """JSON Encoder"""
+    '''JSON Encoder'''
+    # pylint: disable=E0202,R0911,W0221
 
     def default(self, obj):
-        """Encode SQLAlchemy Model and Columns"""
+        '''Encode SQLAlchemy Model and Columns'''
         if isinstance(obj, Model):
             return obj.__data__
         if isinstance(obj, datetime):
@@ -31,7 +35,8 @@ class ModelEncoder(JSONEncoder):
             return numpy.asscalar(obj)
         if isinstance(obj, numpy.ndarray):
             return obj.tolist()
-        # print(type(obj))
+        if isinstance(obj, object):
+            return obj.__dict__
         return JSONEncoder.default(self, obj)
 
 app.json_encoder = ModelEncoder

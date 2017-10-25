@@ -1,3 +1,41 @@
-.App-open {
+.App {
+    margin-bottom: 32px;
+}
+
+.App .App-actions,
+.App .App-label-history {
     margin-top: 32px;
+}
+
+.App .App-actions .btn,
+.App .App-actions .btn-group,
+.App .App-actions .input-group {
+    float: right;
+}
+
+.App .App-main .tab-content {
+    margin-top: 16px;
+}
+
+.App .App-main .tab-content form {
+    padding-bottom: 16px;
+    padding-top: 32px;
+}
+
+.fade-enter {
+    opacity: 0.01;
+}
+
+.fade-enter.fade-enter-active {
+    opacity: 1;
+    transition: opacity 400ms ease-in;
+}
+
+.fade-exit {
+    opacity: 1;
+}
+
+.fade-exit.fade-exit-active {
+    opacity: 0.01;
+    transition: opacity 400ms ease-in;
 }

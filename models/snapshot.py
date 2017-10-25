@@ -1,17 +1,22 @@
 '''Snapshot Model'''
-print("=> SNAPSHOT MODEL")
+# pylint: disable=E0611,R0903
 
 from base64 import b64encode
 from datetime import datetime
 
+from cv2 import IMWRITE_JPEG_OPTIMIZE, IMWRITE_JPEG_QUALITY, imencode, resize
+
 from bobinette.server import db
-from cv2 import IMWRITE_JPEG_OPTIMIZE, IMWRITE_JPEG_QUALITY, imencode
+
+print('=> SNAPSHOT MODEL')
 
 JPEG_QUALITY = 70
+SCALE = 1 / 2
 
 
 class Snapshot(db.Model):
     '''Snapshot Model Class'''
+    # pylint: disable=E1101
     __tablename__ = 'snapshot'
 
     date = db.Column(db.DateTime, primary_key=True)
@@ -25,7 +30,9 @@ class Snapshot(db.Model):
 
     def __init__(self, bgr):
         self.date = datetime.utcnow()
-        _, image = imencode('.jpg', bgr, (
+        size = (int(bgr.shape[0] * SCALE), int(bgr.shape[1] * SCALE))
+        source = resize(bgr, size)
+        _, image = imencode('.jpg', source, (
             IMWRITE_JPEG_OPTIMIZE, True,
             IMWRITE_JPEG_QUALITY, JPEG_QUALITY))
         self.image = b64encode(image)

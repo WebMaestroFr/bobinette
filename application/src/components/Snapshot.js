@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import Canvas from './Canvas';
+import LocaleString from './LocaleString';
 
 import './Snapshot.css';
 
@@ -51,23 +52,14 @@ class Snapshot extends React.Component {
     }
 
     render() {
-        const date = new Date(this.props.date);
         return <div ref="container" className="Snapshot">
-            <Canvas
-                ref="image"
-                className="Snapshot-image"
-                base64={this.props.image}
-                type="jpeg"
-                width={this.props.width}
-                height={this.props.height}/>
+            <Canvas base64={this.props.image} height={this.props.height} type="jpeg" width={this.props.width}/>
             <canvas
-                ref="detections"
                 className="Snapshot-detections"
-                width={this.props.width}
-                height={this.props.height}/>
-            <time ref="date" className="Snapshot-date" dateTime={date}>
-                {date.toLocaleString()}
-            </time>
+                height={this.props.height * 2}
+                ref="detections"
+                width={this.props.width * 2}/>
+            <LocaleString timestamp={this.props.date}/>
         </div>;
     }
 }
@@ -92,8 +84,8 @@ Snapshot.propTypes = {
 };
 
 Snapshot.defaultProps = {
-    width: 640,
-    height: 480
+    width: 320,
+    height: 240
 };
 
 export default Snapshot;

@@ -1,28 +1,20 @@
 '''Capture and Face Recognition'''
-print('\033[93mBobinette v0.1 - https://github.com/WebMaestroFr/bobinette\033[0m')
+# pylint: disable=R0912
 
-from threading import Timer
-
-from bobinette.models import Detection, Label, Snapshot, compute_labels
-from bobinette.server import action, app, db, socket
+from bobinette import IP_ADDRESS
+from bobinette.models import Detection, Label, Snapshot
+from bobinette.server import Lock, Network, action, app, db, socket
 from bobinette.vision import face as subject
 from bobinette.vision import get_gray, run_capture
-from RPi import GPIO
 
-DOMAIN = 'bobinette-dev.local'
+print('\033[93mBobinette v0.1 - https://github.com/WebMaestroFr/bobinette\033[0m')
+print(IP_ADDRESS)
+
 PORT = 80
-
-LOCK_IS_OPEN = False
-LOCK_CHANNEL = 7
-LOCK_TIMEOUT = 4.0
 
 APP_STATUS_CAPTURE = 'CAPTURE'
 APP_STATUS_TRAIN = 'TRAIN'
 APP_STATUS = APP_STATUS_CAPTURE
-
-GPIO.setmode(GPIO.BOARD)
-GPIO.setwarnings(False)
-GPIO.setup(LOCK_CHANNEL, GPIO.OUT, initial=LOCK_IS_OPEN)
 
 
 @socket.on('connect')
@@ -34,23 +26,26 @@ def client_connect():
     })
 
 
-@socket.on('UPDATE_LABEL_NAME')
-def update_label_name(data):
-    '''Update Label Name Event'''
-    print('=> \033[93mUPDATE_LABEL_NAME\033[0m')
+@socket.on('UPDATE_LABEL')
+def update_label(data):
+    # pylint: disable=E1101
+    '''Update Label Event'''
+    print('=> \033[93mUPDATE_LABEL\033[0m')
     print(data)
-    label = Label.query.get(data['id'])
-    label.name = data['name']
+    Label.query.filter_by(id=data['id']).update(data['label'])
     db.session.commit()
 
 
-@socket.on('TRAIN_LABELS')
-def train_labels(_=None):
+@socket.on('TRAIN_LABEL')
+def train_label(data):
     '''Train Labels Event'''
+    # pylint: disable=W0603
     global APP_STATUS
     APP_STATUS = APP_STATUS_TRAIN
-    print('=> \033[93mTRAIN_LABELS\033[0m')
-    training_sets = compute_labels()
+    print('=> \033[93mTRAIN_LABEL\033[0m')
+    print(data)
+    Label.query.get(data['id']).merge()
+    training_sets = Label.get_training_sets()
     subject.regenerate_recognizer(training_sets)
     APP_STATUS = APP_STATUS_CAPTURE
     return client_connect()
@@ -59,27 +54,37 @@ def train_labels(_=None):
 @socket.on('CLOSE_LOCK')
 def close_lock(_=None):
     '''Close Lock Event'''
-    global LOCK_IS_OPEN
-    if LOCK_IS_OPEN:
-        print('=> \033[91mCLOSE_LOCK\033[0m')
-        LOCK_IS_OPEN = False
-        GPIO.output(LOCK_CHANNEL, 0)
+    Lock.close()
 
 
 @socket.on('OPEN_LOCK')
 def open_lock(_=None):
     '''Open Lock Event'''
-    global LOCK_IS_OPEN
-    if not LOCK_IS_OPEN:
-        print('=> \033[92mOPEN_LOCK\033[0m')
-        LOCK_IS_OPEN = True
-        GPIO.output(LOCK_CHANNEL, 1)
-        close = Timer(LOCK_TIMEOUT, close_lock)
-        close.start()
+    Lock.open()
+
+
+@socket.on('NETWORK_SCAN')
+def network_scan(_=None):
+    '''Network Scan'''
+    print('=> \033[93mNETWORK_SCAN\033[0m')
+    action('SET_NETWORKS', {
+        'networks': Network.scan()
+    })
+
+
+@socket.on('NETWORK_CONNECT')
+def network_connect(credentials):
+    '''Network Connect'''
+    print('=> \033[93mNETWORK_CONNECT\033[0m')
+    print(credentials)
+    action('SET_ACTIVE_NETWORK', {
+        'network': Network.connect(**credentials)
+    })
 
 
 def handle_snapshot(frame, snapshot):
     '''Handle Snapshot'''
+    # pylint: disable=E1101
     labels = []
     gray = get_gray(frame)
     # Detect Faces
@@ -92,20 +97,18 @@ def handle_snapshot(frame, snapshot):
             # Attempt thumbnail transformation to confirm Face
             if thumbnail is not None:
                 label_id, confidence = subject.predict(thumbnail)
+                print('=> \033[93mDETECTION : %s\033[0m %s' %
+                      (label_id, confidence))
                 # Analyse prediction confidence
                 if confidence <= subject.THRESHOLD_CREATE:
-                    # If no match over "create" threshold and
-                    # detectable thumbnail : create Label
-                    if subject.detect(thumbnail, min_neighbors=1):
-                        label = Label()
-                        db.session.add(label)
-                        labels.append((label, thumbnail))
-                    else:
-                        continue
+                    # Create Label if no match over "create" threshold
+                    label = Label()
+                    db.session.add(label)
+                    labels.append((label, thumbnail))
                 else:
                     label = Label.query.get(label_id)
                     # Handle predicted Label
-                    if label.name == 'Etienne':
+                    if label.access is True:
                         open_lock()
                     if subject.THRESHOLD_PASS >= confidence <= subject.THRESHOLD_TRAIN:
                         # Train if confidence within range
@@ -115,7 +118,7 @@ def handle_snapshot(frame, snapshot):
                 db.session.add(detection)
                 # Set Detection relationships
                 snapshot.detections.append(detection)
-                label._detections.append(detection)
+                label.add_detections([detection])
 
         if not snapshot.detections:
             db.session.expunge(snapshot)
@@ -151,4 +154,4 @@ if __name__ == '__main__':
         print('=> CREATE DATABASE')
         db.create_all()
     print('=> RUN SERVER')
-    socket.run(app, host=DOMAIN, port=PORT, debug=False, log_output=True)
+    socket.run(app, host=IP_ADDRESS, port=PORT, debug=False, log_output=True)

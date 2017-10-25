@@ -1,71 +1,95 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Form, FormGroup, FormControl, Media} from 'react-bootstrap';
 
-import Canvas from './Canvas'
+import LabelDetection from './LabelDetection';
+import LabelForm from './LabelForm';
+import LabelHomonymList from './LabelHomonymList';
 
 import './Label.css';
 
 class Label extends React.Component {
 
-    shouldComponentUpdate({name, detection}) {
-        return name !== this.props.name || detection.snapshot_date > this.props.detection.snapshot_date;
+    constructor(props) {
+        super(props);
+        const {access, name} = props;
+        this.state = {
+            access,
+            name
+        };
+        this.onAccessChange = this
+            .onAccessChange
+            .bind(this);
+        this.onNameChange = this
+            .onNameChange
+            .bind(this);
+        this.onTrain = this
+            .onTrain
+            .bind(this);
+    }
+
+    onAccessChange({target}) {
+        const state = Object.assign({
+            ...this.state
+        }, {access: target.checked});
+        this.setState(state);
+        return this
+            .props
+            .onChange(this.props.id, state);
+    }
+
+    onNameChange({target}) {
+        const state = Object.assign({
+            ...this.state
+        }, {name: target.value});
+        this.setState(state);
+        return this
+            .props
+            .onChange(this.props.id, state);
+    }
+
+    onTrain(event) {
+        event.preventDefault();
+        return this
+            .props
+            .onTrain(this.props.id);
+    }
+
+    componentWillReceiveProps({access, name}) {
+        this.setState({access, name});
+    }
+
+    shouldComponentUpdate({
+        detection,
+        homonyms,
+        validationState
+    }, {access, name}) {
+        return access !== this.state.access || name !== this.state.name || detection.snapshot_date !== this.props.detection.snapshot_date || homonyms.length !== this.props.homonyms.length || validationState !== this.props.validationState;
     }
 
     render() {
-        const date = new Date(this.props.detection.snapshot_date);
-        const onNameChange = ({target}) => this
-            .props
-            .onNameChange(this.props.id, target.value);
-        const onNameFocus = this.props.onNameFocus
-            ? () => this
-                .props
-                .onNameFocus(this.props.id)
-            : null;
-        return <Media className="Label">
-            <Media.Left>
-                <Canvas
-                    ref="detection-thumbnail"
-                    className="Label-detection-thumbnail"
-                    base64={this.props.detection.thumbnail}
-                    type="png"
-                    width={64}
-                    height={64}/>
-            </Media.Left>
-            <Media.Body>
-                <Form>
-                    <FormGroup controlId="labelName" bsSize="large">
-                        <time ref="date" className="Label-date" dateTime={date}>
-                            {date.toLocaleString()}
-                        </time>
-                        <FormControl
-                            ref="name"
-                            className="Label-name"
-                            type="text"
-                            value={this.props.name}
-                            placeholder={`Label #${this.props.id}`}
-                            onChange={onNameChange}
-                            onFocus={onNameFocus}
-                            onBlur={this.props.onNameBlur}/>
-                    </FormGroup>
-                </Form>
-            </Media.Body>
-        </Media>;
+        return <LabelDetection {...this.props.detection}>
+            <LabelForm
+                access={this.state.access}
+                name={this.state.name}
+                onAccessChange={this.onAccessChange}
+                onNameChange={this.onNameChange}
+                onTrain={this.onTrain}
+                showTrain={this.props.homonyms.length > 0}
+                validationState={this.props.validationState}/>
+            <LabelHomonymList homonyms={this.props.homonyms} validationState={this.props.validationState}/>
+        </LabelDetection>;
     }
 }
 
-const detectionPropTypes = {
-    snapshot_date: PropTypes.number,
-    thumbnail: PropTypes.string
-};
-
 Label.propTypes = {
+    access: PropTypes.bool,
+    detection: PropTypes.shape(LabelDetection.propTypes),
+    homonyms: PropTypes.array,
     id: PropTypes.number,
-    detection: PropTypes.shape(detectionPropTypes),
     name: PropTypes.string,
-    onNameChange: PropTypes.func,
-    onNameBlur: PropTypes.func,
-    onNameFocus: PropTypes.func
+    onChange: PropTypes.func,
+    onTrain: PropTypes.func,
+    validationState: PropTypes.string
 };
 
 export default Label;

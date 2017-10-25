@@ -1,14 +1,18 @@
 '''Face Recognition Constants and Functions'''
+# pylint: disable=E0611
 
 from math import atan2, degrees
 from os import path
 
-from bobinette import PATH_DATA, PATH_OPENCV
-from bobinette.vision import crop_image, get_distance
 from cv2 import error as cv_error
 from cv2 import (CASCADE_SCALE_IMAGE, CascadeClassifier, face,
                  getRotationMatrix2D, warpAffine)
 from numpy import array as numpy_array
+
+from bobinette import PATH_DATA, PATH_OPENCV
+from bobinette.vision import crop_image, get_distance
+
+print('=> VISION FACE')
 
 CLASSIFIER = CascadeClassifier(
     '%s/data/haarcascades/haarcascade_%s.xml' % (PATH_OPENCV, 'frontalface_default'))
@@ -20,7 +24,11 @@ MODEL = '%s/%s.xml' % (PATH_DATA, 'faces')
 if path.isfile(MODEL):
     RECOGNIZER.read(MODEL)
 
-SIZE = (96, 96)
+THRESHOLD_CREATE = 0.7
+THRESHOLD_PASS = 0.8
+THRESHOLD_TRAIN = 0.9
+
+SIZE = (128, 128)
 
 EYE_SIZE = (0.3, 0.3)
 EYE_LEFT_CENTER = (0.3, 0.4)
@@ -47,10 +55,6 @@ EYES_DISTANCE = SIZE[0] * get_distance(EYE_LEFT_CENTER, EYE_RIGHT_CENTER)
 EYES_OFFSET = (
     EYE_LEFT_CENTER[0] * SIZE[0],
     EYE_LEFT_CENTER[1] * SIZE[1])
-
-THRESHOLD_CREATE = 0.61
-THRESHOLD_PASS = 0.63
-THRESHOLD_TRAIN = 0.67
 
 
 def detect(gray, scale_factor=1.3, min_neighbors=4, min_size=SIZE):
@@ -80,7 +84,7 @@ def detect_eyes(gray, scale_factor=1.1, min_neighbors=4, min_size=SIZE):
 
 
 def get_eye_center(gray, roi=None, **kwargs):
-    """Center Point of Single Eye Region"""
+    '''Center Point of Single Eye Region'''
     if roi:
         eye_gray = crop_image(gray, *roi)
     else:
@@ -95,7 +99,7 @@ def get_eye_center(gray, roi=None, **kwargs):
 
 
 def transform(region, gray, **kwargs):
-    """Transform Face Image"""
+    '''Transform Face Image'''
     min_size = (int(round(EYE_MIN[0] * region['width'])),
                 int(round(EYE_MIN[1] * region['height'])))
     max_size = (int(round(EYE_MAX[0] * region['width'])),
@@ -121,12 +125,14 @@ def transform(region, gray, **kwargs):
             scale = EYES_DISTANCE / get_distance(left, right)
             matrix = getRotationMatrix2D(left, angle, scale)
             image = warpAffine(gray, matrix, gray.shape)
-            return crop_image(
+            thumbnail = crop_image(
                 image,
                 int(round(left[0] - EYES_OFFSET[0])),
                 int(round(left[1] - EYES_OFFSET[1])),
                 SIZE[0],
                 SIZE[1])
+            if detect(thumbnail, min_neighbors=2):
+                return thumbnail
     return None
 
 
@@ -149,6 +155,7 @@ def train(label_id, *images):
 
 def regenerate_recognizer(training_sets):
     '''Regenerate Face Recognizer'''
+    # pylint: disable=W0603
     global RECOGNIZER
     recognizer = face.LBPHFaceRecognizer_create()
     for (label_id, images) in training_sets:
