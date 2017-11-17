@@ -15,7 +15,7 @@ import './index.css';
 // let store = createStore(appReducers, applyMiddleware(logger, socket));
 let store = createStore(appReducers, applyMiddleware(socket));
 
-const socketOpenAction = socketOpen('http://bobinette-dev.local:80/')
+const socketOpenAction = socketOpen();
 store.dispatch(socketOpenAction);
 
 const app = <Provider store={store}><App/></Provider>;
