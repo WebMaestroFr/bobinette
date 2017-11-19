@@ -4,9 +4,6 @@
 APSSID="Bobinette"
 APPASS="Chevillette"
 
-apt-get remove --purge hostapd -yqq
-apt-get install hostapd dnsmasq -yqq
-
 mv -n -v /etc/dnsmasq.conf /etc/dnsmasq.conf.bak
 cp /etc/dnsmasq.conf.bak /etc/dnsmasq.conf
 cat > /etc/dnsmasq.conf <<EOF
@@ -58,5 +55,5 @@ echo "denyinterfaces wlan0" >> /etc/dhcpcd.conf
 systemctl enable hostapd
 systemctl enable dnsmasq
 
-sudo service hostapd start
-sudo service dnsmasq start
+service hostapd start
+service dnsmasq start

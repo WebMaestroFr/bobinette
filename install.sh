@@ -1,8 +1,9 @@
 #!/bin/bash
 
-cd "$(dirname "$0")"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd ${DIR}
 
-BLUE="\033[0;34m"
+BLUE="\033[0;94m"
 BLANK="\033[0m"
 
 REVCODE=$(sudo cat /proc/cpuinfo | grep 'Revision' | awk '{print $3}' | sed 's/^ *//g' | sed 's/ *$//g')
@@ -10,52 +11,82 @@ REVCODE=$(sudo cat /proc/cpuinfo | grep 'Revision' | awk '{print $3}' | sed 's/^
 printf "\n${BLUE}Updating Package Manager ...${BLANK}\n"
 sudo apt-get update -y
 printf "\n${BLUE}Upgrading Distribution ...${BLANK}\n"
-sudo apt-get dist-upgrade -y -q
+sudo apt-get dist-upgrade -yq
 printf "\n${BLUE}Upgrading Packages ...${BLANK}\n"
-sudo apt-get upgrade -y -q
+sudo apt-get upgrade -yq
 
 printf "\n${BLUE}Installing Dependencies ...${BLANK}\n"
-sudo apt-get install -y python3-dev python3-pip
-sudo apt-get install -y build-essential cmake pkg-config
-sudo apt-get install -y libjpeg-dev libtiff5-dev libjasper-dev libpng12-dev
-sudo apt-get install -y libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libxvidcore-dev libx264-dev
-sudo apt-get install -y libatlas-base-dev gfortran
-
-printf "\n${BLUE}Initializing Submodules ...${BLANK}\n"
-git submodule init
-printf "\n${BLUE}Updating Submodules ...${BLANK}\n"
-git submodule update
-
-printf "\n${BLUE}Building OpenCV ...${BLANK}\n"
-cd libraries/opencv_build
-cmake \
--D BUILD_opencv_java=OFF \
--D BUILD_PYTHON_SUPPORT=ON \
--D CMAKE_BUILD_TYPE=RELEASE \
--D CMAKE_INSTALL_PREFIX=/usr/local \
--D INSTALL_PYTHON_EXAMPLES=ON \
--D OPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules \
--D WITH_TBB=ON \
--D WITH_V4L=ON \
-../opencv
-if [ "$REVCODE" = "a02082" ] || [ "$REVCODE" = "a22082" ]; then
-    # Raspberry Pi 3 Model B
-    make -j4
-else
-    # Raspberry Pi Zero W or other
-    make
-fi
-sudo make install
-sudo ldconfig
-cd ../..
+sudo apt-get install -yq python3-dev python3-pip
+sudo apt-get install -yq build-essential
+sudo apt-get install -yq cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
+sudo apt-get install -yq libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev
 
 printf "\n${BLUE}Cleaning Up Packages ...${BLANK}\n"
 sudo apt-get autoremove -y
 sudo apt-get clean -y
 
 printf "\n${BLUE}Installing Server Requirements ...${BLANK}\n"
-sudo -H pip3 install --upgrade -r requirements.txt
 sudo -H pip3 install --upgrade pip picamera[array] RPi.GPIO
+sudo -H pip3 install --upgrade -r requirements.txt
+
+printf "\n${BLUE}Initializing Submodules ...${BLANK}\n"
+git submodule init
+printf "\n${BLUE}Updating Submodules ...${BLANK}\n"
+git submodule update
+printf "\n${BLUE}Check Out Version 3.3.1 ...${BLANK}\n"
+cd ${DIR}/libraries/opencv
+git checkout tags/3.3.1
+cd ${DIR}/libraries/opencv_contrib
+git checkout tags/3.3.1
+cd ${DIR}
+
+printf "\n${BLUE}Building OpenCV ...${BLANK}\n"
+cd ${DIR}/libraries/opencv_build
+cmake \
+-D BUILD_opencv_java=OFF \
+-D BUILD_opencv_python2=OFF \
+-D BUILD_opencv_python3=ON \
+-D BUILD_EXAMPLES=OFF \
+-D BUILD_TESTS=OFF \
+-D CMAKE_BUILD_TYPE=RELEASE \
+-D CMAKE_INSTALL_PREFIX=/usr/local \
+-D ENABLE_NEON=ON \
+-D ENABLE_VFPV3=ON \
+-D INSTALL_PYTHON_EXAMPLES=OFF \
+-D OPENCV_EXTRA_MODULES_PATH=${DIR}/libraries/opencv_contrib/modules \
+-D WITH_TBB=ON \
+${DIR}/libraries/opencv
+
+if [ "$REVCODE" = "a02082" ] || [ "$REVCODE" = "a22082" ]; then
+    # Raspberry Pi 3 Model B
+    printf "\n${BLUE}Increasing Swap Space ...${BLANK}\n"
+    sudo mv -n -v /etc/dphys-swapfile /etc/dphys-swapfile.bak
+    sudo cp /etc/dphys-swapfile.bak /etc/dphys-swapfile
+    sudo sed -i -- 's/CONF_SWAPSIZE=100/CONF_SWAPSIZE=1024/g' /etc/dphys-swapfile
+    sudo /etc/init.d/dphys-swapfile stop
+    sudo /etc/init.d/dphys-swapfile start
+    # Raspberry Pi 3 Model B
+    make -j4
+else
+    # Raspberry Pi Zero W or other
+    make
+fi
+
+sudo make install
+sudo ldconfig
+cd ${DIR}
+
+if [ "$REVCODE" = "a02082" ] || [ "$REVCODE" = "a22082" ]; then
+    # Raspberry Pi 3 Model B
+    printf "\n${BLUE}Decreasing Swap Space ...${BLANK}\n"
+    sudo sed -i -- 's/CONF_SWAPSIZE=1024/CONF_SWAPSIZE=100/g' /etc/dphys-swapfile
+    sudo /etc/init.d/dphys-swapfile stop
+    sudo /etc/init.d/dphys-swapfile start
+fi
+
+printf "\n${BLUE}Fixing CV2 Python Bindings${BLANK}\n"
+cd /usr/local/lib/python3.5/dist-packages/
+sudo mv cv2.cpython-35m-arm-linux-gnueabihf.so cv2.so
 
 printf "\n${BLUE}Installing Node${BLANK}\n"
 if [ "$REVCODE" = "0x9000C1" ]; then
@@ -64,24 +95,27 @@ if [ "$REVCODE" = "0x9000C1" ]; then
 else
     # Raspberry Pi 3 Model B or other
     curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
-    sudo apt-get install -y nodejs
+    sudo apt-get install -yq nodejs
 fi
 
 printf "\n${BLUE}Updating Node Package Manager ...${BLANK}\n"
 sudo npm update -g
 
 printf "\n${BLUE}Installing Client Application ...${BLANK}\n"
-cd application
+cd ${DIR}/application
 npm install
 printf "\n${BLUE}Building Client Application ...${BLANK}\n"
 npm run build
-cd ..
-
-printf "\n${BLUE}Setting Up Access Point ...${BLANK}\n"
-sudo bash ./access-point.sh
+cd ${DIR}
 
 printf "\n${BLUE}Cron Task on Reboot ...${BLANK}\n"
+sudo mv -n -v /etc/crontab /etc/crontab.bak
+sudo cp /etc/crontab.bak /etc/crontab
 (crontab -l 2>/dev/null; echo "@reboot sudo python3 -m bobinette &") | crontab -
+
+printf "\n${BLUE}Setting Up Access Point ...${BLANK}\n"
+sudo apt-get install -yq hostapd dnsmasq
+sudo bash ./access-point-enable.sh
 
 printf "\n${BLUE}All Done !${BLANK}\n"
 sudo reboot
